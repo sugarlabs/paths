@@ -46,7 +46,6 @@ class Game():
         if parent is None:
             self.sugar = False
             self.canvas = canvas
-        # Starting from Sugar
         else:
             self.sugar = True
             self.canvas = canvas
@@ -66,6 +65,7 @@ class Game():
         self.card_height = CARD_HEIGHT * self.scale
         self.sprites = Sprites(self.canvas)
         self.last_spr_moved = []
+        self.there_are_errors = False
         self.errormsg = []
 
         for i in range(4):
@@ -98,15 +98,15 @@ class Game():
         x, y = map(int, event.get_coords())
         self.start_drag = [x, y]
 
-        self._hide_errormsgs()
-
         spr = self.sprites.find_sprite((x, y))
         if spr is None or spr == self.deck.board.spr:
             self.press = None
             self.release = None
             return True
-        if self.grid.spr_to_hand(spr) is not None:
+        if self.grid.spr_to_hand(spr) is not None and \
+           not self.there_are_errors:
             self.last_spr_moved.append(spr)
+
         if spr != self.last_spr_moved[-1]:
             self.press = None
             self.release = None
@@ -135,6 +135,8 @@ class Game():
                     self.grid.grid[self.grid.spr_to_grid(self.press)] = None
                 if spr in self.last_spr_moved:
                     self.last_spr_moved.remove(spr)
+            self._hide_errormsgs()
+            self._there_are_errors = False
             self.press = None
             self.release = None
             return True
@@ -177,6 +179,8 @@ class Game():
 
     def _test_for_bad_paths(self):
         ''' Is there a path to no where? '''
+        self._hide_errormsgs()
+        self.there_are_errors = False
         i = self.grid.spr_to_grid(self.press)
         if i is not None:
             self._check_north(i)
@@ -188,47 +192,47 @@ class Game():
         # Is it in the top row?
         if int(i / COL) == 0:
             if self.grid.grid[i].connections[N] == 1:
-                self._error(i, N)
+                self._display_errormsg(i, N)
         else:
             if self.grid.grid[i-COL] is not None:
                 if self.grid.grid[i].connections[N] != \
                    self.grid.grid[i-COL].connections[S]:
-                    self._error(i, N)
+                    self._display_errormsg(i, N)
 
     def _check_east(self, i):
         # Is it in the right column?
         if int(i % ROW) == ROW - 1:
             if self.grid.grid[i].connections[E] == 1:
-                self._error(i, E)
+                self._display_errormsg(i, E)
         else:
             if self.grid.grid[i+1] is not None:
                 if self.grid.grid[i].connections[E] != \
                    self.grid.grid[i+1].connections[W]:
-                    self._error(i, E)
+                    self._display_errormsg(i, E)
 
     def _check_south(self, i):
         # Is it in the bottom row?
         if int(i / COL) == COL - 1:
             if self.grid.grid[i].connections[S] == 1:
-                self._error(i, S)
+                self._display_errormsg(i, S)
         else:
             if self.grid.grid[i+COL] is not None:
                 if self.grid.grid[i].connections[S] != \
                    self.grid.grid[i+COL].connections[N]:
-                    self._error(i, S)
+                    self._display_errormsg(i, S)
 
     def _check_west(self, i):
         # Is it in the left column?
         if int(i % ROW) == 0:
             if self.grid.grid[i].connections[W] == 1:
-                self._error(i, W)
+                self._display_errormsg(i, W)
         else:
             if self.grid.grid[i-1] is not None:
                 if self.grid.grid[i].connections[W] != \
                    self.grid.grid[i-1].connections[E]:
-                    self._error(i, W)
+                    self._display_errormsg(i, W)
 
-    def _error(self, i, direction):
+    def _display_errormsg(self, i, direction):
         ''' Display an error message where and when appropriate. '''
         offsets = [[0.375, -0.125], [0.875, 0.375], [0.375, 0.875],
                    [-0.125, 0.375]]
@@ -237,6 +241,7 @@ class Game():
             (x + offsets[direction][0] * self.card_width,
              y + offsets[direction][1] * self.card_height))
         self.errormsg[direction].set_layer(3000)
+        self.there_are_errors = True
 
     def _hide_errormsgs(self):
         ''' Hide all the error messages. '''
