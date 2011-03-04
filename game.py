@@ -128,6 +128,8 @@ class Game():
             if i is not None: 
                 card = self.deck.spr_to_card(self.press)
                 card.spr.move(self.grid.hand_to_xy(i))
+                if self.grid.spr_to_hand(self.press) is not None:
+                    self.grid.hand[self.grid.spr_to_hand(self.press)] = None
                 self.grid.hand[i] = card
                 if self.grid.spr_to_grid(self.press) is not None:
                     self.grid.grid[self.grid.spr_to_grid(self.press)] = None
