@@ -1,0 +1,37 @@
+<?xml version="1.0" ?><!DOCTYPE svg  PUBLIC '-//W3C//DTD SVG 1.1//EN'  'http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd' [
+	<!ENTITY stroke_color "#000">
+	<!ENTITY fill_color "#eee">
+]><svg height="55px" viewBox="0 0 55 55" width="55px" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" stroke="&stroke_color;" fill="&fill_color;">
+  <g
+     transform="translate(-133.34375,-475.4375)">
+    <path
+       d="m 138.21806,502.9375 45.25138,0"
+       fill="none;" stroke="&stroke_color;" stroke-width="10" stroke-linecap="square" />
+    <path
+       d="m 160.84375,525.57355 0,-45.2721"
+       fill="none;" stroke="&stroke_color;" stroke-width="10" stroke-linecap="square" />
+    <path
+       d="m 138.21806,503.00075 45.25138,0"
+       fill="none;" stroke="&stroke_color;" stroke-width="10" stroke-linecap="square" />
+    <g
+       transform="matrix(1.0,0,0,1.0,-0.62570935,0.77971155)"
+       stroke="&stroke_color;">
+      <path
+         d="m 138.90476,502.66172 21.98482,0"
+       fill="none;" stroke="&stroke_color;" stroke-width="10" stroke-linecap="square" />
+      <path
+         d="m 160.88958,524.66172 0,-22"
+       fill="none;" stroke="&stroke_color;" stroke-width="10" stroke-linecap="square" />
+    </g>
+    <path
+       d="m 138.34375,502.93751 18.46999,0"
+       fill="none;" stroke="&stroke_color;" stroke-width="10" stroke-linecap="square" />
+    <path
+       d="M 0,27.5 27.5,0"
+       transform="translate(133.34375,475.4375)"
+       fill="none;" stroke="&fill_color;" stroke-width="10" stroke-linecap="square" />
+    <path
+       d="m 160.84375,530.4375 27.5,-27.5"
+       fill="none;" stroke="&fill_color;" stroke-width="10" stroke-linecap="square" />
+  </g>
+</svg>
