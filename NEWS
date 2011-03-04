@@ -1,0 +1,10 @@
+NEWS
+
+2
+
+* fixed regression preventing launch from GNONE
+* prevent new tile play while a path error is on the board
+
+1
+
+* New project: tile generation; basic play
