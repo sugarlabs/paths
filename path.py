@@ -44,8 +44,7 @@ class PathMain:
         self.win.show_all()
 
         # Join the activity
-        self.vmw = Game(canvas, os.path.join(os.path.abspath('.'),
-                                             'images/'))
+        self.vmw = Game(canvas)
         self.vmw.win = self.win
         self.vmw.activity = self
         self.vmw.level = 12
