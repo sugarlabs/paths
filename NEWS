@@ -1,5 +1,12 @@
 NEWS
 
+3
+
+* new game button
+* enabled save/restore to Journal
+* highlight active tile
+* highlight playable grid coordinates
+
 2
 
 * fixed regression preventing launch from GNONE
