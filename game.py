@@ -104,9 +104,7 @@ class Game():
         self.start_drag = [x, y]
 
         spr = self.sprites.find_sprite((x, y))
-        print 'in hand?', self.grid.spr_to_hand(spr)
-        print 'in grid?', self.grid.spr_to_grid(spr)
-        print 'errors?', self.there_are_errors
+
         # Ignore clicks on background
         if spr is None or spr in self.grid.blanks or spr == self.deck.board.spr:
             self.press = None
@@ -116,7 +114,6 @@ class Game():
         # Are we clicking on a tile in the hand?
         if self.grid.spr_to_hand(spr) is not None and \
            not self.there_are_errors:
-            print 'reassigning last moved to hand'
             self.last_spr_moved = spr
 
         # We cannot switch to an old tile.
@@ -185,6 +182,7 @@ class Game():
         self._test_for_bad_paths()
         self.press = None
         self.release = None
+        self._show_connected_tiles()
 
         if self.grid.cards_in_hand() == 0:
             self.grid.redeal(self.deck)
@@ -192,6 +190,27 @@ class Game():
 
     def _game_over(self):
         pass
+
+    def _show_connected_tiles(self):
+        for i in range(64):
+            if self._connected(i):
+                self.grid.blanks[i].set_layer(1000)
+            else:
+                self.grid.blanks[i].set_layer(0)
+
+    def _connected(self, i):
+        if self.grid.grid.count(None) == ROW * COL:
+            return True
+        if self.grid.grid[i] is not None: # already has a tile
+            return False
+        if i > COL and self.grid.grid[i - COL] is not None:
+            return True
+        if i < (ROW - 1) * COL and self.grid.grid[i + COL] is not None:
+            return True
+        if i % ROW > 0 and self.grid.grid[i -1] is not None:
+            return True
+        if i % ROW < ROW - 1 and self.grid.grid[i + 1] is not None:
+            return True
 
     def _test_for_bad_paths(self):
         ''' Is there a path to no where? '''
@@ -273,10 +292,6 @@ class Game():
         if self.last_spr_moved is None:
             self._hide_highlight()
         else:
-            if self.grid.spr_to_hand(self.last_spr_moved) is not None:
-                print 'highlighting hand %d', self.grid.spr_to_hand(self.last_spr_moved)
-            if self.grid.spr_to_grid(self.last_spr_moved) is not None:
-                print 'highlighting grid %d', self.grid.spr_to_grid(self.last_spr_moved)            
             x, y = self.last_spr_moved.get_xy()
             self.highlight[0].move((x, y))
             self.highlight[1].move((x + 7 * self.card_width / 8, y))
