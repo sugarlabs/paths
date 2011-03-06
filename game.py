@@ -122,6 +122,13 @@ class Game():
             self.release = None
             if self.sugar:
                 self.activity.status.set_label('clicked on nothing')
+
+            if self.placed_a_tile:
+                if self.sugar:
+                    self.activity.status.set_label('robot taking a turn!')
+                self._robot_play()
+                self._show_connected_tiles()
+                self.placed_a_tile = False
             return True
 
         # Are we clicking on a tile in the hand?
@@ -223,6 +230,7 @@ class Game():
     def _game_over(self):
         if self.sugar:
             self.activity.status.set_label(_('Game over'))
+            self.activity.robot_button.set_icon('robot-off')
 
     def _show_connected_tiles(self):
         ''' Highlight the tiles that surround the tiles on the grid '''
@@ -248,16 +256,21 @@ class Game():
             return True
 
     def _robot_play(self):
-        for i in range(64):
-            if self._connected(i):
+        ''' robot tries random cards in random locations '''
+        order = self.deck.random_order(ROW * COL)
+        for i in range(ROW * COL):
+            if self._connected(order[i]):
                 for tile in self.grid.robot_hand:
-                    if self._try_placement(tile, i):
+                    if self._try_placement(tile, order[i]):
                         # Success, so remove tile from hand
                         self.grid.robot_hand[
                             self.grid.robot_hand.index(tile)] = None
-                        tile.spr.move(self.grid.grid_to_xy(i))
+                        tile.spr.move(self.grid.grid_to_xy(order[i]))
                         tile.spr.set_layer(3000)
                         return
+        # Robot unable to play.
+        print 'robot unable to play'
+        self._game_over()
 
     def _try_placement(self, tile, i):
         if tile is None:

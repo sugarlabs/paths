@@ -82,6 +82,18 @@ class Deck:
         self.hide()
         return
 
+    def random_order(self, size=64):
+        ''' randomize a list'''
+        order = []
+        for i in range(size):
+            order.append(i)
+        for n in range(size):
+            i = randrange(size - n)
+            a = order[n]
+            order[n] = order[size - 1 - i]
+            order[size - 1 - i] = a
+        return order
+
     def restore(self, saved_deck_indices):
         ''' Restore the deck upon resume. '''
         decksize = len(saved_deck_indices)
