@@ -60,10 +60,12 @@ class Game():
         self.canvas.connect("key_press_event", self._keypress_cb)
         self.width = gtk.gdk.screen_width()
         self.height = gtk.gdk.screen_height()-GRID_CELL_SIZE
+
         self.scale = self.height / (8.0 * CARD_HEIGHT)
         self.card_width = CARD_WIDTH * self.scale
         self.card_height = CARD_HEIGHT * self.scale
         self.sprites = Sprites(self.canvas)
+
         self.there_are_errors = False
         self.errormsg = []
 
@@ -84,6 +86,9 @@ class Game():
         self.release = None
         self.last_spr_moved = None
 
+        self.playing_with_robot = False
+        self.placed_a_tile = False
+
     def new_game(self, saved_state=None, deck_index=0):
         ''' Start a new game. '''
 
@@ -92,11 +97,17 @@ class Game():
             self.deck.hide()
 
         # Shuffle the deck and deal a hand of tiles.
+        if self.playing_with_robot:
+            self.grid.set_robot_status(True)
+        else:
+            self.grid.set_robot_status(False)
         self.deck.shuffle()
         self.grid.deal(self.deck)
         self.last_spr_moved = None
         self._hide_highlight()
         self._hide_errormsgs()
+        if self.sugar:
+            self.activity.status.set_label('play on!')
 
     def _button_press_cb(self, win, event):
         win.grab_focus()
@@ -109,19 +120,35 @@ class Game():
         if spr is None or spr in self.grid.blanks or spr == self.deck.board.spr:
             self.press = None
             self.release = None
+            if self.sugar:
+                self.activity.status.set_label('clicked on nothing')
             return True
 
         # Are we clicking on a tile in the hand?
         if self.grid.spr_to_hand(spr) is not None and \
            not self.there_are_errors:
             self.last_spr_moved = spr
+            if self.sugar:
+                self.activity.status.set_label('clicked in hand')
+                clicked_in_hand = True
+                if self.placed_a_tile:
+                    if self.sugar:
+                        self.activity.status.set_label('robot taking a turn')
+                    self._robot_play()
+                self.placed_a_tile = False
+        else:
+            clicked_in_hand = False
 
         # We cannot switch to an old tile.
         if spr != self.last_spr_moved:
             self.press = None
             self.release = None
+            if self.sugar:
+                self.activity.status.set_label('clicked an old tile')
         else:
             self.press = spr
+            if self.sugar and not clicked_in_hand:
+                self.activity.status.set_label('clicked a tile on the grid?')
 
         self._show_highlight()
         return True
@@ -152,6 +179,9 @@ class Game():
             self._there_are_errors = False
             self.press = None
             self.release = None
+            self.placed_a_tile = False
+            if self.sugar:
+                self.activity.status.set_label('returned a tile to the hand')
             return True
 
         self.release = spr
@@ -165,12 +195,14 @@ class Game():
         elif self.release in self.grid.blanks:
             card = self.deck.spr_to_card(self.press)
             card.spr.move(self.grid.grid_to_xy(self.grid.xy_to_grid(x, y)))
-
+            if self.sugar:
+                self.activity.status.set_label('moved a tile to the grid')
             i = self.grid.spr_to_grid(self.press)
             if i is not None:
                 self.grid.grid[i] = None
                 
             self.grid.grid[self.grid.xy_to_grid(x, y)] = card
+            self.placed_a_tile = True
 
             i = self.grid.spr_to_hand(self.press)
             if i is not None:
@@ -179,7 +211,7 @@ class Game():
             if self.last_spr_moved != card.spr:
                 self.last_spr_moved = card.spr
             self._show_highlight()
-        self._test_for_bad_paths()
+        self._test_for_bad_paths(self.grid.spr_to_grid(self.press))
         self.press = None
         self.release = None
         self._show_connected_tiles()
@@ -189,9 +221,11 @@ class Game():
         return True
 
     def _game_over(self):
-        pass
+        if self.sugar:
+            self.activity.status.set_label(_('Game over'))
 
     def _show_connected_tiles(self):
+        ''' Highlight the tiles that surround the tiles on the grid '''
         for i in range(64):
             if self._connected(i):
                 self.grid.blanks[i].set_layer(1000)
@@ -199,6 +233,7 @@ class Game():
                 self.grid.blanks[i].set_layer(0)
 
     def _connected(self, i):
+        ''' Does grid position i abut the path? '''
         if self.grid.grid.count(None) == ROW * COL:
             return True
         if self.grid.grid[i] is not None: # already has a tile
@@ -212,16 +247,39 @@ class Game():
         if i % ROW < ROW - 1 and self.grid.grid[i + 1] is not None:
             return True
 
-    def _test_for_bad_paths(self):
+    def _robot_play(self):
+        for i in range(64):
+            if self._connected(i):
+                for tile in self.grid.robot_hand:
+                    if self._try_placement(tile, i):
+                        # Success, so remove tile from hand
+                        self.grid.robot_hand[
+                            self.grid.robot_hand.index(tile)] = None
+                        tile.spr.move(self.grid.grid_to_xy(i))
+                        tile.spr.set_layer(3000)
+                        return
+
+    def _try_placement(self, tile, i):
+        if tile is None:
+            return False
+        self.grid.grid[i] = tile
+        for j in range(4):
+            self._test_for_bad_paths(i)
+            if not self.there_are_errors:
+                return True
+            tile.rotate_clockwise()
+        self.grid.grid[i] = None
+        return False
+
+    def _test_for_bad_paths(self, tile):
         ''' Is there a path to no where? '''
         self._hide_errormsgs()
         self.there_are_errors = False
-        i = self.grid.spr_to_grid(self.press)
-        if i is not None:
-            self._check_north(i)
-            self._check_east(i)
-            self._check_south(i)
-            self._check_west(i)
+        if tile is not None:
+            self._check_north(tile)
+            self._check_east(tile)
+            self._check_south(tile)
+            self._check_west(tile)
 
     def _check_north(self, i):
         # Is it in the top row?
@@ -269,13 +327,14 @@ class Game():
 
     def _display_errormsg(self, i, direction):
         ''' Display an error message where and when appropriate. '''
-        offsets = [[0.375, -0.125], [0.875, 0.375], [0.375, 0.875],
-                   [-0.125, 0.375]]
-        x, y = self.press.get_xy()
-        self.errormsg[direction].move(
-            (x + offsets[direction][0] * self.card_width,
-             y + offsets[direction][1] * self.card_height))
-        self.errormsg[direction].set_layer(3000)
+        if self.press is not None:
+            offsets = [[0.375, -0.125], [0.875, 0.375], [0.375, 0.875],
+                       [-0.125, 0.375]]
+            x, y = self.press.get_xy()
+            self.errormsg[direction].move(
+                (x + offsets[direction][0] * self.card_width,
+                 y + offsets[direction][1] * self.card_height))
+            self.errormsg[direction].set_layer(3000)
         self.there_are_errors = True
 
     def _hide_errormsgs(self):
@@ -285,10 +344,12 @@ class Game():
             self.errormsg[i].set_layer(0)
 
     def _hide_highlight(self):
+        ''' No tile is selected. '''
         for i in range(4):
             self.highlight[i].set_layer(0)
 
     def _show_highlight(self):
+        ''' Highlight the tile that is selected. '''
         if self.last_spr_moved is None:
             self._hide_highlight()
         else:

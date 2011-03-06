@@ -29,12 +29,15 @@ class Grid:
 
         # the tiles in your hand        
         self.hand = []
+        self.robot_hand = []
+        self.robot_status = False
 
         for i in range(ROW * COL):
             self.grid.append(None)
 
         for i in range(COL):
             self.hand.append(None)
+            self.robot_hand.append(None)
 
         # card spacing
         self.left_hand = int(card_width / 2)
@@ -47,14 +50,19 @@ class Grid:
             self.blanks.append(blank_card(sprites, scale))
             self.blanks[i].move(self.grid_to_xy(i))
 
+    def set_robot_status(self, status=False):
+        self.robot_status = status
+
     def deal(self, deck):
         ''' Deal an initial set of cards to the hand '''
         for i in range(COL):
             self.hand[i] = deck.deal_next_card()
             self.place_a_card(self.hand[i], self.hand_to_xy(i)[0],
                                   self.hand_to_xy(i)[1])
+            if self.robot_status:
+                self.robot_hand[i] = deck.deal_next_card()
 
-        # and empty the grid
+        # ...and empty the grid.
         for i in range(ROW * COL):
             self.grid[i] = None
 
@@ -64,6 +72,8 @@ class Grid:
             self.hand[i] = deck.deal_next_card()
             self.place_a_card(self.hand[i], self.hand_to_xy(i)[0],
                                   self.hand_to_xy(i)[1])
+            if self.robot_status:
+                self.robot_hand[i] = deck.deal_next_card()
 
     def find_empty_slot(self):
         ''' Is there an empty slot in the hand? '''
@@ -75,6 +85,10 @@ class Grid:
     def cards_in_hand(self):
         ''' How many cards are in the hand? '''
         return COL - self.hand.count(None)
+
+    def cards_in_robot_hand(self):
+        ''' How many cards are in the robot hand? '''
+        return COL - self.robot_hand.count(None)
 
     def cards_in_grid(self):
         ''' How many cards are on the grid? '''
@@ -124,6 +138,10 @@ class Grid:
     def hand_to_spr(self, i):
         ''' Return the sprite in hand-position i. '''
         return self.hand[i].spr
+
+    def robot_hand_to_spr(self, i):
+        ''' Return the sprite in robot-hand-position i. '''
+        return self.robot_hand[i].spr
 
     def spr_to_grid(self, spr):
         ''' Return the index of a sprite in grid. '''

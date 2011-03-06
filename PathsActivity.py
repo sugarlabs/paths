@@ -135,14 +135,15 @@ class PathsActivity(activity.Activity):
             toolbox.set_current_toolbar(1)
             toolbar = games_toolbar
 
-        self.new_game = _button_factory('new-game', _('Start a new game.'),
-                                        self.new_game_cb, toolbar)
+        self.new_game_button = _button_factory('new-game',
+                                               _('Start a new game.'),
+                                               self.new_game_cb, toolbar)
 
-        '''
-        self.robot = _button_factory('robot-off',
-                                        _('Play with the computer.'),
-                                        self.robot_cb, toolbar)
-        '''
+        self.robot_button = _button_factory('robot-off',
+                                            _('Play with the computer.'),
+                                            self.robot_cb, toolbar)
+
+        self.status = _label_factory('play on', toolbar)
 
         if _have_toolbox:
             _separator_factory(toolbox.toolbar, False, True)
@@ -157,8 +158,17 @@ class PathsActivity(activity.Activity):
         self.game.new_game()
 
     def robot_cb(self, button=None):
-        ''' Play with the computer. '''
-        pass
+        ''' Play with the computer (or not). '''
+        if not self.game.playing_with_robot:
+             self.game.playing_with_robot = True
+             self.game.grid.set_robot_status(True)
+             self.robot_button.set_icon('robot-on')
+             self.game.new_game()
+        else:
+             self.game.playing_with_robot = False
+             self.game.grid.set_robot_status(False)
+             self.robot_button.set_icon('robot-off')
+             self.game.new_game()
 
     def write_file(self, file_path):
         """ Write the grid status to the Journal """
@@ -237,4 +247,3 @@ class PathsActivity(activity.Activity):
                 if self.game.deck.cards[k].number == j:
                     self.game.last_spr_moved = self.game.deck.cards[k].spr
                     return
-
