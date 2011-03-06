@@ -24,34 +24,42 @@ class Deck:
     def __init__(self, sprites, scale):
         ''' Create the deck of cards. '''
         self.cards = []
+        i = 0
         for a in range(16):
             self.cards.append(Card(sprites, generate_tile_1_line(
-                        -1, 0, 0, 0, scale)))
+                        -1, 0, 0, 0, scale), number=i))
             self.cards[-1].set_connections([0, 0, 0, 1])
+            i += 1
         for a in range(4):
             self.cards.append(Card(sprites, generate_tile_1_line(
-                        -1, 0, 1, 0, scale)))
+                        -1, 0, 1, 0, scale), number=i))
             self.cards[-1].set_connections([0, 1, 0, 1])
+            i += 1
         for a in range(12):
             self.cards.append(Card(sprites, generate_tile_2_lines(
-                        -1, 0, 1, 0, 0, 0, 0, 1, scale)))
+                        -1, 0, 1, 0, 0, 0, 0, 1, scale), number=i))
             self.cards[-1].set_connections([0, 1, 1, 1])
+            i += 1
         for a in range(16):
             self.cards.append(Card(sprites, generate_tile_2_lines(
-                        -1, 0, 0, 0, 0, -1, 0, 0, scale)))
+                        -1, 0, 0, 0, 0, -1, 0, 0, scale), number=i))
             self.cards[-1].set_connections([1, 0, 0, 1])
+            i += 1
         for a in range(4):
             self.cards.append(Card(sprites, generate_tile_2_lines(
-                        -1, 0, 1, 0, 0, -1, 0, 1, scale)))
+                        -1, 0, 1, 0, 0, -1, 0, 1, scale), number=i))
             self.cards[-1].set_connections([1, 1, 1, 1])
+            i += 1
         for a in range(8):
             self.cards.append(Card(sprites, generate_tile_2_lines(
-                        -1, 0, 0, 1, 0, -1, 1, 0, scale)))
+                        -1, 0, 0, 1, 0, -1, 1, 0, scale), number=i))
             self.cards[-1].set_connections([1, 1, 1, 1])
+            i += 1
         for a in range(4):
             self.cards.append(Card(sprites, generate_tile_2_lines(
-                        -1, 0, 0, 0, 0, -1, 1, 0, scale)))
+                        -1, 0, 0, 0, 0, -1, 1, 0, scale), number=i))
             self.cards[-1].set_connections([1, 1, 0, 1])
+            i += 1
         # Remember the current position in the deck.
         self.index = 0
 

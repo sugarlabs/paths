@@ -102,7 +102,12 @@ class PathsActivity(activity.Activity):
         self.show_all()
 
         self.game = Game(canvas, self)
-        self.game.new_game()
+
+        # Restore game state from Journal or start new game
+        if 'deck0' in self.metadata:
+            self._restore()
+        else:
+            self.game.new_game()
 
     def _setup_toolbars(self, have_toolbox):
         """ Setup the toolbars.. """
@@ -130,6 +135,13 @@ class PathsActivity(activity.Activity):
             toolbox.set_current_toolbar(1)
             toolbar = games_toolbar
 
+        self.new_game = _button_factory('new-game', _('Start a new game.'),
+                                        self.new_game_cb, toolbar)
+
+        self.robot_cb = _button_factory('robot-off',
+                                        _('Play with the computer.'),
+                                        self.robot_cb, toolbar)
+
         if _have_toolbox:
             _separator_factory(toolbox.toolbar, False, True)
 
@@ -137,3 +149,90 @@ class PathsActivity(activity.Activity):
             stop_button.props.accelerator = '<Ctrl>q'
             toolbox.toolbar.insert(stop_button, -1)
             stop_button.show()
+
+    def new_game_cb(self, button=None):
+        ''' Start a new game. '''
+        self.game.new_game()
+
+    def robot_cb(self, button=None):
+        ''' Play with the computer. '''
+        pass
+
+    def write_file(self, file_path):
+        """ Write the grid status to the Journal """
+        if not hasattr(self, 'game'):
+            return
+        for i in range(64):
+            self.metadata['deck' + str(i)] = \
+                str(self.game.deck.cards[i].number)
+        for i in range(64):
+            if self.game.grid.grid[i] is not None:
+                self.metadata['grid' + str(i)] = \
+                    str(self.game.grid.grid[i].number)
+                self.metadata['rotate' + str(i)] = \
+                    str(self.game.grid.grid[i].orientation)
+            else:
+                self.metadata['grid' + str(i)] = 'None'
+        for i in range(8):
+            if self.game.grid.hand[i] is not None:
+                self.metadata['hand' + str(i)] = \
+                    str(self.game.grid.hand[i].number)
+            else:
+                self.metadata['hand' + str(i)] = 'None'
+        if self.game.last_spr_moved is not None and \
+           self.game.grid.spr_to_grid(self.game.last_spr_moved) is not None:
+            self.metadata['last'] = str(self.game.grid.grid[
+                self.game.grid.spr_to_grid(self.game.last_spr_moved)].number)
+
+    def _restore(self):
+        """ Restore the game state from metadata """
+        deck = []
+        for i in range(64):
+            if 'deck' + str(i) in self.metadata:
+                deck.append(self.game.deck.cards[
+                        int(self.metadata['deck' + str(i)])])
+        if len(deck) == 64:  # We've retrieved an entire deck
+            self.game.deck.cards = deck[:]
+        for i in range(64):
+            if 'grid' + str(i) in self.metadata:
+                if self.metadata['grid' + str(i)] == 'None':
+                    self.game.grid.grid[i] = None
+                else:
+                    j = int(self.metadata['grid' + str(i)])
+                    for k in range(64):
+                        if self.game.deck.cards[k].number == j:
+                            self.game.grid.grid[i] = self.game.deck.cards[k]
+                    self.game.grid.grid[i].spr.move(
+                        self.game.grid.grid_to_xy(i))
+                    self.game.grid.grid[i].spr.set_layer(2000)
+                    if 'rotate' + str(i) in self.metadata:
+                        o = int(self.metadata['rotate' + str(i)])
+                        while o > 0:
+                            self.game.grid.grid[i].rotate_clockwise()
+                            o -= 90
+            else:
+                self.game.grid.grid[i] = None
+        for i in range(8):
+            if 'hand' + str(i) in self.metadata:
+                if self.metadata['hand' + str(i)] == 'None':
+                    self.game.grid.hand[i] = None
+                else:
+                    j = int(self.metadata['hand' + str(i)])
+                    for k in range(64):
+                        if self.game.deck.cards[k].number == j:
+                            self.game.grid.hand[i] = self.game.deck.cards[k]
+                    self.game.grid.hand[i].spr.move(
+                        self.game.grid.hand_to_xy(i))
+                    self.game.grid.hand[i].spr.set_layer(2000)
+            else:
+                self.game.grid.hand[i] = None
+        self.game.deck.index = 64 - self.game.grid.grid.count(None) + \
+                                8 - self.game.grid.hand.count(None)
+        self.game.last_spr_moved = None
+        if 'last' in self.metadata:
+            j = int(self.metadata['last'])
+            for k in range(64):
+                if self.game.deck.cards[k].number == j:
+                    self.game.last_spr_moved = self.game.deck.cards[k].spr
+                    return
+

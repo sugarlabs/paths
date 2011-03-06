@@ -21,10 +21,12 @@ W = S + 1
 
 class Card:
 
-    def __init__(self, sprites, svg_string, card_type='tile'):
+    def __init__(self, sprites, svg_string, card_type='tile', number=0):
         self.spr = Sprite(sprites, 0, 0, svg_str_to_pixbuf(svg_string))
         self.connections = []  # [N, E, S, W]
-        self.card_type = card_type
+        self.orientation = 0
+        self.type = card_type
+        self.number = number
 
     def set_connections(self, connections):
         self.connections = connections[:]
@@ -41,6 +43,8 @@ class Card:
         self.connections[N] = west
         self.spr.images[0] = self.spr.images[0].rotate_simple(270)
         self.spr.draw()
+        self.orientation += 90
+        self.orientation %= 360
 
     def show_card(self):
         self.spr.set_layer(2000)
@@ -61,9 +65,22 @@ def svg_str_to_pixbuf(svg_string):
     return pixbuf
 
 #
-# Create an error card
+# Create graphics used for interactions
 #
-from genpieces import generate_x
+from genpieces import generate_x, generate_blank, generate_corners
 
-def error_card(sprites):
-    return Sprite(sprites, 0, 0, svg_str_to_pixbuf(generate_x(0.5)))
+def error_card(sprites, scale=1.0):
+    return Sprite(sprites, 0, 0, svg_str_to_pixbuf(generate_x(0.5 * scale)))
+
+def blank_card(sprites, scale=1.0):
+    return Sprite(sprites, 0, 0, svg_str_to_pixbuf(generate_blank(scale)))
+
+def highlight_cards(sprites, scale=1.0):
+    return [Sprite(sprites, 0, 0, svg_str_to_pixbuf(
+                generate_corners(0, 0.125 * scale))),
+            Sprite(sprites, 0, 0, svg_str_to_pixbuf(
+                generate_corners(1, 0.125 * scale))),
+            Sprite(sprites, 0, 0, svg_str_to_pixbuf(
+                generate_corners(2, 0.125 * scale))),
+            Sprite(sprites, 0, 0, svg_str_to_pixbuf(
+                generate_corners(3, 0.125 * scale)))]

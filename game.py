@@ -24,7 +24,7 @@ except ImportError:
 
 from grid import Grid
 from deck import Deck
-from card import error_card
+from card import error_card, highlight_cards
 from sprites import Sprites
 
 N = 0
@@ -64,12 +64,25 @@ class Game():
         self.card_width = CARD_WIDTH * self.scale
         self.card_height = CARD_HEIGHT * self.scale
         self.sprites = Sprites(self.canvas)
-        self.last_spr_moved = []
         self.there_are_errors = False
         self.errormsg = []
 
+        self.grid = Grid(self.sprites, self.width, self.height,
+                         self.card_width, self.card_height, self.scale)
+        self.deck = Deck(self.sprites, self.scale)
+        self.deck.board.spr.move((self.grid.left, self.grid.top))
+        self.deck.hide()
+
         for i in range(4):
             self.errormsg.append(error_card(self.sprites))
+        self._hide_errormsgs()
+
+        self.highlight = highlight_cards(self.sprites, self.scale)
+        self._hide_highlight()
+
+        self.press = None
+        self.release = None
+        self.last_spr_moved = None
 
     def new_game(self, saved_state=None, deck_index=0):
         ''' Start a new game. '''
@@ -78,19 +91,11 @@ class Game():
         if hasattr(self, 'deck'):
             self.deck.hide()
 
-        # Initialize the grid and create a deck of cards.
-        if not hasattr(self, 'grid'):
-            self.grid = Grid(self.width, self.height, self.card_width,
-                                  self.card_height)
-
-        if not hasattr(self, 'deck'):
-            self.deck = Deck(self.sprites, self.scale)
-            self.deck.board.spr.move((self.grid.left, self.grid.top))
-
         # Shuffle the deck and deal a hand of tiles.
         self.deck.shuffle()
         self.grid.deal(self.deck)
-        self.last_spr_move = [None]
+        self.last_spr_moved = None
+        self._hide_highlight()
         self._hide_errormsgs()
 
     def _button_press_cb(self, win, event):
@@ -99,19 +104,29 @@ class Game():
         self.start_drag = [x, y]
 
         spr = self.sprites.find_sprite((x, y))
-        if spr is None or spr == self.deck.board.spr:
+        print 'in hand?', self.grid.spr_to_hand(spr)
+        print 'in grid?', self.grid.spr_to_grid(spr)
+        print 'errors?', self.there_are_errors
+        # Ignore clicks on background
+        if spr is None or spr in self.grid.blanks or spr == self.deck.board.spr:
             self.press = None
             self.release = None
             return True
+
+        # Are we clicking on a tile in the hand?
         if self.grid.spr_to_hand(spr) is not None and \
            not self.there_are_errors:
-            self.last_spr_moved.append(spr)
+            print 'reassigning last moved to hand'
+            self.last_spr_moved = spr
 
-        if spr != self.last_spr_moved[-1]:
+        # We cannot switch to an old tile.
+        if spr != self.last_spr_moved:
             self.press = None
             self.release = None
-            return True
-        self.press = spr
+        else:
+            self.press = spr
+
+        self._show_highlight()
         return True
 
     def _button_release_cb(self, win, event):
@@ -130,11 +145,12 @@ class Game():
                 card.spr.move(self.grid.hand_to_xy(i))
                 if self.grid.spr_to_hand(self.press) is not None:
                     self.grid.hand[self.grid.spr_to_hand(self.press)] = None
-                self.grid.hand[i] = card
-                if self.grid.spr_to_grid(self.press) is not None:
+                elif self.grid.spr_to_grid(self.press) is not None:
                     self.grid.grid[self.grid.spr_to_grid(self.press)] = None
-                if spr in self.last_spr_moved:
-                    self.last_spr_moved.remove(spr)
+                self.grid.hand[i] = card
+                if spr == self.last_spr_moved:
+                    self.last_spr_moved = None
+                    self._hide_highlight()
             self._hide_errormsgs()
             self._there_are_errors = False
             self.press = None
@@ -143,29 +159,29 @@ class Game():
 
         self.release = spr
         if self.press == self.release:
-
             card = self.deck.spr_to_card(spr)
             card.rotate_clockwise()
+            if self.last_spr_moved != card.spr:
+                self.last_spr_moved = card.spr
+            self._show_highlight()
 
-            if self.last_spr_moved[-1] != card.spr:
-                self.last_spr_moved.append(card.spr)
-
-        elif self.release == self.deck.board.spr:
+        elif self.release in self.grid.blanks:
             card = self.deck.spr_to_card(self.press)
             card.spr.move(self.grid.grid_to_xy(self.grid.xy_to_grid(x, y)))
 
             i = self.grid.spr_to_grid(self.press)
             if i is not None:
                 self.grid.grid[i] = None
+                
             self.grid.grid[self.grid.xy_to_grid(x, y)] = card
 
             i = self.grid.spr_to_hand(self.press)
             if i is not None:
                 self.grid.hand[i] = None
 
-            if self.last_spr_moved[-1] != card.spr:
-                self.last_spr_moved.append(card.spr)
-
+            if self.last_spr_moved != card.spr:
+                self.last_spr_moved = card.spr
+            self._show_highlight()
         self._test_for_bad_paths()
         self.press = None
         self.release = None
@@ -249,9 +265,27 @@ class Game():
             self.errormsg[i].move((self.grid.left, self.grid.top))
             self.errormsg[i].set_layer(0)
 
-    #
-    # Callbacks
-    #
+    def _hide_highlight(self):
+        for i in range(4):
+            self.highlight[i].set_layer(0)
+
+    def _show_highlight(self):
+        if self.last_spr_moved is None:
+            self._hide_highlight()
+        else:
+            if self.grid.spr_to_hand(self.last_spr_moved) is not None:
+                print 'highlighting hand %d', self.grid.spr_to_hand(self.last_spr_moved)
+            if self.grid.spr_to_grid(self.last_spr_moved) is not None:
+                print 'highlighting grid %d', self.grid.spr_to_grid(self.last_spr_moved)            
+            x, y = self.last_spr_moved.get_xy()
+            self.highlight[0].move((x, y))
+            self.highlight[1].move((x + 7 * self.card_width / 8, y))
+            self.highlight[2].move((x + 7 * self.card_width / 8,
+                                    y + 7 * self.card_height / 8))
+            self.highlight[3].move((x, y + 7 * self.card_height / 8))
+            for i in range(4):
+                self.highlight[i].set_layer(3000)
+
     def _keypress_cb(self, area, event):
         return True
 

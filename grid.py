@@ -13,6 +13,7 @@
 import gtk
 
 from deck import Deck
+from card import blank_card
 
 ROW = 8
 COL = 8
@@ -21,9 +22,10 @@ COL = 8
 class Grid:
     ''' Class for managing ROWxCOL matrix of cards '''
 
-    def __init__(self, width, height, card_width, card_height):
+    def __init__(self, sprites, width, height, card_width, card_height, scale):
         # the playing surface
         self.grid = []
+        self.blanks = []
 
         # the tiles in your hand        
         self.hand = []
@@ -40,6 +42,10 @@ class Grid:
         self.xinc = int(card_width)
         self.top = 0
         self.yinc = int(card_height)
+
+        for i in range(ROW * COL):
+            self.blanks.append(blank_card(sprites, scale))
+            self.blanks[i].move(self.grid_to_xy(i))
 
     def deal(self, deck):
         ''' Deal an initial set of cards to the hand '''

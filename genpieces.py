@@ -55,6 +55,22 @@ class SVG:
         svg_string += self._svg_line(0, h, w, 0)
         return svg_string
 
+    def _svg_corners(self, which_corner, w, h):
+        self.set_stroke_width(50.0)
+        if which_corner == 0:
+            svg_string = self._svg_line(0, 0, w, 0)
+            svg_string += self._svg_line(0, 0, 0, h)
+        elif which_corner == 1:
+            svg_string = self._svg_line(0, 0, w, 0)
+            svg_string += self._svg_line(w, 0, w, h)
+        elif which_corner == 2:
+            svg_string = self._svg_line(w, 0, w, h)
+            svg_string += self._svg_line(0, h, w, h)
+        else:
+            svg_string = self._svg_line(0, h, w, h)
+            svg_string += self._svg_line(0, 0, 0, h)
+        return svg_string
+
     def _background(self, scale):
         return self._svg_rect(54.5 * scale, 54.5 * scale, 4, 4, 0.25, 0.25)
 
@@ -117,6 +133,23 @@ def generate_x(scale=1):
     svg.set_colors(["#FF0000", "#FF0000"])
     svg_string = svg.header(background=False)
     svg_string += svg._svg_x(55, 55)
+    svg_string += svg.footer()
+    return svg_string
+
+def generate_corners(which_corner=0, scale=1):
+    svg = SVG()
+    svg.set_scale(scale)
+    svg.set_colors(["#0000FF", "#0000FF"])
+    svg_string = svg.header(background=False)
+    svg_string += svg._svg_corners(which_corner, 55, 55)
+    svg_string += svg.footer()
+    return svg_string
+
+def generate_blank(scale=1):
+    svg = SVG()
+    svg.set_scale(scale)
+    svg.set_colors(["#80C080", "#A0FFA0"])
+    svg_string = svg.header()
     svg_string += svg.footer()
     return svg_string
 
@@ -195,6 +228,14 @@ def generator(datapath):
     close_file(f)
     f = open_file(datapath, 'x.svg')
     f.write(generate_x())
+    i += 1
+    close_file(f)
+    f = open_file(datapath, 'blank.svg')
+    f.write(generate_blank())
+    i += 1
+    close_file(f)
+    f = open_file(datapath, 'corners.svg')
+    f.write(generate_corners())
     i += 1
     close_file(f)
 
