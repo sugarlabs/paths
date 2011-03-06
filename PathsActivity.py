@@ -138,9 +138,11 @@ class PathsActivity(activity.Activity):
         self.new_game = _button_factory('new-game', _('Start a new game.'),
                                         self.new_game_cb, toolbar)
 
-        self.robot_cb = _button_factory('robot-off',
+        '''
+        self.robot = _button_factory('robot-off',
                                         _('Play with the computer.'),
                                         self.robot_cb, toolbar)
+        '''
 
         if _have_toolbox:
             _separator_factory(toolbox.toolbar, False, True)
