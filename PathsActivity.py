@@ -174,7 +174,7 @@ class PathsActivity(activity.Activity):
 
     def write_file(self, file_path):
         """ Write the grid status to the Journal """
-        if not hasattr(self, 'game'):
+        if not hasattr(self, '_game'):
             return
         for i in range(64):
             self.metadata['deck' + str(i)] = \

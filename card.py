@@ -24,24 +24,26 @@ class Card:
 
     def __init__(self, sprites, svg_string, card_type='tile', number=0):
         self.spr = Sprite(sprites, 0, 0, svg_str_to_pixbuf(svg_string))
-        self.connections = []  # [N, E, S, W]
+        self.paths = []  # [[N, E, S, W], [N, E, S, W]]
         self.orientation = 0
         self.type = card_type
         self.number = number
 
-    def set_connections(self, connections):
-        self.connections = connections[:]
+    def set_paths(self, paths):
+        for c in paths:
+            self.paths.append(c)
 
-    def get_connections(self):
-        return self.connections
+    def get_paths(self):
+        return self.paths
 
     def rotate_clockwise(self):
-        """ rotate the card and its connections """
-        west = self.connections[W]
-        self.connections[W] = self.connections[S]
-        self.connections[S] = self.connections[E]
-        self.connections[E] = self.connections[N]
-        self.connections[N] = west
+        """ rotate the card and its paths """
+        for i in range(len(self.paths)):
+            west = self.paths[i][W]
+            self.paths[i][W] = self.paths[i][S]
+            self.paths[i][S] = self.paths[i][E]
+            self.paths[i][E] = self.paths[i][N]
+            self.paths[i][N] = west
         self.spr.images[0] = self.spr.images[0].rotate_simple(270)
         self.spr.draw()
         self.orientation += 90

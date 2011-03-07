@@ -297,12 +297,20 @@ class Game():
 
     def _check_card(self, i, edge_check, direction, neighbor):
         if edge_check[0] == edge_check[1]:
-            if self.grid.grid[i].connections[direction] == 1:
-                self._display_errormsg(i, direction)
+            for path in self.grid.grid[i].paths:
+                if path[direction] == 1:
+                    self._display_errormsg(i, direction)
         else:
             if self.grid.grid[neighbor] is not None:
-                if self.grid.grid[i].connections[direction] != \
-                   self.grid.grid[neighbor].connections[(direction + 2) % 4]:
+                my_path = 0
+                your_path = 0
+                for c in self.grid.grid[i].paths:
+                    if c[direction] == 1:
+                        my_path = 1
+                for c in self.grid.grid[neighbor].paths:
+                    if c[(direction + 2) % 4] == 1:
+                        your_path = 1
+                if my_path != your_path:
                     self._display_errormsg(i, direction)
 
     def _display_errormsg(self, i, direction):
