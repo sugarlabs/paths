@@ -133,6 +133,8 @@ class Game():
                             _('The robot is taking a turn.'))
                         self._robot_play()
                         self._show_connected_tiles()
+                        if self.grid.cards_in_hand() == 0:
+                            self.grid.redeal(self.deck)
                     if self.playing_with_robot and self.sugar:
                         self.activity.status.set_label(_('It is your turn.'))
                 self.placed_a_tile = False
@@ -150,6 +152,8 @@ class Game():
                             self.activity.status.set_label(
                                 _('The robot taking a turn.'))
                             self._robot_play()
+                            if self.grid.cards_in_hand() == 0:
+                                self.grid.redeal(self.deck)
                 self.placed_a_tile = False
         else:
             clicked_in_hand = False
@@ -220,7 +224,7 @@ class Game():
         self.release = None
         self._show_connected_tiles()
 
-        if self.grid.cards_in_hand() == 0:
+        if self.grid.cards_in_hand() == 0 and not self.playing_with_robot:
             self.grid.redeal(self.deck)
         return True
 
@@ -262,6 +266,7 @@ class Game():
                         # Success, so remove tile from hand
                         self.grid.robot_hand[
                             self.grid.robot_hand.index(tile)] = None
+                        print order[i], self.grid.grid_to_xy(order[i])
                         tile.spr.move(self.grid.grid_to_xy(order[i]))
                         tile.spr.set_layer(CARDS)
                         return

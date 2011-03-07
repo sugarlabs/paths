@@ -66,9 +66,11 @@ class Grid:
         for i in range(COL):
             self.hand[i] = deck.deal_next_card()
             self.place_a_card(self.hand[i], self.hand_to_xy(i)[0],
-                                  self.hand_to_xy(i)[1])
+                              self.hand_to_xy(i)[1])
             if self.robot_status:
                 self.robot_hand[i] = deck.deal_next_card()
+            self.place_a_card(self.robot_hand[i], self.robot_hand_to_xy(i)[0],
+                              self.robot_hand_to_xy(i)[1])
 
         # ...and empty the grid.
         for i in range(ROW * COL):
@@ -79,9 +81,12 @@ class Grid:
         for i in range(COL):
             self.hand[i] = deck.deal_next_card()
             self.place_a_card(self.hand[i], self.hand_to_xy(i)[0],
-                                  self.hand_to_xy(i)[1])
+                              self.hand_to_xy(i)[1])
             if self.robot_status:
                 self.robot_hand[i] = deck.deal_next_card()
+                self.place_a_card(self.robot_hand[i],
+                                  self.robot_hand_to_xy(i)[0],
+                                  self.robot_hand_to_xy(i)[1])
 
     def find_empty_slot(self):
         ''' Is there an empty slot in the hand? '''
@@ -138,6 +143,10 @@ class Grid:
     def hand_to_xy(self, i):
         ''' Convert from hand index to sprite x,y. '''
         return ((self.left_hand, (self.top + i * self.yinc)))
+
+    def robot_hand_to_xy(self, i):
+        ''' Convert from hand index to sprite x,y. '''
+        return ((-self.xinc, (self.top + i * self.yinc)))
 
     def grid_to_spr(self, i):
         ''' Return the sprite in grid-position i. '''
