@@ -129,7 +129,7 @@ class Game():
                             _('The robot is taking a turn.'))
                         self._robot_play()
                         self._show_connected_tiles()
-                    if self.sugar:
+                    if self.playing_with_robot and self.sugar:
                         self.activity.status.set_label(_('It is your turn.'))
                 self.placed_a_tile = False
             return True
@@ -261,6 +261,8 @@ class Game():
                         tile.spr.move(self.grid.grid_to_xy(order[i]))
                         tile.spr.set_layer(3000)
                         return
+        self.playing_with_robot = False
+        self.grid.set_robot_status(False)
         self._game_over(_('Robot unable to play'))
 
     def _try_placement(self, tile, i):
