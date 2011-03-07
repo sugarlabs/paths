@@ -112,6 +112,9 @@ class PathsActivity(activity.Activity):
     def _setup_toolbars(self, have_toolbox):
         """ Setup the toolbars.. """
 
+        # no sharing
+        self.max_participants = 1
+
         if have_toolbox:
             toolbox = ToolbarBox()
 
@@ -134,6 +137,12 @@ class PathsActivity(activity.Activity):
             toolbox.show()
             toolbox.set_current_toolbar(1)
             toolbar = games_toolbar
+
+            # no sharing
+            if hasattr(toolbox, 'share'):
+               toolbox.share.hide()
+            elif hasattr(toolbox, 'props'):
+               toolbox.props.visible = False
 
         self._new_game_button = _button_factory('new-game',
                                                 _('Start a new game.'),
