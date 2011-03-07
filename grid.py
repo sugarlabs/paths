@@ -17,6 +17,7 @@ from card import blank_card
 
 ROW = 8
 COL = 8
+CARDS = 3
 
 
 class Grid:
@@ -118,7 +119,7 @@ class Grid:
         ''' Place a card at position x,y and display it. '''
         if c is not None:
             c.spr.move((x, y))
-            c.spr.set_layer(2000)
+            c.spr.set_layer(CARDS)
 
     def xy_to_grid(self, x, y):
         ''' Convert from sprite x,y to grid index. '''

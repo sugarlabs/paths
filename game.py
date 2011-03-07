@@ -35,7 +35,11 @@ CARD_WIDTH = 55
 CARD_HEIGHT = 55
 ROW = 8
 COL = 8
-
+HIDE = 0
+BOARD = 1
+GRID = 2
+CARDS = 3
+OVERLAY = 4
 
 class Game():
 
@@ -229,9 +233,9 @@ class Game():
         ''' Highlight the tiles that surround the tiles on the grid '''
         for i in range(64):
             if self._connected(i):
-                self.grid.blanks[i].set_layer(1000)
+                self.grid.blanks[i].set_layer(GRID)
             else:
-                self.grid.blanks[i].set_layer(0)
+                self.grid.blanks[i].set_layer(HIDE)
 
     def _connected(self, i):
         ''' Does grid position i abut the path? '''
@@ -259,7 +263,7 @@ class Game():
                         self.grid.robot_hand[
                             self.grid.robot_hand.index(tile)] = None
                         tile.spr.move(self.grid.grid_to_xy(order[i]))
-                        tile.spr.set_layer(3000)
+                        tile.spr.set_layer(CARDS)
                         return
         self.playing_with_robot = False
         self.grid.set_robot_status(False)
@@ -340,19 +344,19 @@ class Game():
             self.errormsg[direction].move(
                 (x + offsets[direction][0] * self.card_width,
                  y + offsets[direction][1] * self.card_height))
-            self.errormsg[direction].set_layer(3000)
+            self.errormsg[direction].set_layer(OVERLAY)
         self.there_are_errors = True
 
     def _hide_errormsgs(self):
         ''' Hide all the error messages. '''
         for i in range(4):
             self.errormsg[i].move((self.grid.left, self.grid.top))
-            self.errormsg[i].set_layer(0)
+            self.errormsg[i].set_layer(HIDE)
 
     def _hide_highlight(self):
         ''' No tile is selected. '''
         for i in range(4):
-            self.highlight[i].set_layer(0)
+            self.highlight[i].set_layer(HIDE)
 
     def _show_highlight(self):
         ''' Highlight the tile that is selected. '''
@@ -366,7 +370,7 @@ class Game():
                                     y + 7 * self.card_height / 8))
             self.highlight[3].move((x, y + 7 * self.card_height / 8))
             for i in range(4):
-                self.highlight[i].set_layer(3000)
+                self.highlight[i].set_layer(OVERLAY)
 
     def _keypress_cb(self, area, event):
         return True

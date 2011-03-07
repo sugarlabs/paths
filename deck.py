@@ -17,6 +17,9 @@ from card import Card
 from genpieces import generate_tile_1_line, generate_tile_2_lines, \
     generate_board
 
+HIDE = 0
+BOARD = 1
+
 
 class Deck:
     ''' Class for defining deck of card '''
@@ -65,14 +68,14 @@ class Deck:
 
         # And a playing surface
         self.board = Card(sprites, generate_board(scale), card_type='board')
-        self.board.spr.set_layer(1)
+        self.board.spr.set_layer(BOARD)
 
     def shuffle(self):
         ''' Shuffle the deck (Knuth algorithm). '''
         decksize = self.count()
         # Hide all the cards.
         for c in self.cards:
-            c.hide_card()
+            c.spr.set_layer(HIDE)
         # Randomize the card order.
         for n in range(decksize):
             i = randrange(decksize - n)

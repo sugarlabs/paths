@@ -17,6 +17,7 @@ N = 0
 E = N + 1
 S = E + 1
 W = S + 1
+CARDS = 3
 
 
 class Card:
@@ -47,7 +48,7 @@ class Card:
         self.orientation %= 360
 
     def show_card(self):
-        self.spr.set_layer(2000)
+        self.spr.set_layer(CARDS)
         self.spr.draw()
 
     def hide_card(self):

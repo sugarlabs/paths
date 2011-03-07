@@ -36,7 +36,7 @@ from gettext import gettext as _
 import locale
 import os.path
 
-from game import Game
+from game import Game, CARDS
 
 SERVICE = 'org.sugarlabs.PathsActivity'
 IFACE = SERVICE
@@ -216,7 +216,7 @@ class PathsActivity(activity.Activity):
                             self.game.grid.grid[i] = self.game.deck.cards[k]
                     self.game.grid.grid[i].spr.move(
                         self.game.grid.grid_to_xy(i))
-                    self.game.grid.grid[i].spr.set_layer(2000)
+                    self.game.grid.grid[i].spr.set_layer(CARDS)
                     if 'rotate' + str(i) in self.metadata:
                         o = int(self.metadata['rotate' + str(i)])
                         while o > 0:
@@ -235,7 +235,7 @@ class PathsActivity(activity.Activity):
                             self.game.grid.hand[i] = self.game.deck.cards[k]
                     self.game.grid.hand[i].spr.move(
                         self.game.grid.hand_to_xy(i))
-                    self.game.grid.hand[i].spr.set_layer(2000)
+                    self.game.grid.hand[i].spr.set_layer(CARDS)
             else:
                 self.game.grid.hand[i] = None
         self.game.deck.index = 64 - self.game.grid.grid.count(None) + \
