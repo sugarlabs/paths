@@ -17,6 +17,7 @@ from card import blank_card
 
 ROW = 8
 COL = 8
+GRID = 2
 CARDS = 3
 
 
@@ -50,6 +51,7 @@ class Grid:
         for i in range(ROW * COL):
             self.blanks.append(blank_card(sprites, scale))
             self.blanks[i].move(self.grid_to_xy(i))
+            self.blanks[i].set_layer(GRID)
 
     def set_robot_status(self, status=False):
         self.robot_status = status

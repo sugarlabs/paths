@@ -106,7 +106,7 @@ class Game():
         else:
             self.grid.set_robot_status(False)
         self.grid.clear()
-        self._show_connected_tiles()
+        self.show_connected_tiles()
         self.deck.shuffle()
         self.grid.deal(self.deck)
         self.last_spr_moved = None
@@ -132,7 +132,7 @@ class Game():
                         self.activity.status.set_label(
                             _('The robot is taking a turn.'))
                         self._robot_play()
-                        self._show_connected_tiles()
+                        self.show_connected_tiles()
                         if self.grid.cards_in_hand() == 0:
                             self.grid.redeal(self.deck)
                     if self.playing_with_robot and self.sugar:
@@ -222,7 +222,7 @@ class Game():
         self._test_for_bad_paths(self.grid.spr_to_grid(self.press))
         self.press = None
         self.release = None
-        self._show_connected_tiles()
+        self.show_connected_tiles()
 
         if self.grid.cards_in_hand() == 0 and not self.playing_with_robot:
             self.grid.redeal(self.deck)
@@ -233,7 +233,7 @@ class Game():
             self.activity.status.set_label(msg)
             self.activity.robot_button.set_icon('robot-off')
 
-    def _show_connected_tiles(self):
+    def show_connected_tiles(self):
         ''' Highlight the tiles that surround the tiles on the grid '''
         for i in range(64):
             if self._connected(i):
@@ -291,54 +291,20 @@ class Game():
         self._hide_errormsgs()
         self.there_are_errors = False
         if tile is not None:
-            self._check_north(tile)
-            self._check_east(tile)
-            self._check_south(tile)
-            self._check_west(tile)
+            self._check_card(tile, [int(tile / COL), 0], N, tile - COL)
+            self._check_card(tile, [tile % ROW, ROW - 1], E, tile + 1)
+            self._check_card(tile, [int(tile / COL), COL - 1], S, tile + COL)
+            self._check_card(tile, [tile % ROW, 0], W, tile - 1)
 
-    def _check_north(self, i):
-        # Is it in the top row?
-        if int(i / COL) == 0:
-            if self.grid.grid[i].connections[N] == 1:
-                self._display_errormsg(i, N)
+    def _check_card(self, i, edge_check, direction, neighbor):
+        if edge_check[0] == edge_check[1]:
+            if self.grid.grid[i].connections[direction] == 1:
+                self._display_errormsg(i, direction)
         else:
-            if self.grid.grid[i-COL] is not None:
-                if self.grid.grid[i].connections[N] != \
-                   self.grid.grid[i-COL].connections[S]:
-                    self._display_errormsg(i, N)
-
-    def _check_east(self, i):
-        # Is it in the right column?
-        if int(i % ROW) == ROW - 1:
-            if self.grid.grid[i].connections[E] == 1:
-                self._display_errormsg(i, E)
-        else:
-            if self.grid.grid[i+1] is not None:
-                if self.grid.grid[i].connections[E] != \
-                   self.grid.grid[i+1].connections[W]:
-                    self._display_errormsg(i, E)
-
-    def _check_south(self, i):
-        # Is it in the bottom row?
-        if int(i / COL) == COL - 1:
-            if self.grid.grid[i].connections[S] == 1:
-                self._display_errormsg(i, S)
-        else:
-            if self.grid.grid[i+COL] is not None:
-                if self.grid.grid[i].connections[S] != \
-                   self.grid.grid[i+COL].connections[N]:
-                    self._display_errormsg(i, S)
-
-    def _check_west(self, i):
-        # Is it in the left column?
-        if int(i % ROW) == 0:
-            if self.grid.grid[i].connections[W] == 1:
-                self._display_errormsg(i, W)
-        else:
-            if self.grid.grid[i-1] is not None:
-                if self.grid.grid[i].connections[W] != \
-                   self.grid.grid[i-1].connections[E]:
-                    self._display_errormsg(i, W)
+            if self.grid.grid[neighbor] is not None:
+                if self.grid.grid[i].connections[direction] != \
+                   self.grid.grid[neighbor].connections[(direction + 2) % 4]:
+                    self._display_errormsg(i, direction)
 
     def _display_errormsg(self, i, direction):
         ''' Display an error message where and when appropriate. '''

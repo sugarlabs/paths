@@ -205,6 +205,7 @@ class PathsActivity(activity.Activity):
                         int(self.metadata['deck' + str(i)])])
         if len(deck) == 64:  # We've retrieved an entire deck
             self.game.deck.cards = deck[:]
+
         for i in range(64):
             if 'grid' + str(i) in self.metadata:
                 if self.metadata['grid' + str(i)] == 'None':
@@ -224,6 +225,8 @@ class PathsActivity(activity.Activity):
                             o -= 90
             else:
                 self.game.grid.grid[i] = None
+        self.game.show_connected_tiles()
+
         for i in range(8):
             if 'hand' + str(i) in self.metadata:
                 if self.metadata['hand' + str(i)] == 'None':
@@ -238,8 +241,10 @@ class PathsActivity(activity.Activity):
                     self.game.grid.hand[i].spr.set_layer(CARDS)
             else:
                 self.game.grid.hand[i] = None
+
         self.game.deck.index = 64 - self.game.grid.grid.count(None) + \
                                 8 - self.game.grid.hand.count(None)
+
         self.game.last_spr_moved = None
         if 'last' in self.metadata:
             j = int(self.metadata['last'])
