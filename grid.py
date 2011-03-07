@@ -53,6 +53,13 @@ class Grid:
     def set_robot_status(self, status=False):
         self.robot_status = status
 
+    def clear(self):
+        for i in range(ROW * COL):
+            self.grid[i] = None
+        for i in range(COL):
+            self.hand[i] = None
+            self.robot_hand[i] = None
+
     def deal(self, deck):
         ''' Deal an initial set of cards to the hand '''
         for i in range(COL):

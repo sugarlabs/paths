@@ -101,13 +101,13 @@ class Game():
             self.grid.set_robot_status(True)
         else:
             self.grid.set_robot_status(False)
+        self.grid.clear()
+        self._show_connected_tiles()
         self.deck.shuffle()
         self.grid.deal(self.deck)
         self.last_spr_moved = None
         self._hide_highlight()
         self._hide_errormsgs()
-        if self.sugar:
-            self.activity.status.set_label('play on!')
 
     def _button_press_cb(self, win, event):
         win.grab_focus()
@@ -115,19 +115,22 @@ class Game():
         self.start_drag = [x, y]
 
         spr = self.sprites.find_sprite((x, y))
+        self.press = None
+        self.release = None
 
         # Ignore clicks on background
-        if spr is None or spr in self.grid.blanks or spr == self.deck.board.spr:
-            self.press = None
-            self.release = None
-            if self.sugar:
-                self.activity.status.set_label('clicked on nothing')
-
-            if self.placed_a_tile:
-                if self.sugar:
-                    self.activity.status.set_label('robot taking a turn!')
-                self._robot_play()
-                self._show_connected_tiles()
+        if spr is None or \
+           spr in self.grid.blanks or \
+           spr == self.deck.board.spr:
+            if self.placed_a_tile and spr is None:
+                if self.playing_with_robot:
+                    if self.sugar:
+                        self.activity.status.set_label(
+                            _('The robot is taking a turn.'))
+                        self._robot_play()
+                        self._show_connected_tiles()
+                    if self.sugar:
+                        self.activity.status.set_label(_('It is your turn.'))
                 self.placed_a_tile = False
             return True
 
@@ -136,26 +139,20 @@ class Game():
            not self.there_are_errors:
             self.last_spr_moved = spr
             if self.sugar:
-                self.activity.status.set_label('clicked in hand')
                 clicked_in_hand = True
                 if self.placed_a_tile:
-                    if self.sugar:
-                        self.activity.status.set_label('robot taking a turn')
-                    self._robot_play()
+                    if self.playing_with_robot:
+                        if self.sugar:
+                            self.activity.status.set_label(
+                                _('The robot taking a turn.'))
+                            self._robot_play()
                 self.placed_a_tile = False
         else:
             clicked_in_hand = False
 
         # We cannot switch to an old tile.
-        if spr != self.last_spr_moved:
-            self.press = None
-            self.release = None
-            if self.sugar:
-                self.activity.status.set_label('clicked an old tile')
-        else:
+        if spr == self.last_spr_moved:
             self.press = spr
-            if self.sugar and not clicked_in_hand:
-                self.activity.status.set_label('clicked a tile on the grid?')
 
         self._show_highlight()
         return True
@@ -187,8 +184,6 @@ class Game():
             self.press = None
             self.release = None
             self.placed_a_tile = False
-            if self.sugar:
-                self.activity.status.set_label('returned a tile to the hand')
             return True
 
         self.release = spr
@@ -202,8 +197,6 @@ class Game():
         elif self.release in self.grid.blanks:
             card = self.deck.spr_to_card(self.press)
             card.spr.move(self.grid.grid_to_xy(self.grid.xy_to_grid(x, y)))
-            if self.sugar:
-                self.activity.status.set_label('moved a tile to the grid')
             i = self.grid.spr_to_grid(self.press)
             if i is not None:
                 self.grid.grid[i] = None
@@ -227,9 +220,9 @@ class Game():
             self.grid.redeal(self.deck)
         return True
 
-    def _game_over(self):
+    def _game_over(self, msg=_('Game over')):
         if self.sugar:
-            self.activity.status.set_label(_('Game over'))
+            self.activity.status.set_label(msg)
             self.activity.robot_button.set_icon('robot-off')
 
     def _show_connected_tiles(self):
@@ -268,9 +261,7 @@ class Game():
                         tile.spr.move(self.grid.grid_to_xy(order[i]))
                         tile.spr.set_layer(3000)
                         return
-        # Robot unable to play.
-        print 'robot unable to play'
-        self._game_over()
+        self._game_over(_('Robot unable to play'))
 
     def _try_placement(self, tile, i):
         if tile is None:
