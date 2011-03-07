@@ -128,13 +128,10 @@ class Game():
            spr == self.deck.board.spr:
             if self.placed_a_tile and spr is None:
                 if self.playing_with_robot:
-                    if self.sugar:
-                        self.activity.status.set_label(
-                            _('The robot is taking a turn.'))
-                        self._robot_play()
-                        self.show_connected_tiles()
-                        if self.grid.cards_in_hand() == 0:
-                            self.grid.redeal(self.deck)
+                    self._robot_play()
+                    self.show_connected_tiles()
+                    if self.grid.cards_in_hand() == 0:
+                        self.grid.redeal(self.deck)
                     if self.playing_with_robot and self.sugar:
                         self.activity.status.set_label(_('It is your turn.'))
                 self.placed_a_tile = False
@@ -148,12 +145,9 @@ class Game():
                 clicked_in_hand = True
                 if self.placed_a_tile:
                     if self.playing_with_robot:
-                        if self.sugar:
-                            self.activity.status.set_label(
-                                _('The robot taking a turn.'))
-                            self._robot_play()
-                            if self.grid.cards_in_hand() == 0:
-                                self.grid.redeal(self.deck)
+                        self._robot_play()
+                        if self.grid.cards_in_hand() == 0:
+                            self.grid.redeal(self.deck)
                 self.placed_a_tile = False
         else:
             clicked_in_hand = False
@@ -266,12 +260,17 @@ class Game():
                         # Success, so remove tile from hand
                         self.grid.robot_hand[
                             self.grid.robot_hand.index(tile)] = None
-                        print order[i], self.grid.grid_to_xy(order[i])
                         tile.spr.move(self.grid.grid_to_xy(order[i]))
                         tile.spr.set_layer(CARDS)
                         return
-        self.playing_with_robot = False
-        self.grid.set_robot_status(False)
+        if self.sugar:
+            self.activity.set_robot_status(False, 'robot-off')
+        # Show any tiles remaining in the robot's hand
+        for i in range(COL):
+            if self.grid.robot_hand[i] is not None:
+                x, y = self.grid.robot_hand_to_xy(i)
+                self.grid.robot_hand[i].spr.move(
+                    (self.grid.left_hand + self.grid.xinc, y))
         self._game_over(_('Robot unable to play'))
 
     def _try_placement(self, tile, i):
