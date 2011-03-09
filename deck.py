@@ -55,12 +55,12 @@ class Deck:
             i += 1
         for a in range(8):
             self.cards.append(Card(sprites, generate_tile_2_lines(
-                        -1, 0, 0, 1, 0, -1, 1, 0, scale), number=i))
-            self.cards[-1].set_paths([[0, 0, 1, 1], [1, 1, 0, 0]])
+                        0, -1, 1, 0, -1, 0, 0, 1, scale), number=i))
+            self.cards[-1].set_paths([[1, 1, 0, 0], [0, 0, 1, 1]])
             i += 1
         for a in range(4):
             self.cards.append(Card(sprites, generate_tile_2_lines(
-                        -1, 0, 0, 0, 0, -1, 1, 0, scale), number=i))
+                        0, -1, 1, 0, -1, 0, 0, 0, scale), number=i))
             self.cards[-1].set_paths([[1, 1, 0, 0], [0, 0, 0, 1]])
             i += 1
         # Remember the current position in the deck.

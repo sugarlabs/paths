@@ -27,14 +27,15 @@ from deck import Deck
 from card import error_card, highlight_cards
 from sprites import Sprites
 
+ROW = 8
+COL = 8
 N = 0
 E = N + 1
 S = E + 1
 W = S + 1
+OFFSETS = [-COL, 1, COL, -1]
 CARD_WIDTH = 55
 CARD_HEIGHT = 55
-ROW = 8
-COL = 8
 HIDE = 0
 BOARD = 1
 GRID = 2
@@ -43,8 +44,9 @@ OVERLAY = 4
 
 class Game():
 
-    def __init__(self, canvas, parent=None):
+    def __init__(self, canvas, parent=None, colors=['#A0FFA0', '#80A080']):
         self.activity = parent
+        self.colors = colors
 
         # Starting from command line
         if parent is None:
@@ -74,7 +76,8 @@ class Game():
         self.errormsg = []
 
         self.grid = Grid(self.sprites, self.width, self.height,
-                         self.card_width, self.card_height, self.scale)
+                         self.card_width, self.card_height, self.scale,
+                         colors[0])
         self.deck = Deck(self.sprites, self.scale)
         self.deck.board.spr.move((self.grid.left, self.grid.top))
         self.deck.hide()
@@ -102,8 +105,10 @@ class Game():
 
         # Shuffle the deck and deal a hand of tiles.
         if self.playing_with_robot:
+            print 'game: playing with robot'
             self.grid.set_robot_status(True)
         else:
+            print 'game: playing with myself'
             self.grid.set_robot_status(False)
         self.grid.clear()
         self.show_connected_tiles()
@@ -214,6 +219,8 @@ class Game():
                 self.last_spr_moved = card.spr
             self._show_highlight()
         self._test_for_bad_paths(self.grid.spr_to_grid(self.press))
+        if not self.there_are_errors:
+            self._test_for_complete_paths(self.grid.spr_to_grid(self.press))
         self.press = None
         self.release = None
         self.show_connected_tiles()
@@ -235,19 +242,23 @@ class Game():
             else:
                 self.grid.blanks[i].set_layer(HIDE)
 
-    def _connected(self, i):
-        ''' Does grid position i abut the path? '''
+    def _connected(self, tile):
+        ''' Does tile abut the path? '''
         if self.grid.grid.count(None) == ROW * COL:
             return True
-        if self.grid.grid[i] is not None: # already has a tile
+        if self.grid.grid[tile] is not None:  # already has a tile
             return False
-        if i > COL and self.grid.grid[i - COL] is not None:
+        if tile > COL and \
+           self.grid.grid[tile + OFFSETS[0]] is not None:
             return True
-        if i < (ROW - 1) * COL and self.grid.grid[i + COL] is not None:
+        if tile % ROW < ROW - 1 and \
+           self.grid.grid[tile + OFFSETS[1]] is not None:
             return True
-        if i % ROW > 0 and self.grid.grid[i -1] is not None:
+        if tile < (ROW - 1) * COL and \
+           self.grid.grid[tile + OFFSETS[2]] is not None:
             return True
-        if i % ROW < ROW - 1 and self.grid.grid[i + 1] is not None:
+        if tile % ROW > 0 and \
+           self.grid.grid[tile + OFFSETS[3]] is not None:
             return True
 
     def _robot_play(self):
@@ -274,6 +285,7 @@ class Game():
         self._game_over(_('Robot unable to play'))
 
     def _try_placement(self, tile, i):
+        ''' Try to place a tile at grid posiion i. Rotate it, if necessary. '''
         if tile is None:
             return False
         self.grid.grid[i] = tile
@@ -285,15 +297,122 @@ class Game():
         self.grid.grid[i] = None
         return False
 
+    def _test_for_complete_paths(self, tile):
+        ''' Did this tile complete a path? (or two paths?) '''
+
+        # A tile can complete up to two paths.
+        self._paths = [[], []]
+        # List and status of tiles to test
+        self._tiles_to_test = [[], []]
+        break_in_path = [False, False]
+
+        # Seed the paths and lists with the current tile.
+        if tile is not None:
+            self._add_to_path_list(tile, 0, 0)
+            self._add_to_test_list(tile, 0, 0)
+            if len(self.grid.grid[tile].paths) == 2:
+                self._add_to_path_list(tile, 1, 1)
+                self._add_to_test_list(tile, 1, 1)
+
+        # Walk the path.
+        for p in range(2):
+            tile, path = self._tile_to_test(p)
+            while(tile is not None):
+                self._test(tile, path, p, self._test_a_neighbor)
+                self._tile_has_been_tested(tile, path, p)
+                tile, path = self._tile_to_test(p)
+            # Is the path complete?
+            for i in self._paths[p]:
+                if not self._test(i[0], i[1], None, self._test_a_connection):
+                    break_in_path[p] = True
+            if not break_in_path[p] and len(self._paths[p]) > 0:
+                print self._paths[p], ' is a closed path!!!'
+
+    def _tile_to_test(self, test_path):
+        ''' Find a tile that needs testing. '''
+        for i in self._tiles_to_test[test_path]:
+            if i[2] is False:
+                return i[0], i[1]
+        return None, None
+
+    def _add_to_test_list(self, tile, tile_path, test_path):
+        ''' If [tile, path] has not already been tested, add it to the list '''
+        for i in self._tiles_to_test[test_path]:
+            if i[0] == tile and i[1] == tile_path:
+                return
+        self._tiles_to_test[test_path].append([tile, tile_path, False])
+
+    def _add_to_path_list(self, tile, tile_path, test_path):
+        ''' Only add a tile to the path if it is not already there. '''
+        for i in self._paths[test_path]:
+            if i[0] == tile and i[1] == tile_path:
+                return
+        self._paths[test_path].append([tile, tile_path])
+
+    def _tile_has_been_tested(self, tile, tile_path, test_path):
+        ''' Mark a tile as tested. '''
+        for i in self._tiles_to_test[test_path]:
+            if i[0] == tile and i[1] == tile_path:
+                i[2] = True
+                return
+
+    def _test(self, tile, tile_path, test_path, test):
+        ''' Test each neighbor of a block for a connecting path. '''
+        if tile is None:
+            return False
+        for i in range(4):
+            if not test(tile, tile_path, test_path, i, tile + OFFSETS[i]):
+                return False
+        return True
+
+    def _test_a_connection(self, tile, tile_path, test_path, direction,
+                           neighbor):
+        ''' Is there a break in the connection? If so return False. '''
+        if self.grid.grid[tile].paths[tile_path][direction] == 1:
+            if self.grid.grid[neighbor] is None:
+                return False
+            # Which of the neighbor's paths are we connecting to?
+            if len(self.grid.grid[neighbor].paths) == 1:
+                if self.grid.grid[neighbor].paths[0][(direction + 2) % 4] == 0:
+                    return False
+                else:
+                    return True
+            if self.grid.grid[neighbor].paths[0][(direction + 2) % 4] == 0 and \
+               self.grid.grid[neighbor].paths[1][(direction + 2) % 4] == 0:
+                return False
+        return True
+
+    def _test_a_neighbor(self, tile, tile_path, test_path, direction,
+                         neighbor):
+        ''' Are we connected to a neighbor's path? If so, add the neighbor
+        to our paths list and to the list of tiles that need to be tested. '''
+        if self.grid.grid[tile].paths[tile_path][direction] == 1:
+            if self.grid.grid[neighbor] is not None:
+                if not neighbor in self._paths[test_path]:
+                    # Which of the neighbor's paths are we connecting to?
+                    if self.grid.grid[neighbor].paths[0][
+                        (direction + 2) % 4] == 1:
+                        self._add_to_path_list(neighbor, 0, test_path)
+                        self._add_to_test_list(neighbor, 0, test_path)
+                    elif len(self.grid.grid[neighbor].paths) == 2 and \
+                         self.grid.grid[neighbor].paths[1][
+                        (direction + 2) % 4] == 1:
+                        self._add_to_path_list(neighbor, 1, test_path)
+                        self._add_to_test_list(neighbor, 1, test_path)
+                    else:
+                        print 'You should never see this message.'
+        return True
+
     def _test_for_bad_paths(self, tile):
         ''' Is there a path to no where? '''
         self._hide_errormsgs()
         self.there_are_errors = False
         if tile is not None:
-            self._check_card(tile, [int(tile / COL), 0], N, tile - COL)
-            self._check_card(tile, [tile % ROW, ROW - 1], E, tile + 1)
-            self._check_card(tile, [int(tile / COL), COL - 1], S, tile + COL)
-            self._check_card(tile, [tile % ROW, 0], W, tile - 1)
+            self._check_card(tile, [int(tile / COL), 0], N, tile + OFFSETS[0])
+            self._check_card(tile, [tile % ROW, ROW - 1], E, tile + OFFSETS[1])
+            self._check_card(tile, [int(tile / COL), COL - 1], S,
+                             tile + OFFSETS[2])
+            self._check_card(tile, [tile % ROW, 0], W, tile + OFFSETS[3])
 
     def _check_card(self, i, edge_check, direction, neighbor):
         if edge_check[0] == edge_check[1]:
@@ -316,12 +435,12 @@ class Game():
     def _display_errormsg(self, i, direction):
         ''' Display an error message where and when appropriate. '''
         if self.press is not None:
-            offsets = [[0.375, -0.125], [0.875, 0.375], [0.375, 0.875],
-                       [-0.125, 0.375]]
+            dxdy = [[0.375, -0.125], [0.875, 0.375], [0.375, 0.875],
+                    [-0.125, 0.375]]
             x, y = self.press.get_xy()
             self.errormsg[direction].move(
-                (x + offsets[direction][0] * self.card_width,
-                 y + offsets[direction][1] * self.card_height))
+                (x + dxdy[direction][0] * self.card_width,
+                 y + dxdy[direction][1] * self.card_height))
             self.errormsg[direction].set_layer(OVERLAY)
         self.there_are_errors = True
 
