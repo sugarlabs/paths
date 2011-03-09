@@ -151,7 +151,7 @@ class PathsActivity(activity.Activity):
                                                 _('Start a new game.'),
                                                 self._new_game_cb, toolbar)
 
-        self._robot_button = _button_factory('robot-off',
+        self.robot_button = _button_factory('robot-off',
                                              _('Play with the computer.'),
                                              self._robot_cb, toolbar)
 
@@ -185,7 +185,7 @@ class PathsActivity(activity.Activity):
         ''' Reset robot icon and status '''
         self._game.playing_with_robot = status
         self._game.grid.set_robot_status(status)
-        self._robot_button.set_icon(icon)
+        self.robot_button.set_icon(icon)
 
     def write_file(self, file_path):
         """ Write the grid status to the Journal """

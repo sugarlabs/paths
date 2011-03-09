@@ -114,6 +114,9 @@ class Game():
         self.show_connected_tiles()
         self.deck.shuffle()
         self.grid.deal(self.deck)
+        self.press = None
+        self.release = None
+        self.placed_a_tile = None
         self.last_spr_moved = None
         self._hide_highlight()
         self._hide_errormsgs()
