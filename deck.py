@@ -13,62 +13,69 @@
 import gtk
 from random import randrange
 
-from card import Card
-from genpieces import generate_tile_1_line, generate_tile_2_lines, \
-    generate_board
+from card import Card, board_card
+from genpieces import generate_tile_1_line, generate_tile_2_lines
+
 
 HIDE = 0
 BOARD = 1
 
 
 class Deck:
-    ''' Class for defining deck of card '''
+    ''' Class for defining deck of cards. '''
 
-    def __init__(self, sprites, scale):
+    def __init__(self, sprites, scale=1.0, color='#000000'):
         ''' Create the deck of cards. '''
         self.cards = []
         i = 0
         for a in range(16):
             self.cards.append(Card(sprites, generate_tile_1_line(
-                        -1, 0, 0, 0, scale), number=i))
+                -1, 0, 0, 0, scale), generate_tile_1_line(
+                -1, 0, 0, 0, scale, color), number=i))
             self.cards[-1].set_paths([[0, 0, 0, 1]])
             i += 1
         for a in range(4):
             self.cards.append(Card(sprites, generate_tile_1_line(
-                        -1, 0, 1, 0, scale), number=i))
+                -1, 0, 1, 0, scale), generate_tile_1_line(
+                -1, 0, 1, 0, scale, color), number=i))
             self.cards[-1].set_paths([[0, 1, 0, 1]])
             i += 1
         for a in range(12):
             self.cards.append(Card(sprites, generate_tile_2_lines(
-                        -1, 0, 1, 0, 0, 0, 0, 1, scale), number=i))
+                -1, 0, 1, 0, 0, 0, 0, 1, scale), generate_tile_2_lines(
+                -1, 0, 1, 0, 0, 0, 0, 1, scale, color), number=i))
             self.cards[-1].set_paths([[0, 1, 1, 1]])
             i += 1
         for a in range(16):
             self.cards.append(Card(sprites, generate_tile_2_lines(
-                        -1, 0, 0, 0, 0, -1, 0, 0, scale), number=i))
+                -1, 0, 0, 0, 0, -1, 0, 0, scale), generate_tile_2_lines(
+                -1, 0, 0, 0, 0, -1, 0, 0, scale, color), number=i))
             self.cards[-1].set_paths([[1, 0, 0, 1]])
             i += 1
         for a in range(4):
             self.cards.append(Card(sprites, generate_tile_2_lines(
-                        -1, 0, 1, 0, 0, -1, 0, 1, scale), number=i))
+                -1, 0, 1, 0, 0, -1, 0, 1, scale), generate_tile_2_lines(
+                -1, 0, 1, 0, 0, -1, 0, 1, scale, color), number=i))
             self.cards[-1].set_paths([[1, 1, 1, 1]])
             i += 1
         for a in range(8):
             self.cards.append(Card(sprites, generate_tile_2_lines(
-                        0, -1, 1, 0, -1, 0, 0, 1, scale), number=i))
+                0, -1, 1, 0, -1, 0, 0, 1, scale), generate_tile_2_lines(
+                0, -1, 1, 0, -1, 0, 0, 1, scale, color), number=i))
             self.cards[-1].set_paths([[1, 1, 0, 0], [0, 0, 1, 1]])
             i += 1
         for a in range(4):
             self.cards.append(Card(sprites, generate_tile_2_lines(
-                        0, -1, 1, 0, -1, 0, 0, 0, scale), number=i))
+                0, -1, 1, 0, -1, 0, 0, 0, scale), generate_tile_2_lines(
+                0, -1, 1, 0, -1, 0, 0, 0, scale, color), number=i))
             self.cards[-1].set_paths([[1, 1, 0, 0], [0, 0, 0, 1]])
             i += 1
         # Remember the current position in the deck.
         self.index = 0
 
         # And a playing surface
-        self.board = Card(sprites, generate_board(scale), card_type='board')
-        self.board.spr.set_layer(BOARD)
+        self.board = board_card(sprites, scale=scale)
+        self.board.set_layer(BOARD)
 
     def shuffle(self):
         ''' Shuffle the deck (Knuth algorithm). '''
@@ -119,8 +126,6 @@ class Deck:
 
     def spr_to_card(self, spr):
         ''' Given a sprite, find the corresponding card in the deck. '''
-        if spr == self.board.spr:
-            return self.board
         for c in self.cards:
             if c.spr == spr:
                 return c

@@ -22,8 +22,8 @@ class SVG:
     def __init__(self):
         self._scale = 1
         self._stroke_width = 1
-        self._fill = "#FF0000"
-        self._stroke = "A00000"
+        self._fill = '#FFFFFF'
+        self._stroke = '#000000'
 
     def _svg_style(self, extras=""):
         return "%s%s%s%s%s%f%s%s%s" % ("style=\"fill:", self._fill, ";stroke:",
@@ -145,35 +145,35 @@ def generate_corners(which_corner=0, scale=1):
     svg_string += svg.footer()
     return svg_string
 
-def generate_blank(scale=1):
+def generate_blank(scale=1, color='#A0FFA0'):
     svg = SVG()
     svg.set_scale(scale)
-    svg.set_colors(["#80C080", "#A0FFA0"])
+    svg.set_colors([color, color])
     svg_string = svg.header()
     svg_string += svg.footer()
     return svg_string
 
-def generate_board(scale=1):
+def generate_board(scale=1, color='#000000'):
     svg = SVG()
     svg.set_scale(scale)
-    svg.set_colors(["#000000", "#FFFFFF"])
+    svg.set_colors([color, '#FFFFFF'])
     svg_string = svg.header(scale=8)  # board is 8x8 tiles
     svg_string += svg.footer()
     return svg_string
 
-def generate_tile_1_line(a, b, c, d, scale=1):
+def generate_tile_1_line(a, b, c, d, scale=1, color='#000000'):
     svg = SVG()
     svg.set_scale(scale)
-    svg.set_colors(["#000000", "#FFFFFF"])
+    svg.set_colors([color, '#FFFFFF'])
     svg_string = svg.header()
     svg_string += svg.path(a, b, c, d)
     svg_string += svg.footer()
     return svg_string
 
-def generate_tile_2_lines(a, b, c, d, e, f, g, h, scale=1):
+def generate_tile_2_lines(a, b, c, d, e, f, g, h, scale=1, color='#000000'):
     svg = SVG()
     svg.set_scale(scale)
-    svg.set_colors(["#000000", "#FFFFFF"])
+    svg.set_colors([color, '#FFFFFF'])
     svg_string = svg.header()
     svg_string += svg.path(a, b, c, d)
     svg_string += svg.path(e, f, g, h)
@@ -236,6 +236,10 @@ def generator(datapath):
     close_file(f)
     f = open_file(datapath, 'corners.svg')
     f.write(generate_corners())
+    i += 1
+    close_file(f)
+    f = open_file(datapath, 'board.svg')
+    f.write(generate_board())
     i += 1
     close_file(f)
 

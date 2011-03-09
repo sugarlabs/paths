@@ -24,7 +24,8 @@ CARDS = 3
 class Grid:
     ''' Class for managing ROWxCOL matrix of cards '''
 
-    def __init__(self, sprites, width, height, card_width, card_height, scale):
+    def __init__(self, sprites, width, height, card_width, card_height, scale,
+                 color):
         # the playing surface
         self.grid = []
         self.blanks = []
@@ -49,7 +50,7 @@ class Grid:
         self.yinc = int(card_height)
 
         for i in range(ROW * COL):
-            self.blanks.append(blank_card(sprites, scale))
+            self.blanks.append(blank_card(sprites, scale=scale, color=color))
             self.blanks[i].move(self.grid_to_xy(i))
             self.blanks[i].set_layer(GRID)
 

@@ -22,8 +22,9 @@ CARDS = 3
 
 class Card:
 
-    def __init__(self, sprites, svg_string, card_type='tile', number=0):
-        self.spr = Sprite(sprites, 0, 0, svg_str_to_pixbuf(svg_string))
+    def __init__(self, sprites, svg0, svg1, card_type='tile', number=0):
+        self.spr = Sprite(sprites, 0, 0, svg_str_to_pixbuf(svg0))
+        self.highlight = svg_str_to_pixbuf(svg1)
         self.paths = []  # [[N, E, S, W], [N, E, S, W]]
         self.orientation = 0
         self.type = card_type
@@ -45,6 +46,7 @@ class Card:
             self.paths[i][E] = self.paths[i][N]
             self.paths[i][N] = west
         self.spr.images[0] = self.spr.images[0].rotate_simple(270)
+        self.highlight = self.highlight.rotate_simple(270)
         self.spr.draw()
         self.orientation += 90
         self.orientation %= 360
@@ -70,13 +72,18 @@ def svg_str_to_pixbuf(svg_string):
 #
 # Create graphics used for interactions
 #
-from genpieces import generate_x, generate_blank, generate_corners
+from genpieces import generate_board, generate_x, generate_blank, \
+    generate_corners
+
+def board_card(sprites, scale=1.0):
+    return Sprite(sprites, 0, 0, svg_str_to_pixbuf(generate_board(scale)))
 
 def error_card(sprites, scale=1.0):
     return Sprite(sprites, 0, 0, svg_str_to_pixbuf(generate_x(0.5 * scale)))
 
-def blank_card(sprites, scale=1.0):
-    return Sprite(sprites, 0, 0, svg_str_to_pixbuf(generate_blank(scale)))
+def blank_card(sprites, scale=1.0, color='#80FF80'):
+    return Sprite(sprites, 0, 0, svg_str_to_pixbuf(
+            generate_blank(scale, color)))
 
 def highlight_cards(sprites, scale=1.0):
     return [Sprite(sprites, 0, 0, svg_str_to_pixbuf(

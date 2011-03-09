@@ -15,6 +15,7 @@ import gobject
 
 import sugar
 from sugar.activity import activity
+from sugar import profile
 try:
     from sugar.graphics.toolbarbox import ToolbarBox
     _have_toolbox = True
@@ -101,7 +102,9 @@ class PathsActivity(activity.Activity):
         canvas.show()
         self.show_all()
 
-        self._game = Game(canvas, self)
+        self._game = Game(canvas,
+                          parent=self,
+                          colors= profile.get_color().to_string().split(','))
 
         # Restore game state from Journal or start new game
         if 'deck0' in self.metadata:
@@ -168,11 +171,14 @@ class PathsActivity(activity.Activity):
 
     def _robot_cb(self, button=None):
         ''' Play with the computer (or not). '''
+        print 'playing with robot:', self._game.playing_with_robot
         if not self._game.playing_with_robot:
             self.set_robot_status(True, 'robot-on')
+            print 'starting new game with robot'
             self._game.new_game()
         else:
             self.set_robot_status(False, 'robot-off')
+            print 'starting new game without robot'
             self._game.new_game()
 
     def set_robot_status(self, status, icon):

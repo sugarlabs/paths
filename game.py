@@ -44,7 +44,7 @@ OVERLAY = 4
 
 class Game():
 
-    def __init__(self, canvas, parent=None, colors=['#A0FFA0', '#80A080']):
+    def __init__(self, canvas, parent=None, colors=['#A0FFA0', '#FF8080']):
         self.activity = parent
         self.colors = colors
 
@@ -78,8 +78,8 @@ class Game():
         self.grid = Grid(self.sprites, self.width, self.height,
                          self.card_width, self.card_height, self.scale,
                          colors[0])
-        self.deck = Deck(self.sprites, self.scale)
-        self.deck.board.spr.move((self.grid.left, self.grid.top))
+        self.deck = Deck(self.sprites, self.scale, colors[1])
+        self.deck.board.move((self.grid.left, self.grid.top))
         self.deck.hide()
 
         for i in range(4):
@@ -130,7 +130,7 @@ class Game():
         # Ignore clicks on background
         if spr is None or \
            spr in self.grid.blanks or \
-           spr == self.deck.board.spr:
+           spr == self.deck.board:
             if self.placed_a_tile and spr is None:
                 if self.playing_with_robot:
                     self._robot_play()
@@ -322,11 +322,13 @@ class Game():
                 if not self._test(i[0], i[1], None, self._test_a_connection):
                     break_in_path[p] = True
             if not break_in_path[p] and len(self._paths[p]) > 0:
-                print self._paths[p], ' is a closed path!!!'
+                # TODO: Change the color of path 0 vs 1
+                for i in self._paths[p]:
+                    self.grid.grid[i[0]].spr.set_shape(
+                        self.grid.grid[i[0]].highlight)
 
     def _tile_to_test(self, test_path):
         ''' Find a tile that needs testing. '''
-        # for i in self._tiles_to_test[test_path]:
         for i in self._paths[test_path]:
             if i[2] is False:
                 return i[0], i[1]
@@ -341,7 +343,6 @@ class Game():
 
     def _tile_has_been_tested(self, tile, tile_path, test_path):
         ''' Mark a tile as tested. '''
-        # for i in self._tiles_to_test[test_path]:
         for i in self._paths[test_path]:
             if i[0] == tile and i[1] == tile_path:
                 i[2] = True
