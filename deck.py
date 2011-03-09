@@ -130,6 +130,12 @@ class Deck:
              self.cards[i] = _deck[i]
         return True
 
+
+    def clear(self):
+        ''' Remove any highlight from the cards. '''
+        for i in self.cards:
+            i.reset()
+
     def swap_cards(self,i,j):
         ''' Swap the position of two cards in the deck. '''
         tmp = self.cards[j]

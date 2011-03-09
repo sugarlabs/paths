@@ -24,7 +24,7 @@ class Card:
 
     def __init__(self, sprites, svg, svgs, card_type='tile', number=0):
         self.spr = Sprite(sprites, 0, 0, svg_str_to_pixbuf(svg))
-        self.highlight = []
+        self.highlight = [self.spr.images[0]]
         for s in svgs:
             self.highlight.append(svg_str_to_pixbuf(s))
         self.paths = []  # [[N, E, S, W], [N, E, S, W]]
@@ -40,9 +40,13 @@ class Card:
     def get_paths(self):
         return self.paths
 
+    def reset(self):
+        self.shape = None
+        self.spr.set_shape(self.highlight[0])
+
     def set_shape(self, path):
         if self.shape is None:
-            self.spr.set_shape(self.highlight[path])
+            self.spr.set_shape(self.highlight[path + 1])
             self.shape = path
         elif self.shape != path:
             self.spr.set_shape(self.highlight[-1])

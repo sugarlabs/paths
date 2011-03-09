@@ -105,12 +105,11 @@ class Game():
 
         # Shuffle the deck and deal a hand of tiles.
         if self.playing_with_robot:
-            print 'game: playing with robot'
             self.grid.set_robot_status(True)
         else:
-            print 'game: playing with myself'
             self.grid.set_robot_status(False)
         self.grid.clear()
+        self.deck.clear()
         self.show_connected_tiles()
         self.deck.shuffle()
         self.grid.deal(self.deck)
