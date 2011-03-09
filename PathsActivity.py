@@ -155,7 +155,7 @@ class PathsActivity(activity.Activity):
                                              _('Play with the computer.'),
                                              self._robot_cb, toolbar)
 
-        self.status = _label_factory('play on', toolbar)
+        self.status = _label_factory(_('It is your turn.'), toolbar)
 
         if _have_toolbox:
             _separator_factory(toolbox.toolbar, False, True)
