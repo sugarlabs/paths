@@ -29,45 +29,58 @@ class Deck:
         self.cards = []
         i = 0
         for a in range(16):
-            self.cards.append(Card(sprites, generate_tile_1_line(
-                -1, 0, 0, 0, scale), generate_tile_1_line(
-                -1, 0, 0, 0, scale, color), number=i))
+            self.cards.append(Card(sprites,
+                generate_tile_1_line(-1, 0, 0, 0, scale),
+                [generate_tile_1_line(-1, 0, 0, 0, scale, color)], number=i))
             self.cards[-1].set_paths([[0, 0, 0, 1]])
             i += 1
         for a in range(4):
-            self.cards.append(Card(sprites, generate_tile_1_line(
-                -1, 0, 1, 0, scale), generate_tile_1_line(
-                -1, 0, 1, 0, scale, color), number=i))
+            self.cards.append(Card(sprites,
+                generate_tile_1_line(-1, 0, 1, 0, scale),
+                [generate_tile_1_line(-1, 0, 1, 0, scale, color)], number=i))
             self.cards[-1].set_paths([[0, 1, 0, 1]])
             i += 1
         for a in range(12):
-            self.cards.append(Card(sprites, generate_tile_2_lines(
-                -1, 0, 1, 0, 0, 0, 0, 1, scale), generate_tile_2_lines(
-                -1, 0, 1, 0, 0, 0, 0, 1, scale, color), number=i))
+            self.cards.append(Card(sprites,
+                generate_tile_2_lines(-1, 0, 1, 0, 0, 0, 0, 1, scale),
+                [generate_tile_2_lines(-1, 0, 1, 0, 0, 0, 0, 1, scale,
+                                        [color, color])], number=i))
             self.cards[-1].set_paths([[0, 1, 1, 1]])
             i += 1
         for a in range(16):
-            self.cards.append(Card(sprites, generate_tile_2_lines(
-                -1, 0, 0, 0, 0, -1, 0, 0, scale), generate_tile_2_lines(
-                -1, 0, 0, 0, 0, -1, 0, 0, scale, color), number=i))
+            self.cards.append(Card(sprites,
+                generate_tile_2_lines(-1, 0, 0, 0, 0, -1, 0, 0, scale),
+                [generate_tile_2_lines(-1, 0, 0, 0, 0, -1, 0, 0, scale,
+                                        [color, color])], number=i))
             self.cards[-1].set_paths([[1, 0, 0, 1]])
             i += 1
         for a in range(4):
-            self.cards.append(Card(sprites, generate_tile_2_lines(
-                -1, 0, 1, 0, 0, -1, 0, 1, scale), generate_tile_2_lines(
-                -1, 0, 1, 0, 0, -1, 0, 1, scale, color), number=i))
+            self.cards.append(Card(sprites,
+                generate_tile_2_lines(-1, 0, 1, 0, 0, -1, 0, 1, scale),
+                [generate_tile_2_lines(-1, 0, 1, 0, 0, -1, 0, 1, scale,
+                                        [color, color])], number=i))
             self.cards[-1].set_paths([[1, 1, 1, 1]])
             i += 1
         for a in range(8):
-            self.cards.append(Card(sprites, generate_tile_2_lines(
-                0, -1, 1, 0, -1, 0, 0, 1, scale), generate_tile_2_lines(
-                0, -1, 1, 0, -1, 0, 0, 1, scale, color), number=i))
+            self.cards.append(Card(sprites,
+                generate_tile_2_lines(0, -1, 1, 0, -1, 0, 0, 1, scale),
+                [generate_tile_2_lines(0, -1, 1, 0, -1, 0, 0, 1, scale,
+                                       [color, '#000000']),
+                 generate_tile_2_lines(0, -1, 1, 0, -1, 0, 0, 1, scale,
+                                       ['#000000', color]),
+                 generate_tile_2_lines(0, -1, 1, 0, -1, 0, 0, 1, scale,
+                                       [color, color])], number=i))
             self.cards[-1].set_paths([[1, 1, 0, 0], [0, 0, 1, 1]])
             i += 1
         for a in range(4):
-            self.cards.append(Card(sprites, generate_tile_2_lines(
-                0, -1, 1, 0, -1, 0, 0, 0, scale), generate_tile_2_lines(
-                0, -1, 1, 0, -1, 0, 0, 0, scale, color), number=i))
+            self.cards.append(Card(sprites,
+                generate_tile_2_lines(0, -1, 1, 0, -1, 0, 0, 0, scale),
+                [generate_tile_2_lines(0, -1, 1, 0, -1, 0, 0, 0, scale,
+                                       [color, '#000000']),
+                 generate_tile_2_lines(0, -1, 1, 0, -1, 0, 0, 0, scale,
+                                       ['#000000', color]),
+                 generate_tile_2_lines(0, -1, 1, 0, -1, 0, 0, 0, scale,
+                                       [color, color])], number=i))
             self.cards[-1].set_paths([[1, 1, 0, 0], [0, 0, 0, 1]])
             i += 1
         # Remember the current position in the deck.

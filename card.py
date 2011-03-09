@@ -22,10 +22,13 @@ CARDS = 3
 
 class Card:
 
-    def __init__(self, sprites, svg0, svg1, card_type='tile', number=0):
-        self.spr = Sprite(sprites, 0, 0, svg_str_to_pixbuf(svg0))
-        self.highlight = svg_str_to_pixbuf(svg1)
+    def __init__(self, sprites, svg, svgs, card_type='tile', number=0):
+        self.spr = Sprite(sprites, 0, 0, svg_str_to_pixbuf(svg))
+        self.highlight = []
+        for s in svgs:
+            self.highlight.append(svg_str_to_pixbuf(s))
         self.paths = []  # [[N, E, S, W], [N, E, S, W]]
+        self.shape = None
         self.orientation = 0
         self.type = card_type
         self.number = number
@@ -37,6 +40,13 @@ class Card:
     def get_paths(self):
         return self.paths
 
+    def set_shape(self, path):
+        if self.shape is None:
+            self.spr.set_shape(self.highlight[path])
+            self.shape = path
+        elif self.shape != path:
+            self.spr.set_shape(self.highlight[-1])
+
     def rotate_clockwise(self):
         """ rotate the card and its paths """
         for i in range(len(self.paths)):
@@ -46,7 +56,8 @@ class Card:
             self.paths[i][E] = self.paths[i][N]
             self.paths[i][N] = west
         self.spr.images[0] = self.spr.images[0].rotate_simple(270)
-        self.highlight = self.highlight.rotate_simple(270)
+        for h in range(len(self.highlight)):
+            self.highlight[h] = self.highlight[h].rotate_simple(270)
         self.spr.draw()
         self.orientation += 90
         self.orientation %= 360

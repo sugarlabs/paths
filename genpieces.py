@@ -170,12 +170,14 @@ def generate_tile_1_line(a, b, c, d, scale=1, color='#000000'):
     svg_string += svg.footer()
     return svg_string
 
-def generate_tile_2_lines(a, b, c, d, e, f, g, h, scale=1, color='#000000'):
+def generate_tile_2_lines(a, b, c, d, e, f, g, h, scale=1,
+                          colors=['#000000', '#000000']):
     svg = SVG()
     svg.set_scale(scale)
-    svg.set_colors([color, '#FFFFFF'])
     svg_string = svg.header()
+    svg.set_colors([colors[0], '#FFFFFF'])
     svg_string += svg.path(a, b, c, d)
+    svg.set_colors([colors[1], '#FFFFFF'])
     svg_string += svg.path(e, f, g, h)
     svg_string += svg.footer()
     return svg_string

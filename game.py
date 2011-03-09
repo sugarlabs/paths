@@ -324,8 +324,7 @@ class Game():
             if not break_in_path[p] and len(self._paths[p]) > 0:
                 # TODO: Change the color of path 0 vs 1
                 for i in self._paths[p]:
-                    self.grid.grid[i[0]].spr.set_shape(
-                        self.grid.grid[i[0]].highlight)
+                    self.grid.grid[i[0]].set_shape(i[1])
 
     def _tile_to_test(self, test_path):
         ''' Find a tile that needs testing. '''
