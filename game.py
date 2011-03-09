@@ -302,17 +302,13 @@ class Game():
 
         # A tile can complete up to two paths.
         self._paths = [[], []]
-        # List and status of tiles to test
-        self._tiles_to_test = [[], []]
         break_in_path = [False, False]
 
         # Seed the paths and lists with the current tile.
         if tile is not None:
             self._add_to_path_list(tile, 0, 0)
-            self._add_to_test_list(tile, 0, 0)
             if len(self.grid.grid[tile].paths) == 2:
                 self._add_to_path_list(tile, 1, 1)
-                self._add_to_test_list(tile, 1, 1)
 
         # Walk the path.
         for p in range(2):
@@ -330,28 +326,23 @@ class Game():
 
     def _tile_to_test(self, test_path):
         ''' Find a tile that needs testing. '''
-        for i in self._tiles_to_test[test_path]:
+        # for i in self._tiles_to_test[test_path]:
+        for i in self._paths[test_path]:
             if i[2] is False:
                 return i[0], i[1]
         return None, None
-
-    def _add_to_test_list(self, tile, tile_path, test_path):
-        ''' If [tile, path] has not already been tested, add it to the list '''
-        for i in self._tiles_to_test[test_path]:
-            if i[0] == tile and i[1] == tile_path:
-                return
-        self._tiles_to_test[test_path].append([tile, tile_path, False])
 
     def _add_to_path_list(self, tile, tile_path, test_path):
         ''' Only add a tile to the path if it is not already there. '''
         for i in self._paths[test_path]:
             if i[0] == tile and i[1] == tile_path:
                 return
-        self._paths[test_path].append([tile, tile_path])
+        self._paths[test_path].append([tile, tile_path, False])
 
     def _tile_has_been_tested(self, tile, tile_path, test_path):
         ''' Mark a tile as tested. '''
-        for i in self._tiles_to_test[test_path]:
+        # for i in self._tiles_to_test[test_path]:
+        for i in self._paths[test_path]:
             if i[0] == tile and i[1] == tile_path:
                 i[2] = True
                 return
@@ -393,12 +384,10 @@ class Game():
                     if self.grid.grid[neighbor].paths[0][
                         (direction + 2) % 4] == 1:
                         self._add_to_path_list(neighbor, 0, test_path)
-                        self._add_to_test_list(neighbor, 0, test_path)
                     elif len(self.grid.grid[neighbor].paths) == 2 and \
                          self.grid.grid[neighbor].paths[1][
                         (direction + 2) % 4] == 1:
                         self._add_to_path_list(neighbor, 1, test_path)
-                        self._add_to_test_list(neighbor, 1, test_path)
                     else:
                         print 'You should never see this message.'
         return True
