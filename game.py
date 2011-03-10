@@ -65,7 +65,7 @@ class Game():
         self.canvas.connect("button-release-event", self._button_release_cb)
         self.canvas.connect("key_press_event", self._keypress_cb)
         self.width = gtk.gdk.screen_width()
-        self.height = gtk.gdk.screen_height()-GRID_CELL_SIZE
+        self.height = gtk.gdk.screen_height() - (GRID_CELL_SIZE * 1.5)
 
         self.scale = self.height / (8.0 * CARD_HEIGHT)
         self.card_width = CARD_WIDTH * self.scale
