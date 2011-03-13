@@ -15,7 +15,7 @@ from random import randrange
 
 from card import Card, board_card
 from genpieces import generate_tile_1_line, generate_tile_2_lines
-
+from utils import json_dump, json_load
 
 HIDE = 0
 BOARD = 1
@@ -117,19 +117,20 @@ class Deck:
             order[size - 1 - i] = a
         return order
 
-    def restore(self, saved_deck_indices):
-        ''' Restore the deck upon resume. '''
-        decksize = len(saved_deck_indices)
-        # If we have a short deck, then we need to abort.
-        if self.count() < decksize:
-            return False
-        _deck = []
-        for i in saved_deck_indices:
-             _deck.append(self.index_to_card(i))
-        for i in range(decksize):
-             self.cards[i] = _deck[i]
-        return True
+    def serialize(self):
+        ''' Serialize the deck for passing to share and saving '''
+        order = []
+        for i in range(64):
+            order.append(self.cards[i].number)
+        return json_dump(order)
 
+    def restore(self, deck_as_text):
+        ''' Restore the deck upon resume. '''
+        deck = []
+        order = json_load(deck_as_text)
+        for i in order:
+            deck.append(self.cards[order[i]])
+        self.cards = deck[:]
 
     def clear(self):
         ''' Remove any highlight from the cards. '''

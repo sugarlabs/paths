@@ -38,6 +38,7 @@ import locale
 import os.path
 
 from game import Game, CARDS
+from hand import Hand
 
 SERVICE = 'org.sugarlabs.PathsActivity'
 IFACE = SERVICE
@@ -184,30 +185,16 @@ class PathsActivity(activity.Activity):
     def set_robot_status(self, status, icon):
         ''' Reset robot icon and status '''
         self._game.playing_with_robot = status
-        self._game.grid.set_robot_status(status)
         self.robot_button.set_icon(icon)
 
     def write_file(self, file_path):
         """ Write the grid status to the Journal """
         if not hasattr(self, '_game'):
             return
-        for i in range(64):
-            self.metadata['deck' + str(i)] = \
-                str(self._game.deck.cards[i].number)
-        for i in range(64):
-            if self._game.grid.grid[i] is not None:
-                self.metadata['grid' + str(i)] = \
-                    str(self._game.grid.grid[i].number)
-                self.metadata['rotate' + str(i)] = \
-                    str(self._game.grid.grid[i].orientation)
-            else:
-                self.metadata['grid' + str(i)] = 'None'
-        for i in range(8):
-            if self._game.grid.hand[i] is not None:
-                self.metadata['hand' + str(i)] = \
-                    str(self._game.grid.hand[i].number)
-            else:
-                self.metadata['hand' + str(i)] = 'None'
+        self.metadata['deck'] = self._game.deck.serialize()
+        self.metadata['grid'] = self._game.grid.serialize()
+        for i, hand in enumerate(self._game.hands):
+            self.metadata['hand-' + str(i)] = hand.serialize()
         if self._game.last_spr_moved is not None and \
            self._game.grid.spr_to_grid(self._game.last_spr_moved) is not None:
             self.metadata['last'] = str(self._game.grid.grid[
@@ -215,52 +202,24 @@ class PathsActivity(activity.Activity):
 
     def _restore(self):
         """ Restore the game state from metadata """
-        deck = []
-        for i in range(64):
-            if 'deck' + str(i) in self.metadata:
-                deck.append(self._game.deck.cards[
-                        int(self.metadata['deck' + str(i)])])
-        if len(deck) == 64:  # We've retrieved an entire deck
-            self._game.deck.cards = deck[:]
-
-        for i in range(64):
-            if 'grid' + str(i) in self.metadata:
-                if self.metadata['grid' + str(i)] == 'None':
-                    self._game.grid.grid[i] = None
-                else:
-                    j = int(self.metadata['grid' + str(i)])
-                    for k in range(64):
-                        if self._game.deck.cards[k].number == j:
-                            self._game.grid.grid[i] = self._game.deck.cards[k]
-                    self._game.grid.grid[i].spr.move(
-                        self._game.grid.grid_to_xy(i))
-                    self._game.grid.grid[i].spr.set_layer(CARDS)
-                    if 'rotate' + str(i) in self.metadata:
-                        o = int(self.metadata['rotate' + str(i)])
-                        while o > 0:
-                            self._game.grid.grid[i].rotate_clockwise()
-                            o -= 90
-            else:
-                self._game.grid.grid[i] = None
+        if 'deck' in self.metadata:
+            self._game.deck.restore(self.metadata['deck'])
+        if 'grid' in self.metadata:
+            self._game.grid.restore(self.metadata['grid'], self._game.deck)
         self._game.show_connected_tiles()
 
-        for i in range(8):
-            if 'hand' + str(i) in self.metadata:
-                if self.metadata['hand' + str(i)] == 'None':
-                    self._game.grid.hand[i] = None
-                else:
-                    j = int(self.metadata['hand' + str(i)])
-                    for k in range(64):
-                        if self._game.deck.cards[k].number == j:
-                            self._game.grid.hand[i] = self._game.deck.cards[k]
-                    self._game.grid.hand[i].spr.move(
-                        self._game.grid.hand_to_xy(i))
-                    self._game.grid.hand[i].spr.set_layer(CARDS)
-            else:
-                self._game.grid.hand[i] = None
+        for i in range(2):
+            if 'hand-' + str(i) in self.metadata:
+                if len(self._game.hands) < i + 1:  # Add robot hand?
+                    self._game.hands.append(
+                        Hand(self._game.card_width, self._game.card_height,
+                             robot=True))
+                self._game.hands[i].restore(self.metadata['hand-' + str(i)],
+                                            self._game.deck)
 
-        self._game.deck.index = 64 - self._game.grid.grid.count(None) + \
-                                8 - self._game.grid.hand.count(None)
+        self._game.deck.index = 64 - self._game.grid.cards_in_grid()
+        for h in self._game.hands:
+            self._game.deck.index += (8 - h.cards_in_hand())
 
         self._game.last_spr_moved = None
         if 'last' in self.metadata:

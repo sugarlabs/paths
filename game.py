@@ -23,6 +23,7 @@ except ImportError:
     GRID_CELL_SIZE = 0
 
 from grid import Grid
+from hand import Hand
 from deck import Deck
 from card import error_card, highlight_cards
 from sprites import Sprites
@@ -41,6 +42,8 @@ BOARD = 1
 GRID = 2
 CARDS = 3
 OVERLAY = 4
+MY_HAND = 0
+ROBOT_HAND = 1
 
 class Game():
 
@@ -82,6 +85,8 @@ class Game():
         self.deck.board.move((self.grid.left, self.grid.top))
         self.deck.hide()
 
+        self.hands = []
+        self.hands.append(Hand(self.card_width, self.card_height))
         for i in range(4):
             self.errormsg.append(error_card(self.sprites))
         self._hide_errormsgs()
@@ -104,15 +109,24 @@ class Game():
             self.deck.hide()
 
         # Shuffle the deck and deal a hand of tiles.
+        '''
         if self.playing_with_robot:
             self.grid.set_robot_status(True)
         else:
             self.grid.set_robot_status(False)
+        '''
         self.grid.clear()
         self.deck.clear()
         self.show_connected_tiles()
         self.deck.shuffle()
-        self.grid.deal(self.deck)
+        for hand in self.hands:
+            hand.clear()
+        self.hands[MY_HAND].deal(self.deck)
+        if self.playing_with_robot:
+            if len(self.hands) < ROBOT_HAND + 1:
+                self.hands.append(Hand(self.card_width, self.card_height,
+                                       robot=True))
+            self.hands[ROBOT_HAND].deal(self.deck)
         self.press = None
         self.release = None
         self.placed_a_tile = None
@@ -137,15 +151,17 @@ class Game():
                 if self.playing_with_robot:
                     self._robot_play()
                     self.show_connected_tiles()
-                    if self.grid.cards_in_hand() == 0:
-                        self.grid.redeal(self.deck)
+                    if self.hands[MY_HAND].cards_in_hand() == 0:
+                        for hand in self.hands:
+                            hand.deal(self.deck)
                     if self.playing_with_robot and self.sugar:
                         self.activity.status.set_label(_('It is your turn.'))
                 self.placed_a_tile = False
             return True
 
         # Are we clicking on a tile in the hand?
-        if self.grid.spr_to_hand(spr) is not None and \
+        # if self.grid.spr_to_hand(spr) is not None and \
+        if self.hands[MY_HAND].spr_to_hand(spr) is not None and \
            not self.there_are_errors:
             self.last_spr_moved = spr
             if self.sugar:
@@ -153,8 +169,9 @@ class Game():
                 if self.placed_a_tile:
                     if self.playing_with_robot:
                         self._robot_play()
-                        if self.grid.cards_in_hand() == 0:
-                            self.grid.redeal(self.deck)
+                        if self.hands[MY_HAND].cards_in_hand() == 0:
+                            for hand in self.hands:
+                                hand.deal(self.deck)
                 self.placed_a_tile = False
         else:
             clicked_in_hand = False
@@ -176,15 +193,17 @@ class Game():
         spr = self.sprites.find_sprite((x, y))
 
         if spr is None:  # Returning tile to hand
-            i = self.grid.find_empty_slot()
+            i = self.hands[MY_HAND].find_empty_slot()
             if i is not None: 
                 card = self.deck.spr_to_card(self.press)
-                card.spr.move(self.grid.hand_to_xy(i))
-                if self.grid.spr_to_hand(self.press) is not None:
-                    self.grid.hand[self.grid.spr_to_hand(self.press)] = None
+
+                card.spr.move(self.hands[MY_HAND].hand_to_xy(i))
+                if self.hands[MY_HAND].spr_to_hand(self.press) is not None:
+                    self.hands[MY_HAND].hand[
+                        self.hands[MY_HAND].spr_to_hand(self.press)] = None
                 elif self.grid.spr_to_grid(self.press) is not None:
                     self.grid.grid[self.grid.spr_to_grid(self.press)] = None
-                self.grid.hand[i] = card
+                self.hands[MY_HAND].hand[i] = card
                 if spr == self.last_spr_moved:
                     self.last_spr_moved = None
                     self._hide_highlight()
@@ -213,9 +232,9 @@ class Game():
             self.grid.grid[self.grid.xy_to_grid(x, y)] = card
             self.placed_a_tile = True
 
-            i = self.grid.spr_to_hand(self.press)
+            i = self.hands[MY_HAND].spr_to_hand(self.press)
             if i is not None:
-                self.grid.hand[i] = None
+                self.hands[MY_HAND].hand[i] = None
 
             if self.last_spr_moved != card.spr:
                 self.last_spr_moved = card.spr
@@ -227,8 +246,13 @@ class Game():
         self.release = None
         self.show_connected_tiles()
 
+        '''
         if self.grid.cards_in_hand() == 0 and not self.playing_with_robot:
             self.grid.redeal(self.deck)
+        '''
+        if self.hands[MY_HAND].cards_in_hand() == 0 and \
+           not self.playing_with_robot:
+            self.hands[MY_HAND].deal(self.deck)
         return True
 
     def _game_over(self, msg=_('Game over')):
@@ -268,11 +292,11 @@ class Game():
         order = self.deck.random_order(ROW * COL)
         for i in range(ROW * COL):
             if self._connected(order[i]):
-                for tile in self.grid.robot_hand:
+                for tile in self.hands[ROBOT_HAND].hand:
                     if self._try_placement(tile, order[i]):
                         # Success, so remove tile from hand
-                        self.grid.robot_hand[
-                            self.grid.robot_hand.index(tile)] = None
+                        self.hands[ROBOT_HAND].hand[
+                            self.hands[ROBOT_HAND].hand.index(tile)] = None
                         tile.spr.move(self.grid.grid_to_xy(order[i]))
                         tile.spr.set_layer(CARDS)
                         return
@@ -280,9 +304,9 @@ class Game():
             self.activity.set_robot_status(False, 'robot-off')
         # Show any tiles remaining in the robot's hand
         for i in range(COL):
-            if self.grid.robot_hand[i] is not None:
-                x, y = self.grid.robot_hand_to_xy(i)
-                self.grid.robot_hand[i].spr.move(
+            if self.hands[ROBOT_HAND].hand[i] is not None:
+                x, y = self.hands[ROBOT_HAND].hand_to_xy(i)
+                self.hands[ROBOT_HAND].hand[i].spr.move(
                     (self.grid.left_hand + self.grid.xinc, y))
         self._game_over(_('Robot unable to play'))
 

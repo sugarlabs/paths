@@ -14,6 +14,7 @@ import gtk
 
 from deck import Deck
 from card import blank_card
+from utils import json_dump, json_load
 
 ROW = 8
 COL = 8
@@ -30,17 +31,8 @@ class Grid:
         self.grid = []
         self.blanks = []
 
-        # the tiles in your hand        
-        self.hand = []
-        self.robot_hand = []
-        self.robot_status = False
-
         for i in range(ROW * COL):
             self.grid.append(None)
-
-        for i in range(COL):
-            self.hand.append(None)
-            self.robot_hand.append(None)
 
         # card spacing
         self.left_hand = int(card_width / 2)
@@ -54,73 +46,42 @@ class Grid:
             self.blanks[i].move(self.grid_to_xy(i))
             self.blanks[i].set_layer(GRID)
 
-    def set_robot_status(self, status=False):
-        self.robot_status = status
-
     def clear(self):
         for i in range(ROW * COL):
             self.grid[i] = None
-        for i in range(COL):
-            self.hand[i] = None
-            self.robot_hand[i] = None
-
-    def deal(self, deck):
-        ''' Deal an initial set of cards to the hand '''
-        for i in range(COL):
-            self.hand[i] = deck.deal_next_card()
-            self.place_a_card(self.hand[i], self.hand_to_xy(i)[0],
-                              self.hand_to_xy(i)[1])
-            if self.robot_status:
-                self.robot_hand[i] = deck.deal_next_card()
-            self.place_a_card(self.robot_hand[i], self.robot_hand_to_xy(i)[0],
-                              self.robot_hand_to_xy(i)[1])
-
-        # ...and empty the grid.
-        for i in range(ROW * COL):
-            self.grid[i] = None
-
-    def redeal(self, deck):
-        ''' Deal another set of cards to the hand '''
-        for i in range(COL):
-            self.hand[i] = deck.deal_next_card()
-            self.place_a_card(self.hand[i], self.hand_to_xy(i)[0],
-                              self.hand_to_xy(i)[1])
-            if self.robot_status:
-                self.robot_hand[i] = deck.deal_next_card()
-                self.place_a_card(self.robot_hand[i],
-                                  self.robot_hand_to_xy(i)[0],
-                                  self.robot_hand_to_xy(i)[1])
-
-    def find_empty_slot(self):
-        ''' Is there an empty slot in the hand? '''
-        for i in range(COL):
-            if self.hand[i] == None:
-                return i
-        return None
-
-    def cards_in_hand(self):
-        ''' How many cards are in the hand? '''
-        return COL - self.hand.count(None)
-
-    def cards_in_robot_hand(self):
-        ''' How many cards are in the robot hand? '''
-        return COL - self.robot_hand.count(None)
 
     def cards_in_grid(self):
         ''' How many cards are on the grid? '''
         return ROW * COL - self.grid.count(None)
 
-    def restore(self, deck, saved_card_index):
-        ''' Restore cards to grid upon resume or share. '''
-        # TODO: restore hand too
-        self.hide()
-        j = 0
-        for i in saved_card_index:
-            if i is None:
-                self.grid[j] = None
+    def serialize(self):
+        ''' Serialize the grid for passing to share and saving '''
+        grid = []
+        for i in range(ROW * COL):
+            if self.grid[i] is not None:
+                grid.append([self.grid[i].number, self.grid[i].orientation])
             else:
-                self.grid[j] = deck.index_to_card(i)
-            j += 1
+                grid.append([None, None])
+        return json_dump(grid)
+
+    def restore(self, grid_as_text, deck):
+        ''' Restore cards to grid upon resume or share. '''
+        self.hide()
+        grid = json_load(grid_as_text)
+        for i in range(ROW * COL):
+            if grid[i][0] is None:
+                self.grid[i] = None
+            else:
+                for k in range(ROW * COL):
+                    if deck.cards[k].number == grid[i][0]:
+                        self.grid[i] = deck.cards[k]
+                        self.grid[i].spr.move(self.grid_to_xy(i))
+                        self.grid[i].spr.set_layer(CARDS)
+                        o = grid[i][1]
+                        while o > 0:
+                            self.grid[i].rotate_clockwise()
+                            o -= 90
+                        break
         self.show()
 
     def place_a_card(self, c, x, y):
@@ -134,46 +95,19 @@ class Grid:
         return COL * int((y - self.top) / self.yinc) + \
                int((x - self.left) / self.xinc)
 
-    def xy_to_hand(self, x, y):
-        ''' Convert from sprite x,y to hand index. '''
-        return int((y - self.top) / self.yinc)
-
     def grid_to_xy(self, i):
         ''' Convert from grid index to sprite x,y. '''
         return (int((self.left + i % COL * self.xinc)),
                 int((self.top + (i / COL) * self.yinc)))
 
-    def hand_to_xy(self, i):
-        ''' Convert from hand index to sprite x,y. '''
-        return ((self.left_hand, (self.top + i * self.yinc)))
-
-    def robot_hand_to_xy(self, i):
-        ''' Convert from hand index to sprite x,y. '''
-        return ((-self.xinc, (self.top + i * self.yinc)))
-
     def grid_to_spr(self, i):
         ''' Return the sprite in grid-position i. '''
         return self.grid[i].spr
-
-    def hand_to_spr(self, i):
-        ''' Return the sprite in hand-position i. '''
-        return self.hand[i].spr
-
-    def robot_hand_to_spr(self, i):
-        ''' Return the sprite in robot-hand-position i. '''
-        return self.robot_hand[i].spr
 
     def spr_to_grid(self, spr):
         ''' Return the index of a sprite in grid. '''
         for i in range(ROW * COL):
             if self.grid[i] is not None and self.grid[i].spr == spr:
-                return(i)
-        return None
-
-    def spr_to_hand(self, spr):
-        ''' Return the index of a sprite in hand. '''
-        for i in range(COL):
-            if self.hand[i] is not None and self.hand[i].spr == spr:
                 return(i)
         return None
 
