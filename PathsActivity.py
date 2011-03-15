@@ -33,12 +33,23 @@ from sugar.graphics.menuitem import MenuItem
 from sugar.graphics.icon import Icon
 from sugar.datastore import datastore
 
+import telepathy
+from dbus.service import signal
+from dbus.gobject_service import ExportedGObject
+from sugar.presence import presenceservice
+from sugar.presence.tubeconn import TubeConnection
+
 from gettext import gettext as _
 import locale
 import os.path
 
 from game import Game, CARDS
 from hand import Hand
+from utils import data_from_string, data_to_string
+
+ROW = 8
+COL = 8
+MAX_HANDS = 4
 
 SERVICE = 'org.sugarlabs.PathsActivity'
 IFACE = SERVICE
@@ -92,7 +103,11 @@ class PathsActivity(activity.Activity):
     def __init__(self, handle):
         """ Initialize the toolbars and the game board """
         super(PathsActivity,self).__init__(handle)
-
+        self.nick = profile.get_nick_name()
+        if profile.get_color() is not None:
+            self.colors = profile.get_color().to_string().split(',')
+        else:
+            self.colors = ['#A0FFA0', '#FF8080']
         self._setup_toolbars(_have_toolbox)
 
         # Create a canvas
@@ -103,9 +118,7 @@ class PathsActivity(activity.Activity):
         canvas.show()
         self.show_all()
 
-        self._game = Game(canvas,
-                          parent=self,
-                          colors= profile.get_color().to_string().split(','))
+        self._game = Game(canvas, parent=self, colors=self.colors)
 
         # Restore game state from Journal or start new game
         if 'deck0' in self.metadata:
@@ -208,23 +221,172 @@ class PathsActivity(activity.Activity):
             self._game.grid.restore(self.metadata['grid'], self._game.deck)
         self._game.show_connected_tiles()
 
-        for i in range(2):
+        for i in range(MAX_HANDS):
             if 'hand-' + str(i) in self.metadata:
-                if len(self._game.hands) < i + 1:  # Add robot hand?
+                if len(self._game.hands) < i + 1:  # Add robot or shared hand?
                     self._game.hands.append(
                         Hand(self._game.card_width, self._game.card_height,
-                             robot=True))
+                             remote=True))
                 self._game.hands[i].restore(self.metadata['hand-' + str(i)],
                                             self._game.deck)
 
-        self._game.deck.index = 64 - self._game.grid.cards_in_grid()
+        self._game.deck.index = ROW * COL - self._game.grid.cards_in_grid()
         for h in self._game.hands:
-            self._game.deck.index += (8 - h.cards_in_hand())
+            self._game.deck.index += (COL - h.cards_in_hand())
 
         self._game.last_spr_moved = None
         if 'last' in self.metadata:
             j = int(self.metadata['last'])
-            for k in range(64):
+            for k in range(ROW * COL):
                 if self._game.deck.cards[k].number == j:
                     self._game.last_spr_moved = self._game.deck.cards[k].spr
                     return
+
+    # Collaboration-related methods
+
+    def _setup_presence_service(self):
+        """ Setup the Presence Service. """
+        self.pservice = presenceservice.get_instance()
+        self.initiating = None  # sharing (True) or joining (False)
+
+        owner = self.pservice.get_owner()
+        self.owner = owner
+        self._game.buddies.append(self.owner)
+        self._share = ""
+        self.connect('shared', self._shared_cb)
+        self.connect('joined', self._joined_cb)
+
+    def _shared_cb(self, activity):
+        """ Either set up initial share..."""
+        if self._shared_activity is None:
+            _logger.error("Failed to share or join activity ... \
+                _shared_activity is null in _shared_cb()")
+            return
+
+        self.initiating = True
+        self.waiting_for_hand = False
+        _logger.debug('I am sharing...')
+
+        self.conn = self._shared_activity.telepathy_conn
+        self.tubes_chan = self._shared_activity.telepathy_tubes_chan
+        self.text_chan = self._shared_activity.telepathy_text_chan
+
+        self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].connect_to_signal\
+            ('NewTube', self._new_tube_cb)
+
+        _logger.debug('This is my activity: making a tube...')
+        id = self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].OfferDBusTube(
+            SERVICE, {})
+
+    def _joined_cb(self, activity):
+        """ ...or join an exisiting share. """
+        if self._shared_activity is None:
+            _logger.error("Failed to share or join activity ... \
+                _shared_activity is null in _shared_cb()")
+            return
+
+        self.initiating = False
+        _logger.debug('I joined a shared activity.')
+
+        self.conn = self._shared_activity.telepathy_conn
+        self.tubes_chan = self._shared_activity.telepathy_tubes_chan
+        self.text_chan = self._shared_activity.telepathy_text_chan
+
+        self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].connect_to_signal(\
+            'NewTube', self._new_tube_cb)
+
+        _logger.debug('I am joining an activity: waiting for a tube...')
+        self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].ListTubes(
+            reply_handler=self._list_tubes_reply_cb,
+            error_handler=self._list_tubes_error_cb)
+
+        self.waiting_for_hand = True
+
+    def _list_tubes_reply_cb(self, tubes):
+        """ Reply to a list request. """
+        for tube_info in tubes:
+            self._new_tube_cb(*tube_info)
+
+    def _list_tubes_error_cb(self, e):
+        """ Log errors. """
+        _logger.error('ListTubes() failed: %s', e)
+
+    def _new_tube_cb(self, id, initiator, type, service, params, state):
+        """ Create a new tube. """
+        _logger.debug('New tube: ID=%d initator=%d type=%d service=%s '
+                     'params=%r state=%d', id, initiator, type, service,
+                     params, state)
+
+        if (type == telepathy.TUBE_TYPE_DBUS and service == SERVICE):
+            if state == telepathy.TUBE_STATE_LOCAL_PENDING:
+                self.tubes_chan[ \
+                              telepathy.CHANNEL_TYPE_TUBES].AcceptDBusTube(id)
+
+            tube_conn = TubeConnection(self.conn,
+                self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES], id, \
+                group_iface=self.text_chan[telepathy.CHANNEL_INTERFACE_GROUP])
+
+            self.chattube = ChatTube(tube_conn, self.initiating, \
+                self.event_received_cb)
+
+            # Let the sharer know joiner is waiting for a hand.
+            if self.waiting_for_hand:
+                self._send_event('j|[%s]' % (data_to_string(self.nick)))
+
+    def _setup_dispatch_table(self):
+        self._processing_methods = {
+            'j': self._new_joiner,
+            'b': self._buddy_list
+            }
+
+    def event_received_cb(self, event_message):
+        if len(event_message) == 0:
+            return
+        try:
+            command, payload = event_message.split('|', 2)
+            self._processing_methods[command](payload)
+        except ValueError:
+            _logger.debug('Could not split event message %s' % (event_message))
+
+    def _new_joiner(self, payload):
+        nick = data_from_string(payload)
+        _logger.debug("%s has joined" % (nick))
+        if not nick in self._game.buddies:
+            self._game.buddies.append(nick)
+        if self.initiating:
+            self._send_event('b|%s' % (data_to_string(self._game.buddies)))
+
+    def _buddy_list(self, payload):
+        buddies = data_from_string(payload)
+        for nick in buddies:
+            if not nick in self._game.buddies:
+                self._game.buddies.append(nick)
+
+    def _send_event(self, entry):
+        """ Send event through the tube. """
+        if hasattr(self, 'chattube') and self.chattube is not None:
+            self.chattube.SendText(entry)
+
+
+class ChatTube(ExportedGObject):
+    """ Class for setting up tube for sharing """
+
+    def __init__(self, tube, is_initiator, stack_received_cb):
+        super(ChatTube, self).__init__(tube, PATH)
+        self.tube = tube
+        self.is_initiator = is_initiator  # Are we sharing or joining activity?
+        self.stack_received_cb = stack_received_cb
+        self.stack = ''
+
+        self.tube.add_signal_receiver(self.send_stack_cb, 'SendText', IFACE,
+                                      path=PATH, sender_keyword='sender')
+
+    def send_stack_cb(self, text, sender=None):
+        if sender == self.tube.get_unique_name():
+            return
+        self.stack = text
+        self.stack_received_cb(text)
+
+    @signal(dbus_interface=IFACE, signature='s')
+    def SendText(self, text):
+        self.stack = text

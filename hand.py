@@ -22,17 +22,17 @@ CARDS = 3
 class Hand:
     ''' Class for managing COL matrix of cards '''
 
-    def __init__(self, card_width, card_height, robot=False):
+    def __init__(self, card_width, card_height, remote=False):
         # the tiles in your hand        
         self.hand = []
-        self.robot = robot  # Does this hand belong to the robot?
+        self.remote = remote  # Does this hand belong to someone remote?
 
         for i in range(COL):
             self.hand.append(None)
 
         # card spacing
         self.xinc = int(card_width)
-        if self.robot:
+        if self.remote:
             self.left = -self.xinc
         else:
             self.left = int(card_width / 2)

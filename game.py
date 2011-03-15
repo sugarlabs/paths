@@ -101,6 +101,8 @@ class Game():
         self.playing_with_robot = False
         self.placed_a_tile = False
 
+        self.buddies = []
+
     def new_game(self, saved_state=None, deck_index=0):
         ''' Start a new game. '''
 
@@ -109,12 +111,6 @@ class Game():
             self.deck.hide()
 
         # Shuffle the deck and deal a hand of tiles.
-        '''
-        if self.playing_with_robot:
-            self.grid.set_robot_status(True)
-        else:
-            self.grid.set_robot_status(False)
-        '''
         self.grid.clear()
         self.deck.clear()
         self.show_connected_tiles()
@@ -125,7 +121,7 @@ class Game():
         if self.playing_with_robot:
             if len(self.hands) < ROBOT_HAND + 1:
                 self.hands.append(Hand(self.card_width, self.card_height,
-                                       robot=True))
+                                       remote=True))
             self.hands[ROBOT_HAND].deal(self.deck)
         self.press = None
         self.release = None
@@ -143,7 +139,7 @@ class Game():
         self.press = None
         self.release = None
 
-        # Ignore clicks on background
+        # Ignore clicks on background.
         if spr is None or \
            spr in self.grid.blanks or \
            spr == self.deck.board:
@@ -160,7 +156,6 @@ class Game():
             return True
 
         # Are we clicking on a tile in the hand?
-        # if self.grid.spr_to_hand(spr) is not None and \
         if self.hands[MY_HAND].spr_to_hand(spr) is not None and \
            not self.there_are_errors:
             self.last_spr_moved = spr
@@ -246,10 +241,6 @@ class Game():
         self.release = None
         self.show_connected_tiles()
 
-        '''
-        if self.grid.cards_in_hand() == 0 and not self.playing_with_robot:
-            self.grid.redeal(self.deck)
-        '''
         if self.hands[MY_HAND].cards_in_hand() == 0 and \
            not self.playing_with_robot:
             self.hands[MY_HAND].deal(self.deck)
@@ -261,8 +252,9 @@ class Game():
             self.activity.robot_button.set_icon('robot-off')
 
     def show_connected_tiles(self):
-        ''' Highlight the tiles that surround the tiles on the grid '''
-        for i in range(64):
+        ''' Highlight the squares that surround the tiles already on the grid.
+        '''
+        for i in range(ROW * COL):
             if self._connected(i):
                 self.grid.blanks[i].set_layer(GRID)
             else:
@@ -274,8 +266,7 @@ class Game():
             return True
         if self.grid.grid[tile] is not None:  # already has a tile
             return False
-        if tile > COL and \
-           self.grid.grid[tile + OFFSETS[0]] is not None:
+        if tile > COL and self.grid.grid[tile + OFFSETS[0]] is not None:
             return True
         if tile % ROW < ROW - 1 and \
            self.grid.grid[tile + OFFSETS[1]] is not None:
@@ -283,26 +274,28 @@ class Game():
         if tile < (ROW - 1) * COL and \
            self.grid.grid[tile + OFFSETS[2]] is not None:
             return True
-        if tile % ROW > 0 and \
-           self.grid.grid[tile + OFFSETS[3]] is not None:
+        if tile % ROW > 0 and self.grid.grid[tile + OFFSETS[3]] is not None:
             return True
 
     def _robot_play(self):
-        ''' robot tries random cards in random locations '''
+        ''' The robot tries random cards in random locations. '''
+        # TODO: try to complete paths
         order = self.deck.random_order(ROW * COL)
         for i in range(ROW * COL):
             if self._connected(order[i]):
                 for tile in self.hands[ROBOT_HAND].hand:
                     if self._try_placement(tile, order[i]):
-                        # Success, so remove tile from hand
+                        # Success, so remove tile from hand.
                         self.hands[ROBOT_HAND].hand[
                             self.hands[ROBOT_HAND].hand.index(tile)] = None
                         tile.spr.move(self.grid.grid_to_xy(order[i]))
                         tile.spr.set_layer(CARDS)
                         return
+
+        # If we didn't return above, we were unable to play a tile.
         if self.sugar:
             self.activity.set_robot_status(False, 'robot-off')
-        # Show any tiles remaining in the robot's hand
+        # At the end of the game, show any tiles remaining in the robot's hand.
         for i in range(COL):
             if self.hands[ROBOT_HAND].hand[i] is not None:
                 x, y = self.hands[ROBOT_HAND].hand_to_xy(i)
@@ -419,7 +412,7 @@ class Game():
         return True
 
     def _test_for_bad_paths(self, tile):
-        ''' Is there a path to no where? '''
+        ''' Is there a path to nowhere? '''
         self._hide_errormsgs()
         self.there_are_errors = False
         if tile is not None:
@@ -430,6 +423,7 @@ class Game():
             self._check_card(tile, [tile % ROW, 0], W, tile + OFFSETS[3])
 
     def _check_card(self, i, edge_check, direction, neighbor):
+        ''' Can a card be placed at position i? '''
         if edge_check[0] == edge_check[1]:
             for path in self.grid.grid[i].paths:
                 if path[direction] == 1:
