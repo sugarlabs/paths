@@ -26,6 +26,7 @@ from grid import Grid
 from hand import Hand
 from deck import Deck
 from card import error_card, highlight_cards
+from utils import json_dump
 from sprites import Sprites
 
 ROW = 8
@@ -44,6 +45,7 @@ CARDS = 3
 OVERLAY = 4
 MY_HAND = 0
 ROBOT_HAND = 1
+
 
 class Game():
 
@@ -97,66 +99,160 @@ class Game():
         self.press = None
         self.release = None
         self.last_spr_moved = None
-
         self.playing_with_robot = False
         self.placed_a_tile = False
-
+        self.last_tile_played = None
+        self.last_tile_orientation = 0
+        self.last_grid_played = None
         self.buddies = []
+        self.my_hand = MY_HAND
+        self.whos_turn = 0
+        self.waiting_for_my_turn = False
 
     def new_game(self, saved_state=None, deck_index=0):
         ''' Start a new game. '''
+
+        print 'starting new game'
 
         # If there is already a deck, hide it.
         if hasattr(self, 'deck'):
             self.deck.hide()
 
+        print 'hiding the deck'
+
         # Shuffle the deck and deal a hand of tiles.
         self.grid.clear()
         self.deck.clear()
         self.show_connected_tiles()
-        self.deck.shuffle()
         for hand in self.hands:
             hand.clear()
-        self.hands[MY_HAND].deal(self.deck)
-        if self.playing_with_robot:
-            if len(self.hands) < ROBOT_HAND + 1:
-                self.hands.append(Hand(self.card_width, self.card_height,
-                                       remote=True))
-            self.hands[ROBOT_HAND].deal(self.deck)
+        
+        print 'everything is clear'
+
+        # If we are not sharing or we are the sharer...
+        if not self._we_are_sharing() or self.activity.initiating:
+            if not self._we_are_sharing():
+                print 'We are not sharing.'
+            if not self.activity.initiating:
+                print 'I am initiating.'
+            # Let joiners know we are starting a new game...
+            if self._we_are_sharing():
+                print 'sending a new_game event'
+                self.activity.send_event('n| ')
+            self.deck.shuffle()
+            # ...and share the deck.
+            if self._we_are_sharing():
+                print 'sending a new deck event'
+                self.activity.send_event('d|%s' % (self.deck.serialize()))
+
+            # Deal a hand to yourself...
+            print 'dealing myself a hand'
+            self.hands[self.my_hand].deal(self.deck)
+            print 'my hand', self.hands[self.my_hand]
+
+            # ...deal a hand to the robot
+            if self.playing_with_robot:
+                print 'dealing robot a hand'
+                if len(self.hands) < ROBOT_HAND + 1:
+                    self.hands.append(Hand(self.card_width, self.card_height,
+                                           remote=True))
+                self.hands[ROBOT_HAND].deal(self.deck)
+            # ...or deal hands to the joiners.
+            elif len(self.buddies) > 1 and self.activity.initiating:
+                for i, buddy in enumerate(self.buddies):
+                    if buddy != self.activity.nick:
+                        self.hands.append(Hand(
+                                self.card_width, self.card_height, remote=True))
+                        self.hands[i].deal(self.deck)
+                        print 'dealing %s a hand' % (buddy)
+                        self.activity.send_event('h|%s' % \
+                            (self.hands[i].serialize(buddy=buddy)))
+        # Or wait for a hand.
+        else:
+            self.my_hand = self.buddies.index(self.activity.nick)
+            print 'Waiting for hand from the sharer.'
+
         self.press = None
         self.release = None
         self.placed_a_tile = None
         self.last_spr_moved = None
+        self.last_tile_played = None
+        self.last_tile_orientation = 0
+        self.last_grid_played = None
         self._hide_highlight()
         self._hide_errormsgs()
+        self.whos_turn = 0
+        self.its_my_turn()
+        self.waiting_for_my_turn = False
+
+    def _we_are_sharing(self):
+        if len(self.buddies) > 1:
+            return True
+
+    def its_my_turn(self):
+        self.waiting_for_my_turn = False
+        if self.hands[self.my_hand].cards_in_hand() == 0:
+            self._redeal()
+        if self.sugar:
+            self.activity.status.set_label(_('It is my turn.'))
+        self.placed_a_tile = False
+
+    def _redeal(self):
+        print 'redeal'
+        if not self._we_are_sharing():
+            for hand in self.hands:
+                hand.deal(self.deck)
+        elif self.activity.initiating:
+            for i, buddy in enumerate(self.buddies):
+                print 'dealing %s a hand' % (buddy)
+                self.hands[i].deal(self.deck)
+                if buddy != self.activity.nick:
+                    self.activity.send_event('h|%s' % \
+                        (self.hands[i].serialize(buddy=buddy)))
+
+    def took_my_turn(self):
+        self.waiting_for_my_turn = True
+        if self.sugar:
+            self.activity.status.set_label(_('I took my turn.'))
+        if self._we_are_sharing():
+            self.activity.send_event('p|%s' % \
+                (json_dump([self.last_tile_played,
+                                 self.last_tile_orientation,
+                                 self.last_grid_played])))
+
+    def its_their_turn(self, nick):
+        if self.sugar:
+            self.activity.status.set_label(_('Waiting for ') + nick)
 
     def _button_press_cb(self, win, event):
         win.grab_focus()
         x, y = map(int, event.get_coords())
+
+        if self.waiting_for_my_turn:
+            print "waiting for my turn"
+            return
+
         self.start_drag = [x, y]
 
         spr = self.sprites.find_sprite((x, y))
         self.press = None
         self.release = None
 
-        # Ignore clicks on background.
+        # Ignore clicks on background except to indicate you took your turn
         if spr is None or \
            spr in self.grid.blanks or \
            spr == self.deck.board:
             if self.placed_a_tile and spr is None:
+                self.took_my_turn()
                 if self.playing_with_robot:
+                    self.its_their_turn(_('robot'))
                     self._robot_play()
                     self.show_connected_tiles()
-                    if self.hands[MY_HAND].cards_in_hand() == 0:
-                        for hand in self.hands:
-                            hand.deal(self.deck)
-                    if self.playing_with_robot and self.sugar:
-                        self.activity.status.set_label(_('It is your turn.'))
-                self.placed_a_tile = False
+                self.its_my_turn()
             return True
 
         # Are we clicking on a tile in the hand?
-        if self.hands[MY_HAND].spr_to_hand(spr) is not None and \
+        if self.hands[self.my_hand].spr_to_hand(spr) is not None and \
            not self.there_are_errors:
             self.last_spr_moved = spr
             if self.sugar:
@@ -164,10 +260,7 @@ class Game():
                 if self.placed_a_tile:
                     if self.playing_with_robot:
                         self._robot_play()
-                        if self.hands[MY_HAND].cards_in_hand() == 0:
-                            for hand in self.hands:
-                                hand.deal(self.deck)
-                self.placed_a_tile = False
+                self.its_my_turn()
         else:
             clicked_in_hand = False
 
@@ -181,6 +274,10 @@ class Game():
     def _button_release_cb(self, win, event):
         win.grab_focus()
 
+        if self.waiting_for_my_turn:
+            print "waiting for my turn"
+            return
+
         if self.press is None:
             return
 
@@ -188,17 +285,17 @@ class Game():
         spr = self.sprites.find_sprite((x, y))
 
         if spr is None:  # Returning tile to hand
-            i = self.hands[MY_HAND].find_empty_slot()
+            i = self.hands[self.my_hand].find_empty_slot()
             if i is not None: 
                 card = self.deck.spr_to_card(self.press)
 
-                card.spr.move(self.hands[MY_HAND].hand_to_xy(i))
-                if self.hands[MY_HAND].spr_to_hand(self.press) is not None:
-                    self.hands[MY_HAND].hand[
-                        self.hands[MY_HAND].spr_to_hand(self.press)] = None
+                card.spr.move(self.hands[self.my_hand].hand_to_xy(i))
+                if self.hands[self.my_hand].spr_to_hand(self.press) is not None:
+                    self.hands[self.my_hand].hand[
+                        self.hands[self.my_hand].spr_to_hand(self.press)] = None
                 elif self.grid.spr_to_grid(self.press) is not None:
                     self.grid.grid[self.grid.spr_to_grid(self.press)] = None
-                self.hands[MY_HAND].hand[i] = card
+                self.hands[self.my_hand].hand[i] = card
                 if spr == self.last_spr_moved:
                     self.last_spr_moved = None
                     self._hide_highlight()
@@ -213,6 +310,8 @@ class Game():
         if self.press == self.release:
             card = self.deck.spr_to_card(spr)
             card.rotate_clockwise()
+            print 'new orientation', card.orientation
+            self.last_tile_orientation = card.orientation
             if self.last_spr_moved != card.spr:
                 self.last_spr_moved = card.spr
             self._show_highlight()
@@ -226,10 +325,13 @@ class Game():
                 
             self.grid.grid[self.grid.xy_to_grid(x, y)] = card
             self.placed_a_tile = True
+            self.last_tile_played = card.number
+            print 'orientation', card.orientation
+            self.last_grid_played = self.grid.xy_to_grid(x, y)
 
-            i = self.hands[MY_HAND].spr_to_hand(self.press)
+            i = self.hands[self.my_hand].spr_to_hand(self.press)
             if i is not None:
-                self.hands[MY_HAND].hand[i] = None
+                self.hands[self.my_hand].hand[i] = None
 
             if self.last_spr_moved != card.spr:
                 self.last_spr_moved = card.spr
@@ -241,9 +343,9 @@ class Game():
         self.release = None
         self.show_connected_tiles()
 
-        if self.hands[MY_HAND].cards_in_hand() == 0 and \
-           not self.playing_with_robot:
-            self.hands[MY_HAND].deal(self.deck)
+        if self.hands[self.my_hand].cards_in_hand() == 0 and \
+           not self.playing_with_robot and not self._we_are_sharing():
+            self.hands[self.my_hand].deal(self.deck)
         return True
 
     def _game_over(self, msg=_('Game over')):

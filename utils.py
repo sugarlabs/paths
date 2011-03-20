@@ -32,10 +32,7 @@ def json_load(text):
         listdata = json.read(text)
     else:
         # strip out leading and trailing whitespace, nulls, and newlines
-        clean_text = text.lstrip()
-        clean_text = clean_text.replace('\12', '')
-        clean_text = clean_text.replace('\00', '')
-        io = StringIO(clean_text.rstrip())
+        io = StringIO(text)
         try:
             listdata = jload(io)
         except ValueError:
@@ -45,6 +42,7 @@ def json_load(text):
                 listdata[i] = int(value)
     return listdata
 
+
 def json_dump(data):
     """ Save data using available JSON tools. """
     if OLD_SUGAR_SYSTEM is True:
@@ -53,12 +51,3 @@ def json_dump(data):
         _io = StringIO()
         jdump(data, _io)
         return _io.getvalue()
-
-def data_from_string(text):
-    """ JSON load data from a string. """
-    return json_load(text.replace(']],\n', ']], '))
-
-def data_to_string(data):
-    """ JSON dump a string. """
-    return json_dump(data).replace(']], ', ']],\n')
-

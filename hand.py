@@ -38,7 +38,6 @@ class Hand:
             self.left = int(card_width / 2)
         self.top = 0
         self.yinc = int(card_height)
-        print 'hand: left = %d, top = %d' % (self.left, self.top)
 
     def clear(self):
         for i in range(COL):
@@ -48,8 +47,12 @@ class Hand:
         ''' Deal an initial set of cards to the hand '''
         for i in range(COL):
             self.hand[i] = deck.deal_next_card()
-            self.hand[i].spr.move(self.hand_to_xy(i))
-            self.hand[i].spr.set_layer(CARDS)
+            if self.hand[i] is not None:
+                self.hand[i].spr.move(self.hand_to_xy(i))
+                self.hand[i].spr.set_layer(CARDS)
+            else:
+                print 'No more cards in the deck.'
+                return
 
     def find_empty_slot(self):
         ''' Is there an empty slot in the hand? '''
@@ -62,9 +65,12 @@ class Hand:
         ''' How many cards are in the hand? '''
         return COL - self.hand.count(None)
 
-    def serialize(self):
+    def serialize(self, buddy=None):
         ''' Serialize the hand for passing to share and saving '''
-        hand = []
+        if buddy == None:
+            hand = []
+        else:
+            hand = [buddy]
         for i in range( COL):
             if self.hand[i] is not None:
                 hand.append(self.hand[i].number)
@@ -72,18 +78,23 @@ class Hand:
                 hand.append(None)
         return json_dump(hand)
 
-    def restore(self, hand_as_text, deck):
+    def restore(self, hand_as_text, deck, buddy=False):
         ''' Restore cards to hand upon resume or share. '''
         hand = json_load(hand_as_text)
-        for i in range(COL):
+        if buddy:
+            offset = 1  # skip the buddy
+        else:
+            offset = 0
+        for card in range(COL):
+            i = card + offset
             if hand[i] is None:
                 self.hand[i] = None
             else:
                 for k in range(ROW * COL):
                     if deck.cards[k].number == hand[i]:
-                        self.hand[i] = deck.cards[k]
-                        self.hand[i].spr.move(self.hand_to_xy(i))
-                        self.hand[i].spr.set_layer(CARDS)
+                        self.hand[card] = deck.cards[k]
+                        self.hand[card].spr.move(self.hand_to_xy(card))
+                        self.hand[card].spr.set_layer(CARDS)
                         break
 
     def xy_to_hand(self, x, y):
