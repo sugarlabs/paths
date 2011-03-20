@@ -1,5 +1,10 @@
 NEWS
 
+6
+
+* fixed scaling problem on old-style Sugar that caused clipping of bottom row
+* refactoring in anticipation of sharing
+
 5
 
 * reset card highlight between games
