@@ -83,6 +83,7 @@ class Deck:
                                        [color, color])], number=i))
             self.cards[-1].set_paths([[1, 1, 0, 0], [0, 0, 0, 1]])
             i += 1
+
         # Remember the current position in the deck.
         self.index = 0
 
@@ -93,9 +94,9 @@ class Deck:
     def shuffle(self):
         ''' Shuffle the deck (Knuth algorithm). '''
         decksize = self.count()
-        # Hide all the cards.
+        # Hide all the cards and make sure they are back to orientation 0
         for c in self.cards:
-            c.spr.set_layer(HIDE)
+            c.reset()
         # Randomize the card order.
         for n in range(decksize):
             i = randrange(decksize - n)

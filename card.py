@@ -17,6 +17,7 @@ N = 0
 E = N + 1
 S = E + 1
 W = S + 1
+HIDE = 0
 CARDS = 3
 
 
@@ -32,6 +33,9 @@ class Card:
         self.orientation = 0
         self.type = card_type
         self.number = number
+        self.spr.set_label_color('#FF0000')
+        self.spr.set_label_attributes(32)
+        self.spr.set_label(str(number))
 
     def set_paths(self, paths):
         for c in paths:
@@ -41,8 +45,11 @@ class Card:
         return self.paths
 
     def reset(self):
+        self.spr.set_layer(HIDE)
         self.shape = None
         self.spr.set_shape(self.highlight[0])
+        while self.orientation != 0:
+            self.rotate_clockwise()
 
     def set_shape(self, path):
         if self.shape is None:
@@ -71,7 +78,7 @@ class Card:
         self.spr.draw()
 
     def hide_card(self):
-        self.spr.hide()
+        self.spr.move((-self.spr.images[0].get_width(),0))
 
 
 #

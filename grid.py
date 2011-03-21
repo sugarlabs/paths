@@ -74,15 +74,18 @@ class Grid:
             else:
                 for k in range(ROW * COL):
                     if deck.cards[k].number == grid[i][0]:
-                        self.grid[i] = deck.cards[k]
-                        self.grid[i].spr.move(self.grid_to_xy(i))
-                        self.grid[i].spr.set_layer(CARDS)
-                        o = grid[i][1]
-                        while o > 0:
-                            self.grid[i].rotate_clockwise()
-                            o -= 90
+                        self.add_card_to_grid(k, grid[i][1], i, deck) 
                         break
         self.show()
+
+    def add_card_to_grid(self, card_number, orientation, grid_number, deck):
+        ''' Add cards[card_number] to grid[grid_number] at orientation ''' 
+        self.grid[grid_number] = deck.cards[card_number]
+        self.grid[grid_number].spr.move(self.grid_to_xy(grid_number))
+        self.grid[grid_number].spr.set_layer(CARDS)
+        while orientation > 0:
+            self.grid[grid_number].rotate_clockwise()
+            orientation -= 90
 
     def place_a_card(self, c, x, y):
         ''' Place a card at position x,y and display it. '''

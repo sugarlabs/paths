@@ -45,7 +45,7 @@ import os.path
 
 from game import Game, CARDS
 from hand import Hand
-from utils import data_from_string, data_to_string
+from utils import json_load, json_dump
 
 ROW = 8
 COL = 8
@@ -109,6 +109,7 @@ class PathsActivity(activity.Activity):
         else:
             self.colors = ['#A0FFA0', '#FF8080']
         self._setup_toolbars(_have_toolbox)
+        self._setup_dispatch_table()
 
         # Create a canvas
         canvas = gtk.DrawingArea()
@@ -119,18 +120,28 @@ class PathsActivity(activity.Activity):
         self.show_all()
 
         self._game = Game(canvas, parent=self, colors=self.colors)
+        self._setup_presence_service()
 
         # Restore game state from Journal or start new game
         if 'deck0' in self.metadata:
+            print 'restoring'
             self._restore()
-        else:
+        elif not hasattr(self, 'initiating'):
+            print 'no initiating'
             self._game.new_game()
+        elif not self.initiating:
+            print 'I am not initiating'
+            self._game.new_game()
+        elif len(self._game.buddies) == 1:
+            print 'no buddies'
+            self._game.new_game()
+        else:
+            print 'I am confused'
 
     def _setup_toolbars(self, have_toolbox):
         """ Setup the toolbars.. """
 
-        # no sharing
-        self.max_participants = 1
+        self.max_participants = 4
 
         if have_toolbox:
             toolbox = ToolbarBox()
@@ -155,12 +166,6 @@ class PathsActivity(activity.Activity):
             toolbox.set_current_toolbar(1)
             toolbar = games_toolbar
 
-            # no sharing
-            if hasattr(toolbox, 'share'):
-               toolbox.share.hide()
-            elif hasattr(toolbox, 'props'):
-               toolbox.props.visible = False
-
         self._new_game_button = _button_factory('new-game',
                                                 _('Start a new game.'),
                                                 self._new_game_cb, toolbar)
@@ -168,6 +173,10 @@ class PathsActivity(activity.Activity):
         self.robot_button = _button_factory('robot-off',
                                              _('Play with the computer.'),
                                              self._robot_cb, toolbar)
+
+        self.dialog_button = _button_factory('dialog-ok',
+                                             _('Turn complete'),
+                                             self._dialog_cb, toolbar)
 
         self.status = _label_factory(_('It is your turn.'), toolbar)
 
@@ -185,20 +194,24 @@ class PathsActivity(activity.Activity):
 
     def _robot_cb(self, button=None):
         ''' Play with the computer (or not). '''
-        print 'playing with robot:', self._game.playing_with_robot
         if not self._game.playing_with_robot:
             self.set_robot_status(True, 'robot-on')
-            print 'starting new game with robot'
             self._game.new_game()
         else:
             self.set_robot_status(False, 'robot-off')
-            print 'starting new game without robot'
             self._game.new_game()
 
     def set_robot_status(self, status, icon):
         ''' Reset robot icon and status '''
         self._game.playing_with_robot = status
         self.robot_button.set_icon(icon)
+
+    def _dialog_cb(self, button=None):
+        ''' Send end of turn '''
+        if self._game.placed_a_tile:
+            print 'finished a turn'
+        else:
+            print 'need to place a piece'
 
     def write_file(self, file_path):
         """ Write the grid status to the Journal """
@@ -251,7 +264,7 @@ class PathsActivity(activity.Activity):
 
         owner = self.pservice.get_owner()
         self.owner = owner
-        self._game.buddies.append(self.owner)
+        self._game.buddies.append(self.nick)
         self._share = ""
         self.connect('shared', self._shared_cb)
         self.connect('joined', self._joined_cb)
@@ -259,13 +272,13 @@ class PathsActivity(activity.Activity):
     def _shared_cb(self, activity):
         """ Either set up initial share..."""
         if self._shared_activity is None:
-            _logger.error("Failed to share or join activity ... \
+            print("Error: Failed to share or join activity ... \
                 _shared_activity is null in _shared_cb()")
             return
 
         self.initiating = True
         self.waiting_for_hand = False
-        _logger.debug('I am sharing...')
+        print('I am sharing...')
 
         self.conn = self._shared_activity.telepathy_conn
         self.tubes_chan = self._shared_activity.telepathy_tubes_chan
@@ -274,19 +287,19 @@ class PathsActivity(activity.Activity):
         self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].connect_to_signal\
             ('NewTube', self._new_tube_cb)
 
-        _logger.debug('This is my activity: making a tube...')
+        print('This is my activity: making a tube...')
         id = self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].OfferDBusTube(
             SERVICE, {})
 
     def _joined_cb(self, activity):
         """ ...or join an exisiting share. """
         if self._shared_activity is None:
-            _logger.error("Failed to share or join activity ... \
+            print("Error: Failed to share or join activity ... \
                 _shared_activity is null in _shared_cb()")
             return
 
         self.initiating = False
-        _logger.debug('I joined a shared activity.')
+        print('I joined a shared activity.')
 
         self.conn = self._shared_activity.telepathy_conn
         self.tubes_chan = self._shared_activity.telepathy_tubes_chan
@@ -295,11 +308,12 @@ class PathsActivity(activity.Activity):
         self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].connect_to_signal(\
             'NewTube', self._new_tube_cb)
 
-        _logger.debug('I am joining an activity: waiting for a tube...')
+        print('I am joining an activity: waiting for a tube...')
         self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].ListTubes(
             reply_handler=self._list_tubes_reply_cb,
             error_handler=self._list_tubes_error_cb)
 
+        # DO TO: DISABLE NEW GAME BUTTON
         self.waiting_for_hand = True
 
     def _list_tubes_reply_cb(self, tubes):
@@ -309,13 +323,12 @@ class PathsActivity(activity.Activity):
 
     def _list_tubes_error_cb(self, e):
         """ Log errors. """
-        _logger.error('ListTubes() failed: %s', e)
+        print('Error: ListTubes() failed: %s', e)
 
     def _new_tube_cb(self, id, initiator, type, service, params, state):
         """ Create a new tube. """
-        _logger.debug('New tube: ID=%d initator=%d type=%d service=%s '
-                     'params=%r state=%d', id, initiator, type, service,
-                     params, state)
+        print('New tube: ID=%d initator=%d type=%d service=%s params=%r \
+state=%d' % (id, initiator, type, service, params, state))
 
         if (type == telepathy.TUBE_TYPE_DBUS and service == SERVICE):
             if state == telepathy.TUBE_STATE_LOCAL_PENDING:
@@ -331,38 +344,108 @@ class PathsActivity(activity.Activity):
 
             # Let the sharer know joiner is waiting for a hand.
             if self.waiting_for_hand:
-                self._send_event('j|[%s]' % (data_to_string(self.nick)))
+                print 'send event joining (%s)' % (self.nick)
+                self.send_event('j|%s' % (self.nick))
 
     def _setup_dispatch_table(self):
         self._processing_methods = {
-            'j': self._new_joiner,
-            'b': self._buddy_list
+            'n': [self._new_game, 'new game'],
+            'j': [self._new_joiner, 'new joiner'],
+            'b': [self._buddy_list, 'buddy list'],
+            'd': [self._sending_deck, 'sending deck'],
+            'h': [self._sending_hand, 'sending hand'],
+            'p': [self._play_a_piece, 'play a piece'],
+            't': [self._take_a_turn, 'take a turn']
             }
 
     def event_received_cb(self, event_message):
         if len(event_message) == 0:
             return
         try:
+            print 'event received', event_message
             command, payload = event_message.split('|', 2)
-            self._processing_methods[command](payload)
         except ValueError:
-            _logger.debug('Could not split event message %s' % (event_message))
+            print('Could not split event message %s' % (event_message))
+            return
+        print 'calling event', self._processing_methods[command][1]
+        self._processing_methods[command][0](payload)
 
     def _new_joiner(self, payload):
-        nick = data_from_string(payload)
-        _logger.debug("%s has joined" % (nick))
+        print payload
+        nick = payload
+        print("%s has joined" % (nick))
+        self.status.set_label(nick + ' ' + _('has joined.'))
         if not nick in self._game.buddies:
             self._game.buddies.append(nick)
         if self.initiating:
-            self._send_event('b|%s' % (data_to_string(self._game.buddies)))
+            payload = json_dump(self._game.buddies)
+            print payload
+            self.send_event('b|%s' % (payload))
 
     def _buddy_list(self, payload):
-        buddies = data_from_string(payload)
+        buddies = json_load(payload)
         for nick in buddies:
             if not nick in self._game.buddies:
                 self._game.buddies.append(nick)
+                print 'appending %s to buddy list' % (nick)
 
-    def _send_event(self, entry):
+    def _new_game(self, payload):
+        if not self.initiating:
+            print 'starting new game'
+            self._game.new_game()
+
+    def _sending_deck(self, payload):
+        print 'got a deck'
+        self._game.deck.restore(payload)
+        print 'reseting cards in new deck'
+        for card in self._game.deck.cards:
+            card.reset()
+            card.hide()
+
+    def _sending_hand(self, payload):
+        hand = json_load(payload)
+        nick = hand[0]
+        if nick == self.nick:
+            print 'I got a hand'
+            self._game.hands[self._game.buddies.index(nick)].restore(
+                payload, self._game.deck, buddy=True)
+        else:
+            print 'I saw a hand for %s' % (nick)
+
+    def _play_a_piece(self, payload):
+        # TO DO: something with buttons and label
+        tile_number, orientation, grid_position = json_load(payload)
+        print 'moving tile', tile_number, orientation, grid_position
+        for i in range(ROW * COL):  # find the tile with this number
+            if self._game.deck.cards[i].number == tile_number:
+                tile_to_move = i
+                break
+        self._game.grid.add_card_to_grid(tile_to_move, orientation,
+                                         grid_position, self._game.deck)
+        self._game.show_connected_tiles()
+        if self.initiating:
+            self._game.whos_turn += 1
+            if self._game.whos_turn == len(self._game.buddies):
+                self._game.whos_turn = 0
+            print "it is %s's turn" % (self._game.buddies[self._game.whos_turn])
+            print 'sending turn event'
+            self.send_event('t|%s' % (self._game.buddies[self._game.whos_turn]))
+            self._take_a_turn(self._game.buddies[self._game.whos_turn])
+
+    def _take_a_turn(self, payload):
+        # TO DO: something with buttons and label
+        print 'take a turn event'
+        nick = payload
+        print "It's %s's turn." % (nick)
+        self.status.set_label(nick + ': ' + _('take a turn.'))
+        if nick == self.nick:
+            self.dialog_button.set_icon('dialog-ok')
+            self._game.its_my_turn()
+        else:
+            self.dialog_button.set_icon('dialog-cancel')
+            self._game.its_their_turn(nick)
+
+    def send_event(self, entry):
         """ Send event through the tube. """
         if hasattr(self, 'chattube') and self.chattube is not None:
             self.chattube.SendText(entry)
@@ -390,3 +473,4 @@ class ChatTube(ExportedGObject):
     @signal(dbus_interface=IFACE, signature='s')
     def SendText(self, text):
         self.stack = text
+        print text
