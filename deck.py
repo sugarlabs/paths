@@ -16,9 +16,7 @@ from random import randrange
 from card import Card, board_card
 from genpieces import generate_tile_1_line, generate_tile_2_lines
 from utils import json_dump, json_load
-
-HIDE = 0
-BOARD = 1
+from constants import HIDE, BOARD, ROW, COL
 
 
 class Deck:
@@ -106,7 +104,7 @@ class Deck:
         self.hide()
         return
 
-    def random_order(self, size=64):
+    def random_order(self, size=ROW * COL):
         ''' randomize a list'''
         order = []
         for i in range(size):
@@ -121,7 +119,7 @@ class Deck:
     def serialize(self):
         ''' Serialize the deck for passing to share and saving '''
         order = []
-        for i in range(64):
+        for i in range(ROW * COL):
             order.append(self.cards[i].number)
         return json_dump(order)
 

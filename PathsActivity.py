@@ -46,9 +46,8 @@ import os.path
 from game import Game, CARDS
 from hand import Hand
 from utils import json_load, json_dump
+from constants import ROW, COL
 
-ROW = 8
-COL = 8
 MAX_HANDS = 4
 
 SERVICE = 'org.sugarlabs.PathsActivity'
@@ -123,7 +122,7 @@ class PathsActivity(activity.Activity):
         self._setup_presence_service()
 
         # Restore game state from Journal or start new game
-        if 'deck0' in self.metadata:
+        if 'deck' in self.metadata:
             print 'restoring'
             self._restore()
         elif not hasattr(self, 'initiating'):
@@ -209,7 +208,8 @@ class PathsActivity(activity.Activity):
     def _dialog_cb(self, button=None):
         ''' Send end of turn '''
         if self._game.placed_a_tile:
-            print 'finished a turn'
+            print 'placed a tile and click on toolbar button'
+            self._game.took_my_turn()
         else:
             print 'need to place a piece'
 
@@ -219,8 +219,14 @@ class PathsActivity(activity.Activity):
             return
         self.metadata['deck'] = self._game.deck.serialize()
         self.metadata['grid'] = self._game.grid.serialize()
-        for i, hand in enumerate(self._game.hands):
-            self.metadata['hand-' + str(i)] = hand.serialize()
+        if self._game._we_are_sharing():
+            for i, hand in enumerate(self._game.hands):
+                self.metadata['hand-' + str(i)] = hand.serialize()
+        else:
+            self.metadata['hand-0'] = self._game.hands[0].serialize()
+            if self._game.playing_with_robot:
+                self.metadata['hand-1'] = self._game.hands[1].serialize()
+            
         if self._game.last_spr_moved is not None and \
            self._game.grid.spr_to_grid(self._game.last_spr_moved) is not None:
             self.metadata['last'] = str(self._game.grid.grid[
@@ -246,6 +252,10 @@ class PathsActivity(activity.Activity):
         self._game.deck.index = ROW * COL - self._game.grid.cards_in_grid()
         for h in self._game.hands:
             self._game.deck.index += (COL - h.cards_in_hand())
+        print 'recalculating deck index: %d = %d + ' % (
+            self._game.deck.index, ROW * COL - self._game.grid.cards_in_grid())
+        for h in self._game.hands:
+            print (COL - h.cards_in_hand())
 
         self._game.last_spr_moved = None
         if 'last' in self.metadata:
@@ -291,6 +301,12 @@ class PathsActivity(activity.Activity):
         id = self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].OfferDBusTube(
             SERVICE, {})
 
+        self._new_game_button.set_tooltip(
+            _('Start a new game once everyone has joined.'))
+
+        self.robot_button.set_icon('no-robot')
+        self.robot_button.set_tooltip(_('The robot is disabled when sharing.'))
+
     def _joined_cb(self, activity):
         """ ...or join an exisiting share. """
         if self._shared_activity is None:
@@ -313,7 +329,13 @@ class PathsActivity(activity.Activity):
             reply_handler=self._list_tubes_reply_cb,
             error_handler=self._list_tubes_error_cb)
 
-        # DO TO: DISABLE NEW GAME BUTTON
+        self._new_game_button.set_icon('no-new-game')
+        self._new_game_button.set_tooltip(
+            _('Only the sharer can start a new game.'))
+
+        self.robot_button.set_icon('no-robot')
+        self.robot_button.set_tooltip(_('The robot is disabled when sharing.'))
+
         self.waiting_for_hand = True
 
     def _list_tubes_reply_cb(self, tubes):
@@ -433,16 +455,13 @@ state=%d' % (id, initiator, type, service, params, state))
             self._take_a_turn(self._game.buddies[self._game.whos_turn])
 
     def _take_a_turn(self, payload):
-        # TO DO: something with buttons and label
         print 'take a turn event'
         nick = payload
         print "It's %s's turn." % (nick)
         self.status.set_label(nick + ': ' + _('take a turn.'))
         if nick == self.nick:
-            self.dialog_button.set_icon('dialog-ok')
             self._game.its_my_turn()
         else:
-            self.dialog_button.set_icon('dialog-cancel')
             self._game.its_their_turn(nick)
 
     def send_event(self, entry):

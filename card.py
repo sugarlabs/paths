@@ -11,14 +11,8 @@
 # Boston, MA 02111-1307, USA.
 
 import gtk
+from constants import NORTH, EAST, SOUTH, WEST, HIDE, CARDS
 from sprites import Sprite
-
-N = 0
-E = N + 1
-S = E + 1
-W = S + 1
-HIDE = 0
-CARDS = 3
 
 
 class Card:
@@ -61,11 +55,11 @@ class Card:
     def rotate_clockwise(self):
         """ rotate the card and its paths """
         for i in range(len(self.paths)):
-            west = self.paths[i][W]
-            self.paths[i][W] = self.paths[i][S]
-            self.paths[i][S] = self.paths[i][E]
-            self.paths[i][E] = self.paths[i][N]
-            self.paths[i][N] = west
+            west = self.paths[i][WEST]
+            self.paths[i][WEST] = self.paths[i][SOUTH]
+            self.paths[i][SOUTH] = self.paths[i][EAST]
+            self.paths[i][EAST] = self.paths[i][NORTH]
+            self.paths[i][NORTH] = west
         self.spr.images[0] = self.spr.images[0].rotate_simple(270)
         for h in range(len(self.highlight)):
             self.highlight[h] = self.highlight[h].rotate_simple(270)
@@ -81,10 +75,8 @@ class Card:
         self.spr.move((-self.spr.images[0].get_width(),0))
 
 
-#
-# Load pixbuf from SVG string
-#
 def svg_str_to_pixbuf(svg_string):
+    ''' Load pixbuf from SVG string '''
     pl = gtk.gdk.PixbufLoader('svg')
     pl.write(svg_string)
     pl.close()
@@ -92,27 +84,31 @@ def svg_str_to_pixbuf(svg_string):
     return pixbuf
 
 #
-# Create graphics used for interactions
+# Utilities used to create graphics used for interactions
 #
 from genpieces import generate_board, generate_x, generate_blank, \
     generate_corners
 
+
 def board_card(sprites, scale=1.0):
     return Sprite(sprites, 0, 0, svg_str_to_pixbuf(generate_board(scale)))
 
+
 def error_card(sprites, scale=1.0):
-    return Sprite(sprites, 0, 0, svg_str_to_pixbuf(generate_x(0.5 * scale)))
+    return Sprite(sprites, -100, 0, svg_str_to_pixbuf(generate_x(0.5 * scale)))
+
 
 def blank_card(sprites, scale=1.0, color='#80FF80'):
     return Sprite(sprites, 0, 0, svg_str_to_pixbuf(
             generate_blank(scale, color)))
 
+
 def highlight_cards(sprites, scale=1.0):
-    return [Sprite(sprites, 0, 0, svg_str_to_pixbuf(
+    return [Sprite(sprites, -100, 0, svg_str_to_pixbuf(
                 generate_corners(0, 0.125 * scale))),
-            Sprite(sprites, 0, 0, svg_str_to_pixbuf(
+            Sprite(sprites, -100, 0, svg_str_to_pixbuf(
                 generate_corners(1, 0.125 * scale))),
-            Sprite(sprites, 0, 0, svg_str_to_pixbuf(
+            Sprite(sprites, -100, 0, svg_str_to_pixbuf(
                 generate_corners(2, 0.125 * scale))),
-            Sprite(sprites, 0, 0, svg_str_to_pixbuf(
+            Sprite(sprites, -100, 0, svg_str_to_pixbuf(
                 generate_corners(3, 0.125 * scale)))]

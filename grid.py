@@ -15,11 +15,7 @@ import gtk
 from deck import Deck
 from card import blank_card
 from utils import json_dump, json_load
-
-ROW = 8
-COL = 8
-GRID = 2
-CARDS = 3
+from constants import ROW, COL, GRID, CARDS
 
 
 class Grid:
