@@ -226,7 +226,8 @@ class PathsActivity(activity.Activity):
             self.metadata['hand-0'] = self._game.hands[0].serialize()
             if self._game.playing_with_robot:
                 self.metadata['hand-1'] = self._game.hands[1].serialize()
-            
+            elif 'hand-1' in self.metadata:
+                del self.metadata['hand-1']
         if self._game.last_spr_moved is not None and \
            self._game.grid.spr_to_grid(self._game.last_spr_moved) is not None:
             self.metadata['last'] = str(self._game.grid.grid[
@@ -252,10 +253,6 @@ class PathsActivity(activity.Activity):
         self._game.deck.index = ROW * COL - self._game.grid.cards_in_grid()
         for h in self._game.hands:
             self._game.deck.index += (COL - h.cards_in_hand())
-        print 'recalculating deck index: %d = %d + ' % (
-            self._game.deck.index, ROW * COL - self._game.grid.cards_in_grid())
-        for h in self._game.hands:
-            print (COL - h.cards_in_hand())
 
         self._game.last_spr_moved = None
         if 'last' in self.metadata:
