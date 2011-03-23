@@ -99,7 +99,10 @@ class Hand:
 
     def xy_to_hand(self, x, y):
         ''' Convert from sprite x,y to hand index. '''
-        return int((y - self.top) / self.yinc)
+        if x < self.left + self.xinc:
+            return int((y - self.top) / self.yinc)
+        else:
+            return None
 
     def hand_to_xy(self, i):
         ''' Convert from hand index to sprite x,y. '''

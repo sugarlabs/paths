@@ -29,7 +29,7 @@ from deck import Deck
 from card import error_card, highlight_cards
 from utils import json_dump
 from constants import ROW, COL, NORTH, EAST, SOUTH, WEST, CARD_WIDTH, \
-    CARD_HEIGHT, HIDE, BOARD, GRID, CARDS, OVERLAY
+    CARD_HEIGHT, HIDE, BOARD, GRID, CARDS, TOP, OVER_THE_TOP
 from sprites import Sprites
 
 OFFSETS = [-COL, 1, COL, -1]
@@ -55,6 +55,7 @@ class Game():
         self.canvas.set_flags(gtk.CAN_FOCUS)
         self.canvas.add_events(gtk.gdk.BUTTON_PRESS_MASK)
         self.canvas.add_events(gtk.gdk.BUTTON_RELEASE_MASK)
+        self.canvas.add_events(gtk.gdk.POINTER_MOTION_MASK)
         self.canvas.connect("expose-event", self._expose_cb)
         self.canvas.connect("button-press-event", self._button_press_cb)
         self.canvas.connect("button-release-event", self._button_release_cb)
@@ -101,7 +102,7 @@ class Game():
         self.press = None
         self.release = None
         self.dragpos = [0, 0]
-        self.spr = None
+        self.total_drag = [0, 0]
         self.last_spr_moved = None
         self.last_tile_played = None
         self.last_tile_orientation = 0
@@ -235,6 +236,8 @@ class Game():
                                  self.last_grid_played])))
         # I took my turn, so I am waiting again.
         self.waiting_for_my_turn = True
+        self.last_spr_moved.set_layer(CARDS)
+        self._hide_highlight()
         print 'took my turn'
         self._set_label(_('I took my turn.'))
         if self.playing_with_robot:
@@ -260,8 +263,9 @@ class Game():
         x, y = map(int, event.get_coords())
 
         self.dragpos = [x, y]
+        self.total_drag = [0, 0]
 
-        self.spr = self.sprites.find_sprite((x, y))
+        spr = self.sprites.find_sprite((x, y))
 
         # If it is not my turn, do nothing.
         if self.waiting_for_my_turn:
@@ -272,19 +276,19 @@ class Game():
         self.release = None
 
         # Ignore clicks on background except to indicate you took your turn
-        if self.spr is None or \
-           self.spr in self.grid.blanks or \
-           self.spr == self.deck.board:
-            if self.placed_a_tile and self.spr is None:
+        if spr is None or \
+           spr in self.grid.blanks or \
+           spr == self.deck.board:
+            if self.placed_a_tile and spr is None:
                 print 'placed a tile and clicked on None'
                 self.took_my_turn()
                 self.press = None
             return True
 
         # Are we clicking on a tile in the hand?
-        if self.hands[self.my_hand].spr_to_hand(self.spr) is not None and \
+        if self.hands[self.my_hand].spr_to_hand(spr) is not None and \
            not self.there_are_errors:
-            self.last_spr_moved = self.spr
+            self.last_spr_moved = spr
             clicked_in_hand = True
             if self.placed_a_tile:
                 print 'placed a tile and clicked in hand'
@@ -294,27 +298,33 @@ class Game():
             clicked_in_hand = False
 
         # We cannot switch to an old tile.
-        if self.spr == self.last_spr_moved:
-            self.press = self.spr
+        if spr == self.last_spr_moved:
+            self.press = spr
 
+        spr.set_layer(TOP)
         self._show_highlight()
         return True
 
     def _mouse_move_cb(self, win, event):
         """ Drag a tile with the mouse. """
-        print 'drag event'
-        if self.spr is None:
+        spr = self.press
+        if spr is None:
             self.dragpos = [0, 0]
             return True
         win.grab_focus()
         x, y = map(int, event.get_coords())
         dx = x - self.dragpos[0]
         dy = y - self.dragpos[1]
-        self.self.spr.move_relative([dx, dy])
+        spr.move_relative([dx, dy])
+        self._move_highlight([dx, dy])
         self.dragpos = [x, y]
+        self.total_drag[0] += dx
+        self.total_drag[1] += dy
 
     def _button_release_cb(self, win, event):
         win.grab_focus()
+
+        self.dragpos = [0, 0]
 
         if self.waiting_for_my_turn:
             print "waiting for my turn -- ignoring button release"
@@ -326,11 +336,39 @@ class Game():
         x, y = map(int, event.get_coords())
         spr = self.sprites.find_sprite((x, y))
 
-        if spr is None:  # Returning tile to hand
-            i = self.hands[self.my_hand].find_empty_slot()
-            if i is not None: 
+        # when we are dragging, this sprite will be the same as self.press
+        grid_pos = self.grid.xy_to_grid(x, y)
+        hand_pos = self.hands[self.my_hand].xy_to_hand(x, y)
+        print grid_pos, hand_pos
+        if grid_pos is not None:  # Placing tile in grid
+            if self.grid.grid[grid_pos] is None:
                 card = self.deck.spr_to_card(self.press)
+                print 'moving card to grid ', self.grid.grid_to_xy(grid_pos)
+                card.spr.move(self.grid.grid_to_xy(grid_pos))
+                i = self.grid.spr_to_grid(self.press)
+                if i is not None:
+                    self.grid.grid[i] = None
+                
+                self.grid.grid[grid_pos] = card
+                self.placed_a_tile = True
+                self.last_tile_played = card.number
+                self.last_grid_played = grid_pos
 
+                i = self.hands[self.my_hand].spr_to_hand(self.press)
+                if i is not None:
+                    self.hands[self.my_hand].hand[i] = None
+
+                if self.last_spr_moved != card.spr:
+                    self.last_spr_moved = card.spr
+                self._show_highlight()
+        # Returning tile to hand
+        elif hand_pos is not None: # or x < self.grid.left:
+            i = self.hands[self.my_hand].find_empty_slot()
+            print 'found an empty slot?', i
+            if i is not None: 
+                print 'returning card to hand'
+                card = self.deck.spr_to_card(self.press)
+                print 'moving card to ', self.hands[self.my_hand].hand_to_xy(i)
                 card.spr.move(self.hands[self.my_hand].hand_to_xy(i))
                 if self.hands[self.my_hand].spr_to_hand(self.press) is not None:
                     self.hands[self.my_hand].hand[
@@ -340,39 +378,27 @@ class Game():
                 self.hands[self.my_hand].hand[i] = card
                 if spr == self.last_spr_moved:
                     self.last_spr_moved = None
-                    self._hide_highlight()
-            self._hide_errormsgs()
-            self._there_are_errors = False
+                self._hide_errormsgs()
+                self._there_are_errors = False
+                self.show_connected_tiles()
+            else:  # Or return tile to the grid
+                grid_pos = self.grid.spr_to_grid(self.press)
+                if grid_pos is not None: 
+                    card = self.deck.spr_to_card(self.press)
+                    print 'returning card to grid'
+                    card.spr.move(self.grid.grid_to_xy(grid_pos))
+
+            self._hide_highlight()
             self.press = None
             self.release = None
             self.placed_a_tile = False
             return True
 
         self.release = spr
-        if self.press == self.release:
+        if self.press == self.release and not self._it_is_a_drag():
             card = self.deck.spr_to_card(spr)
             card.rotate_clockwise()
             self.last_tile_orientation = card.orientation
-            if self.last_spr_moved != card.spr:
-                self.last_spr_moved = card.spr
-            self._show_highlight()
-
-        elif self.release in self.grid.blanks:
-            card = self.deck.spr_to_card(self.press)
-            card.spr.move(self.grid.grid_to_xy(self.grid.xy_to_grid(x, y)))
-            i = self.grid.spr_to_grid(self.press)
-            if i is not None:
-                self.grid.grid[i] = None
-                
-            self.grid.grid[self.grid.xy_to_grid(x, y)] = card
-            self.placed_a_tile = True
-            self.last_tile_played = card.number
-            self.last_grid_played = self.grid.xy_to_grid(x, y)
-
-            i = self.hands[self.my_hand].spr_to_hand(self.press)
-            if i is not None:
-                self.hands[self.my_hand].hand[i] = None
-
             if self.last_spr_moved != card.spr:
                 self.last_spr_moved = card.spr
             self._show_highlight()
@@ -382,6 +408,13 @@ class Game():
         self.press = None
         self.release = None
         return True
+
+    def _it_is_a_drag(self):
+        if self.total_drag[0] * self.total_drag[0] + \
+           self.total_drag[1] * self.total_drag[1] > \
+           self.card_width * self.card_height:
+            return True
+        return False
 
     def _game_over(self, msg=_('Game over')):
         self._set_label(msg)
@@ -591,7 +624,7 @@ class Game():
             self.errormsg[direction].move(
                 (x + dxdy[direction][0] * self.card_width,
                  y + dxdy[direction][1] * self.card_height))
-            self.errormsg[direction].set_layer(OVERLAY)
+            self.errormsg[direction].set_layer(OVER_THE_TOP)
         self.there_are_errors = True
 
     def _hide_errormsgs(self):
@@ -603,7 +636,12 @@ class Game():
     def _hide_highlight(self):
         ''' No tile is selected. '''
         for i in range(4):
+            self.highlight[i].move((self.grid.left, self.grid.top))
             self.highlight[i].set_layer(HIDE)
+
+    def _move_highlight(self, pos):
+            for i in range(4):
+                self.highlight[i].move_relative(pos)
 
     def _show_highlight(self):
         ''' Highlight the tile that is selected. '''
@@ -617,7 +655,7 @@ class Game():
                                     y + 7 * self.card_height / 8))
             self.highlight[3].move((x, y + 7 * self.card_height / 8))
             for i in range(4):
-                self.highlight[i].set_layer(OVERLAY)
+                self.highlight[i].set_layer(OVER_THE_TOP)
 
     def _keypress_cb(self, area, event):
         return True

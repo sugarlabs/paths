@@ -91,8 +91,11 @@ class Grid:
 
     def xy_to_grid(self, x, y):
         ''' Convert from sprite x,y to grid index. '''
-        return COL * int((y - self.top) / self.yinc) + \
-               int((x - self.left) / self.xinc)
+        if x > self.left:
+            return COL * int((y - self.top) / self.yinc) + \
+                   int((x - self.left) / self.xinc)
+        else:
+            return None
 
     def grid_to_xy(self, i):
         ''' Convert from grid index to sprite x,y. '''

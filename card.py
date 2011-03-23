@@ -27,9 +27,9 @@ class Card:
         self.orientation = 0
         self.type = card_type
         self.number = number
-        self.spr.set_label_color('#FF0000')
-        self.spr.set_label_attributes(32)
-        self.spr.set_label(str(number))
+        # self.spr.set_label_color('#FF0000')
+        # self.spr.set_label_attributes(32)
+        # self.spr.set_label(str(number))
 
     def set_paths(self, paths):
         for c in paths:
