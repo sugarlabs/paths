@@ -1,0 +1,50 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-03-09 18:44-0500\n"
+"PO-Revision-Date: 2011-03-17 21:26+0200\n"
+"Last-Translator: Rafael Ortiz <rafael@laptop.org>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Pootle 2.0.1\n"
+
+#: activity/activity.info:2 /home/walter/Desktop/Activities/paths/path.py:31
+msgid "Paths"
+msgstr "Caminos"
+
+#: /home/walter/Desktop/Activities/paths/PathsActivity.py:139
+msgid "Game"
+msgstr "Juego"
+
+#: /home/walter/Desktop/Activities/paths/PathsActivity.py:151
+msgid "Start a new game."
+msgstr "Empieza juego nuevo."
+
+#: /home/walter/Desktop/Activities/paths/PathsActivity.py:155
+msgid "Play with the computer."
+msgstr "Juege con el computador"
+
+#: /home/walter/Desktop/Activities/paths/game.py:143
+msgid "It is your turn."
+msgstr "Es su turno"
+
+#: /home/walter/Desktop/Activities/paths/game.py:234
+msgid "Game over"
+msgstr "Juego teminado."
+
+#: /home/walter/Desktop/Activities/paths/game.py:287
+msgid "Robot unable to play"
+msgstr "El robot no puede Jugar"
+
+#: /home/walter/Desktop/Activities/paths/path.py:32
+msgid "Move tiles to make a path."
+msgstr "Mueva los bloques para hacer un sendero"
