@@ -255,7 +255,8 @@ class Game():
     def _robot_turn(self):
         self._robot_play()
         self.show_connected_tiles()
-        self.its_my_turn()
+        if not self._waiting_for_robot:
+            self.its_my_turn()
 
     def its_their_turn(self, nick):
         # It is someone else's turn.
@@ -495,7 +496,6 @@ class Game():
                 x, y = self.hands[ROBOT_HAND].hand_to_xy(i)
                 self.hands[ROBOT_HAND].hand[i].spr.move(
                     (self.grid.left_hand + self.grid.xinc, y))
-        self._waiting_for_robot = False
         self._game_over(_('Robot unable to play'))
 
     def _try_placement(self, tile, i):
