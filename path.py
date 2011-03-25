@@ -23,7 +23,6 @@ from game import Game
 class PathMain:
     def __init__(self):
         self.r = 0
-        self.tw = None
 
         # create a new window
         self.win = gtk.Window(gtk.WINDOW_TOPLEVEL)
@@ -57,6 +56,7 @@ class PathMain:
     def _new_game_cb(self, widget, game):
         self.vmw.new_game()
         return True
+
 
 def main():
     gtk.main()

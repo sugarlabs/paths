@@ -117,6 +117,11 @@ class Game():
 
         self.score = 0
 
+    def _initiating(self):
+        if not self._running_sugar:
+            return True
+        return self._activity.initiating
+
     def new_game(self, saved_state=None, deck_index=0):
         ''' Start a new game. '''
 
@@ -124,10 +129,10 @@ class Game():
         self._all_clear()
 
         # If we are not sharing or we are the sharer...
-        if not self.we_are_sharing() or self._activity.initiating:
+        if not self.we_are_sharing() or self._initiating():
             if not self.we_are_sharing():
                 print 'We are not sharing.'
-            if not self._activity.initiating:
+            if not self._initiating():
                 print 'I am initiating.'
             # Let joiners know we are starting a new game...
             if self.we_are_sharing():
@@ -199,7 +204,7 @@ class Game():
             self._activity.dialog_button.set_icon('dialog-ok')
             self._activity.dialog_button.set_tooltip(
                 _('Click after taking your turn.'))
-        self._set_label(self._activity.nick + ': ' + _('It is your turn.'))
+        self._set_label(_('It is your turn.'))
 
     def _redeal(self):
         # Only the sharer deals cards.
@@ -213,7 +218,7 @@ class Game():
                     self._activity.dialog_button.set_tooltip(_('Game over'))
                 self._set_label(_('Game over'))
                 
-        elif self._activity.initiating:
+        elif self._initiating():
             for i, buddy in enumerate(self.buddies):
                 print 'dealing %s a hand' % (buddy)
                 self.hands[i].deal(self.deck)
