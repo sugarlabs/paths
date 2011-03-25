@@ -3,7 +3,12 @@ NEWS
 6
 
 * fixed scaling problem on old-style Sugar that caused clipping of bottom row
-* refactoring in anticipation of sharing
+* refactoring to enable sharing
+* animate dragging tiles
+* added scoring
+* added hint button
+
+Note: there are some restore issues when sharing.
 
 5
 
