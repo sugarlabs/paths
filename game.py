@@ -124,35 +124,25 @@ class Game():
 
     def new_game(self, saved_state=None, deck_index=0):
         ''' Start a new game. '''
-
-        print 'starting new game'
         self._all_clear()
 
         # If we are not sharing or we are the sharer...
         if not self.we_are_sharing() or self._initiating():
-            if not self.we_are_sharing():
-                print 'We are not sharing.'
-            if not self._initiating():
-                print 'I am initiating.'
             # Let joiners know we are starting a new game...
             if self.we_are_sharing():
-                print 'sending a new_game event'
                 self._activity.send_event('n| ')
 
             # The initiator shuffles the deck...
             self.deck.shuffle()
             # ...and shares it.
             if self.we_are_sharing():
-                print 'sending a new deck event'
                 self._activity.send_event('d|%s' % (self.deck.serialize()))
 
             # Deal a hand to yourself...
-            print 'dealing myself a hand'
             self.hands[self._my_hand].deal(self.deck)
 
             # ...deal a hand to the robot...
             if self.playing_with_robot:
-                print 'dealing robot a hand'
                 if len(self.hands) < ROBOT_HAND + 1:
                     self.hands.append(Hand(self.card_width, self.card_height,
                                            remote=True))
@@ -164,7 +154,6 @@ class Game():
                         self.hands.append(Hand(
                             self.card_width, self.card_height, remote=True))
                         self.hands[i].deal(self.deck)
-                        print 'dealing %s a hand' % (buddy)
                         self._activity.send_event('h|%s' % \
                             (self.hands[i].serialize(buddy=buddy)))
 
@@ -174,8 +163,6 @@ class Game():
         # If we are joining, we need to wait for a hand.
         else:
             self._my_hand = self.buddies.index(self._activity.nick)
-            print 'my hand is %d' % (self._my_hand)
-            print 'Waiting for hand from the sharer and a turn to play.'
             self.its_their_turn(self.buddies[1])  # Sharer will be buddy 1
 
     def we_are_sharing(self):
@@ -192,7 +179,6 @@ class Game():
             self.win.set_title('%s: %s [%d]' % (_('Paths'), string, self.score))
 
     def its_my_turn(self):
-        print 'its my turn'
         # I need to play a piece...
         self.placed_a_tile = False
         # and I am no longer waiting for my turn.
@@ -220,7 +206,6 @@ class Game():
                 
         elif self._initiating():
             for i, buddy in enumerate(self.buddies):
-                print 'dealing %s a hand' % (buddy)
                 self.hands[i].deal(self.deck)
                 # Send the joiners their new hands.
                 if buddy != self._activity.nick:
@@ -234,8 +219,6 @@ class Game():
             return
 
         # Are there any completed paths?
-        print 'testing for completed tiles'
-        # self._test_for_complete_paths(self.grid.spr_to_grid(self._press))
         self._test_for_complete_paths(self._last_grid_played)
 
         # If so, let everyone know what piece I moved.
@@ -244,13 +227,13 @@ class Game():
                 (json_dump([self._last_tile_played,
                                  self._last_tile_orientation,
                                  self._last_grid_played])))
+            self._last_tile_orientation = 0  # Reset orientation.
         # I took my turn, so I am waiting again.
         self._waiting_for_my_turn = True
         if self.last_spr_moved is not None:
             self.last_spr_moved.set_layer(CARDS)
             self.last_spr_moved = None
         self._hide_highlight()
-        print 'took my turn'
         self._set_label(_('You took your turn.'))
 
         if self.playing_with_robot:
@@ -264,7 +247,6 @@ class Game():
             if self.whos_turn == len(self.buddies):
                 self.whos_turn = 0
             else:
-                print "it is %s's turn" % (self.buddies[self.whos_turn])
                 self._activity.send_event('t|%s' % (
                         self.buddies[self.whos_turn]))
 
@@ -276,7 +258,6 @@ class Game():
 
     def its_their_turn(self, nick):
         # It is someone else's turn.
-        print 'waiting for ', nick
         if self._running_sugar:
             self._activity.dialog_button.set_icon('dialog-cancel')
             self._activity.dialog_button.set_tooltip(_('Wait your turn.'))
@@ -294,7 +275,6 @@ class Game():
 
         # If it is not my turn, do nothing.
         if self._waiting_for_my_turn:
-            print "Waiting for my turn -- ignoring button press."
             self._press = None
             return
 
@@ -303,7 +283,6 @@ class Game():
         # Ignore clicks on background except to indicate you took your turn
         if spr is None or spr in self.grid.blanks or spr == self.deck.board:
             if self.placed_a_tile and spr is None:
-                print 'placed a tile and clicked on None'
                 self.took_my_turn()
                 self._press = None
             return True
@@ -314,7 +293,6 @@ class Game():
             self.last_spr_moved = spr
             clicked_in_hand = True
             if self.placed_a_tile:
-                print 'placed a tile and clicked in hand'
                 self._press = None
                 self.took_my_turn()
         else:
@@ -350,7 +328,6 @@ class Game():
         self._dragpos = [0, 0]
 
         if self._waiting_for_my_turn:
-            print "waiting for my turn -- ignoring button release"
             return
 
         if self._press is None:
@@ -383,7 +360,6 @@ class Game():
                 self._show_highlight()
         elif hand_pos is not None:  # Returning tile to hand
             i = self.hands[self._my_hand].find_empty_slot()
-            print 'found an empty slot?', i
             if i is not None: 
                 card = self.deck.spr_to_card(self._press)
                 card.spr.move(self.hands[self._my_hand].hand_to_xy(i))
@@ -482,7 +458,6 @@ class Game():
                         self.grid.grid[order[i]] = None
                         self._show_highlight(
                             pos=self.grid.grid_to_xy(order[i]))
-                        print 'hint: %d' % (order[i])
                         return
         # Nowhere to play.
         self._set_label(_('Nowhere to play. Game over'))
@@ -618,8 +593,6 @@ class Game():
                          self.grid.grid[neighbor].paths[1][
                         (direction + 2) % 4] == 1:
                         self._add_to_path_list(neighbor, 1, test_path)
-                    else:
-                        print 'You should never see this message.'
         return True
 
     def _test_for_bad_paths(self, tile):
