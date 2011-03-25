@@ -474,12 +474,8 @@ state=%d' % (id, initiator, type, service, params, state))
             self._take_a_turn(self._game.buddies[self._game.whos_turn])
             self.send_event('t|%s' % (self._game.buddies[self._game.whos_turn]))
 
-    def _take_a_turn(self, payload):
+    def _take_a_turn(self, nick):
         ''' If it is your turn, take it, otherwise, wait. '''
-        nick = payload
-        self.player.set_from_pixbuf(self._player_pixbuf[
-                self._game.buddies.index(nick)])
-        self.player.set_tooltip_text(nick)
         if nick == self.nick:
             print "it's my turn"
             self._game.its_my_turn()
@@ -492,6 +488,10 @@ state=%d' % (id, initiator, type, service, params, state))
         if hasattr(self, 'chattube') and self.chattube is not None:
             self.chattube.SendText(entry)
 
+    def set_player_on_toolbar(self, nick):
+        self.player.set_from_pixbuf(self._player_pixbuf[
+                self._game.buddies.index(nick)])
+        self.player.set_tooltip_text(nick)
 
 class ChatTube(ExportedGObject):
     """ Class for setting up tube for sharing """

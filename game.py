@@ -187,6 +187,7 @@ class Game():
         if self.hands[self._my_hand].cards_in_hand() == 0:
             self._redeal()
         if self._running_sugar:
+            self._activity.set_player_on_toolbar(self._activity.nick)
             self._activity.dialog_button.set_icon('dialog-ok')
             self._activity.dialog_button.set_tooltip(
                 _('Click after taking your turn.'))
@@ -205,19 +206,19 @@ class Game():
                 self._set_label(_('Game over'))
                 
         elif self._initiating():
-            if deck.empty():
+            if self.deck.empty():
                 self._set_label(_('Game over'))
                 return
-            if deck.cards_remaining() < COL * len(self.buddies):
+            if self.deck.cards_remaining() < COL * len(self.buddies):
                 # TODO: deal a short hand
                 self._set_label(_('Game over'))
                 return
-            for i, buddy in enumerate(self.buddies):
+            for i, nick in enumerate(self.buddies):
                 self.hands[i].deal(self.deck)
                 # Send the joiners their new hands.
-                if buddy != self._activity.nick:
+                if nick != self._activity.nick:
                     self._activity.send_event('h|%s' % \
-                        (self.hands[i].serialize(buddy=buddy)))
+                        (self.hands[i].serialize(buddy=nick)))
 
     def took_my_turn(self):
         # Did I complete my turn without any errors?
@@ -254,6 +255,7 @@ class Game():
             if self.whos_turn == len(self.buddies):
                 self.whos_turn = 0
             else:
+                print "it's %s's turn" % (self.buddies[self.whos_turn])
                 self.its_their_turn(self.buddies[self.whos_turn])
                 self._activity.send_event('t|%s' % (
                         self.buddies[self.whos_turn]))
@@ -267,6 +269,7 @@ class Game():
     def its_their_turn(self, nick):
         # It is someone else's turn.
         if self._running_sugar:
+            self._activity.set_player_on_toolbar(nick)
             self._activity.dialog_button.set_icon('dialog-cancel')
             self._activity.dialog_button.set_tooltip(_('Wait your turn.'))
         self._set_label(_('Waiting for') + ' ' + nick)
