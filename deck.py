@@ -93,8 +93,8 @@ class Deck:
         ''' Shuffle the deck (Knuth algorithm). '''
         decksize = self.count()
         # Hide all the cards and make sure they are back to orientation 0
-        for c in self.cards:
-            c.reset()
+        for card in self.cards:
+            card.reset()
         # Randomize the card order.
         for n in range(decksize):
             i = randrange(decksize - n)
@@ -133,8 +133,8 @@ class Deck:
 
     def clear(self):
         ''' Remove any highlight from the cards. '''
-        for i in self.cards:
-            i.reset()
+        for card in self.cards:
+            card.reset()
 
     def swap_cards(self,i,j):
         ''' Swap the position of two cards in the deck. '''
@@ -145,16 +145,16 @@ class Deck:
 
     def spr_to_card(self, spr):
         ''' Given a sprite, find the corresponding card in the deck. '''
-        for c in self.cards:
-            if c.spr == spr:
-                return c
+        for card in self.cards:
+            if card.spr == spr:
+                return card
         return None
 
     def index_to_card(self, i):
         ''' Given a card index, find the corresponding card in the deck. '''
-        for c in self.cards:
-            if c.index == i:
-                return c
+        for card in self.cards:
+            if card.index == i:
+                return card
         return None
 
     def deal_next_card(self):
@@ -178,9 +178,9 @@ class Deck:
 
     def hide(self):
         ''' Hide the deck. '''
-        for c in self.cards:
-            if c is not None:
-                c.hide_card()
+        for card in self.cards:
+            if card is not None:
+                card.hide()
 
     def count(self):
         ''' Return the length of the deck. '''

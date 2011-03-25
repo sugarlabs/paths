@@ -71,7 +71,7 @@ class Card:
         self.spr.set_layer(CARDS)
         self.spr.draw()
 
-    def hide_card(self):
+    def hide(self):
         self.spr.move((-self.spr.images[0].get_width(),0))
 
 
