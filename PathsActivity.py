@@ -501,11 +501,10 @@ state=%d' % (id, initiator, type, service, params, state))
                 generate_xo(colors=self._player_colors[
                         self._game.buddies.index(nick)])))
         self.player.set_tooltip_text(nick)
-        if not self.initiating:  # Initiator took a turn above.
-            if nick == self.nick:
-                self._game.its_my_turn()
-            else:
-                self._game.its_their_turn(nick)
+        if nick == self.nick:
+            self._game.its_my_turn()
+        else:
+            self._game.its_their_turn(nick)
 
     def send_event(self, entry):
         """ Send event through the tube. """

@@ -259,6 +259,14 @@ class Game():
             gobject.timeout_add(1000, self._robot_turn)
         elif not self.we_are_sharing():
             self.its_my_turn()
+        else:
+            self.whos_turn += 1
+            if self.whos_turn == len(self.buddies):
+                self.whos_turn = 0
+            else:
+                print "it is %s's turn" % (self.buddies[self.whos_turn])
+                self._activity.send_event('t|%s' % (
+                        self.buddies[self.whos_turn]))
 
     def _robot_turn(self):
         self._robot_play()
