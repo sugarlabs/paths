@@ -97,19 +97,18 @@ def _separator_factory(toolbar, visible=True, expand=False):
     separator.show()
 
 
-def _image_factory(image, toolbar, from_file=False):
+def _image_factory(image, toolbar, tooltip=None):
     """ Add an image to the toolbar """
     print "in image factory", image, toolbar
     img = gtk.Image()
-    if from_file:
-        img.set_from_file(image)
-    else:
-        img.set_from_pixbuf(image)
+    img.set_from_pixbuf(image)
     img_tool = gtk.ToolItem()
     img_tool.add(img)
+    if tooltip is not None:
+        img.set_tooltip_text(tooltip)
     toolbar.insert(img_tool, -1)
     img_tool.show()
-
+    return img
 
 class PathsActivity(activity.Activity):
     """ Path puzzle game """
@@ -188,11 +187,20 @@ class PathsActivity(activity.Activity):
                                              _('Play with the computer.'),
                                              self._robot_cb, self.toolbar)
 
+        self.player = _image_factory(
+            svg_str_to_pixbuf(generate_xo(scale=0.8,
+                                          colors=['#404040', '#000000'])),
+            self.toolbar, tooltip=self.nick)
+
         self.dialog_button = _button_factory('dialog-ok',
                                              _('Turn complete'),
                                              self._dialog_cb, self.toolbar)
 
         self.status = _label_factory('', self.toolbar)
+
+        self.hint_button = _button_factory('help-toolbar',
+                                             _('Help'),
+                                             self._hint_cb, self.toolbar)
 
         if _have_toolbox:
             _separator_factory(toolbox.toolbar, False, True)
@@ -227,6 +235,11 @@ class PathsActivity(activity.Activity):
             self._game.took_my_turn()
         else:
             print 'Clicked on the toolbar button but need to place a piece.'
+
+    def _hint_cb(self, button=None):
+        ''' Give a hint as to where to place a tile '''
+        if not self._game.placed_a_tile:
+            self._game.give_a_hint()
 
     def write_file(self, file_path):
         """ Write the grid status to the Journal """
@@ -294,6 +307,7 @@ class PathsActivity(activity.Activity):
         owner = self.pservice.get_owner()
         self.owner = owner
         self._game.buddies.append(self.nick)
+        self._player_colors = [self.colors]
         self._share = ""
         self.connect('shared', self._shared_cb)
         self.connect('joined', self._joined_cb)
@@ -344,10 +358,9 @@ class PathsActivity(activity.Activity):
         self.robot_button.set_tooltip(_('The robot is disabled when sharing.'))
 
         # display your XO on the toolbar
-        print "calling image_factory", self.colors
-        _image_factory(svg_str_to_pixbuf(generate_xo(colors=self.colors)),
-                       self.toolbar)
-        self.toolbar.show()
+        self.player.set_from_pixbuf(svg_str_to_pixbuf(
+                generate_xo(colors=self.colors)))
+        self.toolbar.show_all()
 
     def _list_tubes_reply_cb(self, tubes):
         """ Reply to a list request. """
@@ -378,7 +391,8 @@ state=%d' % (id, initiator, type, service, params, state))
             # Let the sharer know joiner is waiting for a hand.
             if self.waiting_for_hand:
                 print 'send event joining (%s)' % (self.nick)
-                self.send_event('j|%s' % (self.nick))
+                self.send_event('j|%s' % (json_dump([self.nick,
+                                                     self.colors])))
 
     def _setup_dispatch_table(self):
         self._processing_methods = {
@@ -392,6 +406,7 @@ state=%d' % (id, initiator, type, service, params, state))
             }
 
     def event_received_cb(self, event_message):
+        ''' Data from a tube has arrived. '''
         if len(event_message) == 0:
             return
         try:
@@ -404,53 +419,55 @@ state=%d' % (id, initiator, type, service, params, state))
         self._processing_methods[command][0](payload)
 
     def _new_joiner(self, payload):
+        ''' Someone has joined; sharer adds them to the buddy list. '''
         print payload
-        nick = payload
+        [nick, colors] = json_load(payload)
         print("%s has joined" % (nick))
         self.status.set_label(nick + ' ' + _('has joined.'))
         if not nick in self._game.buddies:
             self._game.buddies.append(nick)
-            # TODO: get joiner's colors
-            _image_factory(svg_str_to_pixbuf(generate_xo()),
-                           toolbar)
+            self._player_colors.append(colors)
 
         if self.initiating:
-            payload = json_dump(self._game.buddies)
+            payload = json_dump([self._game.buddies, self._player_colors])
             print payload
             self.send_event('b|%s' % (payload))
 
     def _buddy_list(self, payload):
-        buddies = json_load(payload)
-        for nick in buddies:
+        ''' Sharer sent the updated buddy list. '''
+        [buddies, colors] = json_load(payload)
+        for i, nick in enumerate(buddies):
             if not nick in self._game.buddies:
                 self._game.buddies.append(nick)
                 print 'appending %s to buddy list' % (nick)
+                self._player_colors.append(colors[i])
+                print 'appending %s to color list' % (str(colors[i]))
 
     def _new_game(self, payload):
+        ''' Sharer can start a new game. '''
         if not self.initiating:
             print 'starting new game'
             self._game.new_game()
 
     def _sending_deck(self, payload):
+        ''' Sharer sends the deck. '''
         print 'got a deck'
         self._game.deck.restore(payload)
-        print 'reseting cards in new deck'
         for card in self._game.deck.cards:
             card.reset()
             card.hide()
 
     def _sending_hand(self, payload):
+        ''' Sharer sends a hand. '''
         hand = json_load(payload)
         nick = hand[0]
+        print 'I saw a hand for %s' % (nick)
         if nick == self.nick:
-            print 'I got a hand'
             self._game.hands[self._game.buddies.index(nick)].restore(
                 payload, self._game.deck, buddy=True)
-        else:
-            print 'I saw a hand for %s' % (nick)
 
     def _play_a_piece(self, payload):
-        # When a piece is played, everyone should move it into position.
+        ''' When a piece is played, everyone should move it into position. '''
         tile_number, orientation, grid_position = json_load(payload)
         print 'moving tile', tile_number, orientation, grid_position
         for i in range(ROW * COL):  # find the tile with this number
@@ -470,17 +487,19 @@ state=%d' % (id, initiator, type, service, params, state))
                 self.status.set_label(self.nick + ': ' + _('take a turn.'))
                 self._take_a_turn(self._game.buddies[self._game.whos_turn])
             print "it is %s's turn" % (self._game.buddies[self._game.whos_turn])
-            print 'sending turn event'
             self.send_event('t|%s' % (self._game.buddies[
                         self._game.whos_turn]))
 
     def _take_a_turn(self, payload):
-        # If it is your turn, take it, otherwise, wait.
-        print 'take a turn event'
+        ''' If it is your turn, take it, otherwise, wait. '''
         nick = payload
         print "It's %s's turn." % (nick)
-        if not self.initiating:
-            self.status.set_label(nick + ': ' + _('take a turn.'))
+        # TODO: use cached pixbufs
+        self.player.set_from_pixbuf(svg_str_to_pixbuf(
+                generate_xo(colors=self._player_colors[
+                        self._game.buddies.index(nick)])))
+        self.player.set_tooltip_text(nick)
+        if not self.initiating:  # Initiator took a turn above.
             if nick == self.nick:
                 self._game.its_my_turn()
             else:
@@ -514,4 +533,4 @@ class ChatTube(ExportedGObject):
     @signal(dbus_interface=IFACE, signature='s')
     def SendText(self, text):
         self.stack = text
-        print text
+        print 'SendText', text
