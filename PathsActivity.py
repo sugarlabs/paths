@@ -202,6 +202,8 @@ class PathsActivity(activity.Activity):
                                              _('Help'),
                                              self._hint_cb, self.toolbar)
 
+        self.score = _label_factory(_('Score: ') + '0', self.toolbar)
+
         if _have_toolbox:
             _separator_factory(toolbox.toolbar, False, True)
 

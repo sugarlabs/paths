@@ -115,6 +115,8 @@ class Game():
         self.placed_a_tile = False
         self._there_are_errors = False
 
+        self.score = 0
+
     def new_game(self, saved_state=None, deck_index=0):
         ''' Start a new game. '''
 
@@ -180,8 +182,9 @@ class Game():
         ''' Set the label in the toolbar or the window frame. '''
         if self._running_sugar:
             self._activity.status.set_label(string)
+            self._activity.score.set_label(_('Score: ') + str(self.score))
         elif hasattr(self, 'win'):
-            self.win.set_title('%s: %s' % (_('Paths'), string))
+            self.win.set_title('%s: %s [%d]' % (_('Paths'), string, self.score))
 
     def its_my_turn(self):
         print 'its my turn'
@@ -536,9 +539,9 @@ class Game():
                 if not self._test(i[0], i[1], None, self._test_a_connection):
                     break_in_path[p] = True
             if not break_in_path[p] and len(self._paths[p]) > 0:
-                # TODO: Change the color of path 0 vs 1
                 for i in self._paths[p]:
                     self.grid.grid[i[0]].set_shape(i[1])
+                self.score += len(self._paths[p])
 
     def _tile_to_test(self, test_path):
         ''' Find a tile that needs testing. '''
