@@ -117,7 +117,7 @@ class Grid:
         ''' Hide all of the cards on the grid. '''
         for i in range(ROW * COL):
             if self.grid[i] is not None:
-                self.grid[i].hide_card()
+                self.grid[i].hide()
 
     def show(self):
         ''' Restore all card on the grid to their x,y positions. '''
