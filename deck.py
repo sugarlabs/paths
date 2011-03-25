@@ -98,7 +98,7 @@ class Deck:
         # Randomize the card order.
         for n in range(decksize):
             i = randrange(decksize - n)
-            self.swap_cards(n, decksize - 1 - i)            
+            self.swap_cards(n, decksize - 1 - i)
         # Reset the index to the beginning of the deck after a shuffle,
         self.index = 0
         self.hide()
@@ -136,7 +136,7 @@ class Deck:
         for card in self.cards:
             card.reset()
 
-    def swap_cards(self,i,j):
+    def swap_cards(self, i, j):
         ''' Swap the position of two cards in the deck. '''
         tmp = self.cards[j]
         self.cards[j] = self.cards[i]
@@ -164,7 +164,7 @@ class Deck:
         next_card = self.cards[self.index]
         self.index += 1
         return next_card
- 
+
     def empty(self):
         ''' Is the deck empty? '''
         if self.cards_remaining() > 0:
@@ -174,7 +174,7 @@ class Deck:
 
     def cards_remaining(self):
         ''' Return how many cards are remaining in the deck. '''
-        return(self.count()-self.index)
+        return(self.count() - self.index)
 
     def hide(self):
         ''' Hide the deck. '''

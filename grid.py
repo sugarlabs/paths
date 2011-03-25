@@ -70,12 +70,12 @@ class Grid:
             else:
                 for k in range(ROW * COL):
                     if deck.cards[k].number == grid[i][0]:
-                        self.add_card_to_grid(k, grid[i][1], i, deck) 
+                        self.add_card_to_grid(k, grid[i][1], i, deck)
                         break
         self.show()
 
     def add_card_to_grid(self, card_number, orientation, grid_number, deck):
-        ''' Add cards[card_number] to grid[grid_number] at orientation ''' 
+        ''' Add cards[card_number] to grid[grid_number] at orientation '''
         self.grid[grid_number] = deck.cards[card_number]
         self.grid[grid_number].spr.move(self.grid_to_xy(grid_number))
         self.grid[grid_number].spr.set_layer(CARDS)
@@ -122,6 +122,5 @@ class Grid:
     def show(self):
         ''' Restore all card on the grid to their x,y positions. '''
         for i in range(ROW * COL):
-            self.place_a_card(self.grid[i],self.grid_to_xy(i)[0],
+            self.place_a_card(self.grid[i], self.grid_to_xy(i)[0],
                               self.grid_to_xy(i)[1])
-  

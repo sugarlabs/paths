@@ -23,14 +23,14 @@ class Hand:
     ''' Class for managing COL matrix of cards '''
 
     def __init__(self, card_width, card_height, remote=False):
-        # the tiles in your hand        
+        # The tiles in your hand
         self.hand = []
         self.remote = remote  # Does this hand belong to someone remote?
 
         for i in range(COL):
             self.hand.append(None)
 
-        # card spacing
+        # Card spacing
         self.xinc = int(card_width)
         if self.remote:
             self.left = -self.xinc
@@ -50,8 +50,6 @@ class Hand:
             if self.hand[i] is not None:
                 self.hand[i].spr.move(self.hand_to_xy(i))
                 self.hand[i].spr.set_layer(CARDS)
-            else:
-                print 'No more cards in the deck.'
         return True
 
     def find_empty_slot(self):
@@ -71,7 +69,7 @@ class Hand:
             hand = []
         else:
             hand = [buddy]
-        for i in range( COL):
+        for i in range(COL):
             if self.hand[i] is not None:
                 hand.append(self.hand[i].number)
             else:

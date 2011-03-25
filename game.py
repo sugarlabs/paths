@@ -176,7 +176,8 @@ class Game():
             self._activity.status.set_label(string)
             self._activity.score.set_label(_('Score: ') + str(self.score))
         elif hasattr(self, 'win'):
-            self.win.set_title('%s: %s [%d]' % (_('Paths'), string, self.score))
+            self.win.set_title('%s: %s [%d]' % (_('Paths'), string,
+                                                self.score))
 
     def its_my_turn(self):
         # I need to play a piece...
@@ -204,7 +205,7 @@ class Game():
                     self._activity.dialog_button.set_icon('dialog-cancel')
                     self._activity.dialog_button.set_tooltip(_('Game over'))
                 self._set_label(_('Game over'))
-                
+
         elif self._initiating():
             if self.deck.empty():
                 self._set_label(_('Game over'))
@@ -356,7 +357,7 @@ class Game():
                 i = self.grid.spr_to_grid(self._press)
                 if i is not None:
                     self.grid.grid[i] = None
-                
+
                 self.grid.grid[grid_pos] = card
                 self.placed_a_tile = True
                 self._last_tile_played = card.number
@@ -371,7 +372,7 @@ class Game():
                 self._show_highlight()
         elif hand_pos is not None:  # Returning tile to hand
             i = self.hands[self._my_hand].find_empty_slot()
-            if i is not None: 
+            if i is not None:
                 card = self.deck.spr_to_card(self._press)
                 card.spr.move(self.hands[self._my_hand].hand_to_xy(i))
                 if self.hands[self._my_hand].spr_to_hand(
@@ -389,7 +390,7 @@ class Game():
                 self.show_connected_tiles()
             else:  # Or return tile to the grid
                 grid_pos = self.grid.spr_to_grid(self._press)
-                if grid_pos is not None: 
+                if grid_pos is not None:
                     card = self.deck.spr_to_card(self._press)
                     card.spr.move(self.grid.grid_to_xy(grid_pos))
             self._hide_highlight()
@@ -409,7 +410,7 @@ class Game():
 
         if hand_pos is None and x < self.grid.left:  # In limbo: return to grid
             grid_pos = self.grid.spr_to_grid(self._press)
-            if grid_pos is not None: 
+            if grid_pos is not None:
                 card = self.deck.spr_to_card(self._press)
                 card.spr.move(self.grid.grid_to_xy(grid_pos))
                 self._hide_highlight()
@@ -584,7 +585,7 @@ class Game():
                     return False
                 else:
                     return True
-            if self.grid.grid[neighbor].paths[0][(direction + 2) % 4] == 0 and \
+            if self.grid.grid[neighbor].paths[0][(direction + 2) % 4] == 0 and\
                self.grid.grid[neighbor].paths[1][(direction + 2) % 4] == 0:
                 return False
         return True

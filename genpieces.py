@@ -15,10 +15,9 @@
 
 import os
 
-#
-# SVG generators
-#
+
 class SVG:
+    ''' SVG generators '''
     def __init__(self):
         self._scale = 1
         self._stroke_width = 1
@@ -94,7 +93,7 @@ class SVG:
                                   "\"\n")
         svg_string += "%s%f%s" % ("   height=\"", scale * 55 * self._scale,
                                   "\">\n")
-        svg_string += "%s%f%s%f%s" % ("<g\n       transform=\"matrix(", 
+        svg_string += "%s%f%s%f%s" % ("<g\n       transform=\"matrix(",
                                       self._scale, ",0,0,", self._scale,
                                       ",0,0)\">\n")
         if background:
@@ -135,6 +134,8 @@ class SVG:
 #
 # Card generators
 #
+
+
 def generate_xo(scale=1, colors=["#FFFFFF", "#000000"]):
     svg = SVG()
     svg.set_scale(scale)
@@ -143,6 +144,7 @@ def generate_xo(scale=1, colors=["#FFFFFF", "#000000"]):
     svg_string += svg._svg_xo()
     svg_string += svg.footer()
     return svg_string
+
 
 def generate_x(scale=1):
     svg = SVG()
@@ -153,6 +155,7 @@ def generate_x(scale=1):
     svg_string += svg.footer()
     return svg_string
 
+
 def generate_corners(which_corner=0, scale=1):
     svg = SVG()
     svg.set_scale(scale)
@@ -162,6 +165,7 @@ def generate_corners(which_corner=0, scale=1):
     svg_string += svg.footer()
     return svg_string
 
+
 def generate_blank(scale=1, color='#A0FFA0'):
     svg = SVG()
     svg.set_scale(scale)
@@ -169,6 +173,7 @@ def generate_blank(scale=1, color='#A0FFA0'):
     svg_string = svg.header()
     svg_string += svg.footer()
     return svg_string
+
 
 def generate_board(scale=1, color='#000000'):
     svg = SVG()
@@ -178,6 +183,7 @@ def generate_board(scale=1, color='#000000'):
     svg_string += svg.footer()
     return svg_string
 
+
 def generate_tile_1_line(a, b, c, d, scale=1, color='#000000'):
     svg = SVG()
     svg.set_scale(scale)
@@ -186,6 +192,7 @@ def generate_tile_1_line(a, b, c, d, scale=1, color='#000000'):
     svg_string += svg.path(a, b, c, d)
     svg_string += svg.footer()
     return svg_string
+
 
 def generate_tile_2_lines(a, b, c, d, e, f, g, h, scale=1,
                           colors=['#000000', '#000000']):
@@ -202,19 +209,23 @@ def generate_tile_2_lines(a, b, c, d, e, f, g, h, scale=1,
 #
 # Command line utilities used for testing purposed only
 #
+
+
 def open_file(datapath, filename):
     return file(os.path.join(datapath, filename), "w")
+
 
 def close_file(f):
     f.close()
 
+
 def generator(datapath):
-    """
     i = 0
     filename = "tile-%d.svg" % (i)
     f = open_file(datapath, filename)
     f.write(generate_tile_1_line(-1, 0, 0, 0))
     close_file(f)
+    """
     i += 1
     filename = "tile-%d.svg" % (i)
     f = open_file(datapath, filename)
@@ -257,10 +268,11 @@ def generator(datapath):
     f = open_file(datapath, 'board.svg')
     f.write(generate_board())
     close_file(f)
-    """
     f = open_file(datapath, 'xo.svg')
     f.write(generate_xo())
     close_file(f)
+    """
+
 
 def main():
     return 0

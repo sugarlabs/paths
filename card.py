@@ -15,6 +15,7 @@ from constants import NORTH, EAST, SOUTH, WEST, HIDE, CARDS
 from sprites import Sprite
 from utils import svg_str_to_pixbuf
 
+
 class Card:
 
     def __init__(self, sprites, svg, svgs, card_type='tile', number=0):
@@ -72,7 +73,7 @@ class Card:
         self.spr.draw()
 
     def hide(self):
-        self.spr.move((-self.spr.images[0].get_width(),0))
+        self.spr.move((-self.spr.images[0].get_width(), 0))
 
 
 #

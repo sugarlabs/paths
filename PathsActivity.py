@@ -109,18 +109,19 @@ def _image_factory(image, toolbar, tooltip=None):
     img_tool.show()
     return img
 
+
 class PathsActivity(activity.Activity):
     """ Path puzzle game """
 
     def __init__(self, handle):
         """ Initialize the toolbars and the game board """
-        super(PathsActivity,self).__init__(handle)
+        super(PathsActivity, self).__init__(handle)
         self.nick = profile.get_nick_name()
         if profile.get_color() is not None:
             self.colors = profile.get_color().to_string().split(',')
         else:
             self.colors = ['#A0FFA0', '#FF8080']
-        
+
         self._setup_toolbars(_have_toolbox)
         self._setup_dispatch_table()
 
@@ -136,6 +137,8 @@ class PathsActivity(activity.Activity):
         self._setup_presence_service()
 
         # Restore game state from Journal or start new game
+        # TODO: Sort out restore issues for sharer;
+        #       Sort out init issues for joiner.
         if 'deck' in self.metadata:
             self._restore()
         elif not hasattr(self, 'initiating'):
@@ -144,8 +147,6 @@ class PathsActivity(activity.Activity):
             self._game.new_game()
         elif len(self._game.buddies) == 1:
             self._game.new_game()
-        else:
-            print 'I am confused'
 
     def _setup_toolbars(self, have_toolbox):
         """ Setup the toolbars. """
@@ -175,13 +176,13 @@ class PathsActivity(activity.Activity):
             toolbox.set_current_toolbar(1)
             self.toolbar = games_toolbar
 
-        self._new_game_button = _button_factory('new-game',
-                                                _('Start a new game.'),
-                                                self._new_game_cb, self.toolbar)
+        self._new_game_button = _button_factory(
+            'new-game', _('Start a new game.'), self._new_game_cb,
+            self.toolbar)
 
-        self.robot_button = _button_factory('robot-off',
-                                             _('Play with the computer.'),
-                                             self._robot_cb, self.toolbar)
+        self.robot_button = _button_factory(
+            'robot-off', _('Play with the computer.'), self._robot_cb,
+            self.toolbar)
 
         self.player = _image_factory(
             svg_str_to_pixbuf(generate_xo(scale=0.8,
@@ -331,8 +332,8 @@ class PathsActivity(activity.Activity):
         self.tubes_chan = self._shared_activity.telepathy_tubes_chan
         self.text_chan = self._shared_activity.telepathy_text_chan
 
-        self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].connect_to_signal\
-            ('NewTube', self._new_tube_cb)
+        self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].connect_to_signal(
+            'NewTube', self._new_tube_cb)
 
         if sharer:
             print('This is my activity: making a tube...')
@@ -472,15 +473,14 @@ state=%d' % (id, initiator, type, service, params, state))
                 self._game.whos_turn = 0
             self.status.set_label(self.nick + ': ' + _('take a turn.'))
             self._take_a_turn(self._game.buddies[self._game.whos_turn])
-            self.send_event('t|%s' % (self._game.buddies[self._game.whos_turn]))
+            self.send_event('t|%s' % (
+                    self._game.buddies[self._game.whos_turn]))
 
     def _take_a_turn(self, nick):
         ''' If it is your turn, take it, otherwise, wait. '''
         if nick == self.nick:
-            print "it's my turn"
             self._game.its_my_turn()
         else:
-            print "it's %s's turn" % (nick)
             self._game.its_their_turn(nick)
 
     def send_event(self, entry):
@@ -492,6 +492,7 @@ state=%d' % (id, initiator, type, service, params, state))
         self.player.set_from_pixbuf(self._player_pixbuf[
                 self._game.buddies.index(nick)])
         self.player.set_tooltip_text(nick)
+
 
 class ChatTube(ExportedGObject):
     """ Class for setting up tube for sharing """
