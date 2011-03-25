@@ -205,6 +205,13 @@ class Game():
                 self._set_label(_('Game over'))
                 
         elif self._initiating():
+            if deck.empty():
+                self._set_label(_('Game over'))
+                return
+            if deck.cards_remaining() < COL * len(self.buddies):
+                # TODO: deal a short hand
+                self._set_label(_('Game over'))
+                return
             for i, buddy in enumerate(self.buddies):
                 self.hands[i].deal(self.deck)
                 # Send the joiners their new hands.
@@ -247,6 +254,7 @@ class Game():
             if self.whos_turn == len(self.buddies):
                 self.whos_turn = 0
             else:
+                self.its_their_turn(self.buddies[self.whos_turn])
                 self._activity.send_event('t|%s' % (
                         self.buddies[self.whos_turn]))
 

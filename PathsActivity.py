@@ -415,24 +415,24 @@ state=%d' % (id, initiator, type, service, params, state))
         ''' Someone has joined; sharer adds them to the buddy list. '''
         [nick, colors] = json_load(payload)
         self.status.set_label(nick + ' ' + _('has joined.'))
+        self._append_player(nick, colors)
+        if self.initiating:
+            payload = json_dump([self._game.buddies, self._player_colors])
+            self.send_event('b|%s' % (payload))
+
+    def _append_player(self, nick, colors):
+        ''' Keep a list of players, their colors, and an XO pixbuf '''
         if not nick in self._game.buddies:
             self._game.buddies.append(nick)
             self._player_colors.append(colors)
             self._player_pixbuf.append(svg_str_to_pixbuf(
                 generate_xo(colors=colors)))
-        if self.initiating:
-            payload = json_dump([self._game.buddies, self._player_colors])
-            self.send_event('b|%s' % (payload))
 
     def _buddy_list(self, payload):
         ''' Sharer sent the updated buddy list. '''
         [buddies, colors] = json_load(payload)
         for i, nick in enumerate(buddies):
-            if not nick in self._game.buddies:
-                self._game.buddies.append(nick)
-                self._player_colors.append(colors[i])
-                self._player_pixbuf.append(svg_str_to_pixbuf(
-                    generate_xo(colors=colors)))
+            self._append_player(nick, colors[i])
 
     def _new_game(self, payload):
         ''' Sharer can start a new game. '''

@@ -52,7 +52,7 @@ class Hand:
                 self.hand[i].spr.set_layer(CARDS)
             else:
                 print 'No more cards in the deck.'
-                return
+        return True
 
     def find_empty_slot(self):
         ''' Is there an empty slot in the hand? '''
