@@ -10,6 +10,7 @@
 # Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 # Boston, MA 02111-1307, USA.
 
+import gtk
 from StringIO import StringIO
 try:
     OLD_SUGAR_SYSTEM = False
@@ -51,3 +52,12 @@ def json_dump(data):
         _io = StringIO()
         jdump(data, _io)
         return _io.getvalue()
+
+
+def svg_str_to_pixbuf(svg_string):
+    ''' Load pixbuf from SVG string '''
+    pl = gtk.gdk.PixbufLoader('svg')
+    pl.write(svg_string)
+    pl.close()
+    pixbuf = pl.get_pixbuf()
+    return pixbuf

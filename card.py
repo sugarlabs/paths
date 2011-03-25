@@ -13,7 +13,7 @@
 import gtk
 from constants import NORTH, EAST, SOUTH, WEST, HIDE, CARDS
 from sprites import Sprite
-
+from utils import svg_str_to_pixbuf
 
 class Card:
 
@@ -74,14 +74,6 @@ class Card:
     def hide_card(self):
         self.spr.move((-self.spr.images[0].get_width(),0))
 
-
-def svg_str_to_pixbuf(svg_string):
-    ''' Load pixbuf from SVG string '''
-    pl = gtk.gdk.PixbufLoader('svg')
-    pl.write(svg_string)
-    pl.close()
-    pixbuf = pl.get_pixbuf()
-    return pixbuf
 
 #
 # Utilities used to create graphics used for interactions

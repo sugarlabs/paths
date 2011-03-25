@@ -12,6 +12,7 @@
 # Boston, MA 02111-1307, USA.
 
 import gtk
+import gobject
 from gettext import gettext as _
 
 import logging
@@ -121,20 +122,20 @@ class Game():
         self._all_clear()
 
         # If we are not sharing or we are the sharer...
-        if not self._we_are_sharing() or self.activity.initiating:
-            if not self._we_are_sharing():
+        if not self.we_are_sharing() or self.activity.initiating:
+            if not self.we_are_sharing():
                 print 'We are not sharing.'
             if not self.activity.initiating:
                 print 'I am initiating.'
             # Let joiners know we are starting a new game...
-            if self._we_are_sharing():
+            if self.we_are_sharing():
                 print 'sending a new_game event'
                 self.activity.send_event('n| ')
 
             # The initiator shuffles the deck...
             self.deck.shuffle()
             # ...and shares it.
-            if self._we_are_sharing():
+            if self.we_are_sharing():
                 print 'sending a new deck event'
                 self.activity.send_event('d|%s' % (self.deck.serialize()))
 
@@ -166,10 +167,11 @@ class Game():
         # If we are joining, we need to wait for a hand.
         else:
             self.my_hand = self.buddies.index(self.activity.nick)
+            print 'my hand is %d' % (self.my_hand)
             print 'Waiting for hand from the sharer and a turn to play.'
-            self.its_their_turn(_('my turn'))
+            self.its_their_turn(self.buddies[1])  # Sharer will be buddy 1
 
-    def _we_are_sharing(self):
+    def we_are_sharing(self):
         ''' If we are sharing, there is more than one buddy. '''
         if len(self.buddies) > 1:
             return True
@@ -194,11 +196,11 @@ class Game():
             self.activity.dialog_button.set_icon('dialog-ok')
             self.activity.dialog_button.set_tooltip(
                 _('Click after taking your turn.'))
-        self._set_label(self.activity.nick + ': ' + _('It is my turn.'))
+        self._set_label(self.activity.nick + ': ' + _('It is your turn.'))
 
     def _redeal(self):
         # Only the sharer deals cards.
-        if not self._we_are_sharing():
+        if not self.we_are_sharing():
             self.hands[self.my_hand].deal(self.deck)
             if self.playing_with_robot:
                 self.hands[ROBOT_HAND].deal(self.deck)
@@ -220,7 +222,7 @@ class Game():
     def took_my_turn(self):
         # Did I complete my turn without any errors?
         if self.there_are_errors:
-            self._set_label(_('There are errors -- still my turn.'))
+            self._set_label(_('There are errors -- it is still your turn.'))
             return
 
         # Are there any completed paths?
@@ -229,26 +231,31 @@ class Game():
         self._test_for_complete_paths(self.last_grid_played)
 
         # If so, let everyone know what piece I moved.
-        if self._we_are_sharing():
+        if self.we_are_sharing():
             self.activity.send_event('p|%s' % \
                 (json_dump([self.last_tile_played,
                                  self.last_tile_orientation,
                                  self.last_grid_played])))
         # I took my turn, so I am waiting again.
         self.waiting_for_my_turn = True
-        self.last_spr_moved.set_layer(CARDS)
+        if self.last_spr_moved is not None:
+            self.last_spr_moved.set_layer(CARDS)
+            self.last_spr_moved = None
         self._hide_highlight()
         print 'took my turn'
-        self._set_label(_('I took my turn.'))
+        self._set_label(_('You took your turn.'))
+
         if self.playing_with_robot:
             self.its_their_turn(_('robot'))
             self.waiting_for_robot = True
-            self._robot_play()
-            self.show_connected_tiles()
-
-        # If the robot played or playing solitaire, go again.
-        if self.playing_with_robot or not self._we_are_sharing():
+            gobject.timeout_add(1000, self._robot_turn)
+        elif not self.we_are_sharing():
             self.its_my_turn()
+
+    def _robot_turn(self):
+        self._robot_play()
+        self.show_connected_tiles()
+        self.its_my_turn()
 
     def its_their_turn(self, nick):
         # It is someone else's turn.
@@ -256,7 +263,8 @@ class Game():
         if self.running_sugar:
             self.activity.dialog_button.set_icon('dialog-cancel')
             self.activity.dialog_button.set_tooltip(_('Wait your turn.'))
-        self._set_label(_('Waiting for') + nick)
+        self._set_label(_('Waiting for') + ' ' + nick)
+        self.waiting_for_my_turn = True  # I am still waiting.
 
     def _button_press_cb(self, win, event):
         win.grab_focus()
@@ -276,9 +284,7 @@ class Game():
         self.release = None
 
         # Ignore clicks on background except to indicate you took your turn
-        if spr is None or \
-           spr in self.grid.blanks or \
-           spr == self.deck.board:
+        if spr is None or spr in self.grid.blanks or spr == self.deck.board:
             if self.placed_a_tile and spr is None:
                 print 'placed a tile and clicked on None'
                 self.took_my_turn()
@@ -335,15 +341,12 @@ class Game():
 
         x, y = map(int, event.get_coords())
         spr = self.sprites.find_sprite((x, y))
-
-        # when we are dragging, this sprite will be the same as self.press
         grid_pos = self.grid.xy_to_grid(x, y)
         hand_pos = self.hands[self.my_hand].xy_to_hand(x, y)
-        print grid_pos, hand_pos
+
         if grid_pos is not None:  # Placing tile in grid
             if self.grid.grid[grid_pos] is None:
                 card = self.deck.spr_to_card(self.press)
-                print 'moving card to grid ', self.grid.grid_to_xy(grid_pos)
                 card.spr.move(self.grid.grid_to_xy(grid_pos))
                 i = self.grid.spr_to_grid(self.press)
                 if i is not None:
@@ -361,14 +364,11 @@ class Game():
                 if self.last_spr_moved != card.spr:
                     self.last_spr_moved = card.spr
                 self._show_highlight()
-        # Returning tile to hand
-        elif hand_pos is not None: # or x < self.grid.left:
+        elif hand_pos is not None:  # Returning tile to hand
             i = self.hands[self.my_hand].find_empty_slot()
             print 'found an empty slot?', i
             if i is not None: 
-                print 'returning card to hand'
                 card = self.deck.spr_to_card(self.press)
-                print 'moving card to ', self.hands[self.my_hand].hand_to_xy(i)
                 card.spr.move(self.hands[self.my_hand].hand_to_xy(i))
                 if self.hands[self.my_hand].spr_to_hand(self.press) is not None:
                     self.hands[self.my_hand].hand[
@@ -385,9 +385,7 @@ class Game():
                 grid_pos = self.grid.spr_to_grid(self.press)
                 if grid_pos is not None: 
                     card = self.deck.spr_to_card(self.press)
-                    print 'returning card to grid'
                     card.spr.move(self.grid.grid_to_xy(grid_pos))
-
             self._hide_highlight()
             self.press = None
             self.release = None
@@ -395,13 +393,20 @@ class Game():
             return True
 
         self.release = spr
-        if self.press == self.release and not self._it_is_a_drag():
+        if self.press == self.release and not self._it_is_a_drag():  # Rotate
             card = self.deck.spr_to_card(spr)
             card.rotate_clockwise()
             self.last_tile_orientation = card.orientation
             if self.last_spr_moved != card.spr:
                 self.last_spr_moved = card.spr
             self._show_highlight()
+
+        if hand_pos is None and x < self.grid.left:  # In limbo: return to grid
+            grid_pos = self.grid.spr_to_grid(self.press)
+            if grid_pos is not None: 
+                card = self.deck.spr_to_card(self.press)
+                card.spr.move(self.grid.grid_to_xy(grid_pos))
+                self._hide_highlight()
 
         self._test_for_bad_paths(self.grid.spr_to_grid(self.press))
         self.show_connected_tiles()
