@@ -419,7 +419,7 @@ state=%d' % (id, initiator, type, service, params, state))
             self._game.buddies.append(nick)
             self._player_colors.append(colors)
             self._player_pixbuf.append(svg_str_to_pixbuf(
-                generate_xo(colors=self.colors)))
+                generate_xo(colors=colors)))
         if self.initiating:
             payload = json_dump([self._game.buddies, self._player_colors])
             self.send_event('b|%s' % (payload))
@@ -431,6 +431,8 @@ state=%d' % (id, initiator, type, service, params, state))
             if not nick in self._game.buddies:
                 self._game.buddies.append(nick)
                 self._player_colors.append(colors[i])
+                self._player_pixbuf.append(svg_str_to_pixbuf(
+                    generate_xo(colors=colors)))
 
     def _new_game(self, payload):
         ''' Sharer can start a new game. '''
@@ -468,7 +470,6 @@ state=%d' % (id, initiator, type, service, params, state))
             self._game.whos_turn += 1
             if self._game.whos_turn == len(self._game.buddies):
                 self._game.whos_turn = 0
-            # if self._game.whos_turn == 0:  # Sharer's turn
             self.status.set_label(self.nick + ': ' + _('take a turn.'))
             self._take_a_turn(self._game.buddies[self._game.whos_turn])
             self.send_event('t|%s' % (self._game.buddies[self._game.whos_turn]))
@@ -476,13 +477,14 @@ state=%d' % (id, initiator, type, service, params, state))
     def _take_a_turn(self, payload):
         ''' If it is your turn, take it, otherwise, wait. '''
         nick = payload
-        # TODO: use cached pixbufs
         self.player.set_from_pixbuf(self._player_pixbuf[
-                        self._game.buddies.index(nick)])
+                self._game.buddies.index(nick)])
         self.player.set_tooltip_text(nick)
         if nick == self.nick:
+            print "it's my turn"
             self._game.its_my_turn()
         else:
+            print "it's %s's turn" % (nick)
             self._game.its_their_turn(nick)
 
     def send_event(self, entry):
