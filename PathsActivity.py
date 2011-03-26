@@ -466,8 +466,15 @@ state=%d' % (id, initiator, type, service, params, state))
                                          grid_position, self._game.deck)
         self._game.show_connected_tiles()
 
-        # Then the sharer should let the next player know it is their turn.
         if self.initiating:
+            # First, remove the piece from whatever hand it was played.
+            for i in range(COL):
+                if self._game.hands[self._game.whos_turn].hand[i].number == \
+                        tile_number:
+                    self._game.hands[self._game.whos_turn].hand[i] = None
+                    break
+
+            # Then let the next player know it is their turn.
             self._game.whos_turn += 1
             if self._game.whos_turn == len(self._game.buddies):
                 self._game.whos_turn = 0
