@@ -305,7 +305,7 @@ class PathsActivity(activity.Activity):
         self._game.buddies.append(self.nick)
         self._player_colors = [self.colors]
         self._player_pixbuf = [svg_str_to_pixbuf(
-                generate_xo(colors=self.colors))]
+                generate_xo(scale=0.8, colors=self.colors))]
         self._share = ""
         self.connect('shared', self._shared_cb)
         self.connect('joined', self._joined_cb)
@@ -427,7 +427,7 @@ state=%d' % (id, initiator, type, service, params, state))
             self._game.buddies.append(nick)
             self._player_colors.append(colors)
             self._player_pixbuf.append(svg_str_to_pixbuf(
-                generate_xo(colors=colors)))
+                generate_xo(scale=0.8, colors=colors)))
 
     def _buddy_list(self, payload):
         ''' Sharer sent the updated buddy list. '''
