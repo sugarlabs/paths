@@ -211,11 +211,14 @@ class Game():
                 self._set_label(_('Game over'))
                 return
             if self.deck.cards_remaining() < COL * len(self.buddies):
-                # TODO: deal a short hand
-                self._set_label(_('Game over'))
-                return
+                number_of_cards_to_deal = \
+                    int(self.deck.cards_remaining() / len(self.buddies))
+                if number_of_cards_to_deal == 0:
+                    number_of_cards_to_deal = 1  # Deal last card in deck.
+            else:
+                number_of_cards_to_deal = COL
             for i, nick in enumerate(self.buddies):
-                self.hands[i].deal(self.deck)
+                self.hands[i].deal(self.deck, number_of_cards_to_deal)
                 # Send the joiners their new hands.
                 if nick != self._activity.nick:
                     self._activity.send_event('h|%s' % \
@@ -224,8 +227,11 @@ class Game():
     def took_my_turn(self):
         # Did I complete my turn without any errors?
         if self._there_are_errors:
-            self._set_label(_('There are errors -- it is still your turn.'))
+            self._set_label(_('There are errors—it is still your turn.'))
             return
+
+        # After the tile is placed, expand regions of playable grid squares.
+        self.show_connected_tiles()
 
         # Are there any completed paths?
         self._test_for_complete_paths(self._last_grid_played)
@@ -270,7 +276,8 @@ class Game():
     def its_their_turn(self, nick):
         # It is someone else's turn.
         if self._running_sugar:
-            self._activity.set_player_on_toolbar(nick)
+            if not self.playing_with_robot:
+                self._activity.set_player_on_toolbar(nick)
             self._activity.dialog_button.set_icon('dialog-cancel')
             self._activity.dialog_button.set_tooltip(_('Wait your turn.'))
         self._set_label(_('Waiting for') + ' ' + nick)
@@ -387,7 +394,6 @@ class Game():
                     self.last_spr_moved = None
                 self._hide_errormsgs()
                 self._there_are_errors = False
-                self.show_connected_tiles()
             else:  # Or return tile to the grid
                 grid_pos = self.grid.spr_to_grid(self._press)
                 if grid_pos is not None:
@@ -416,7 +422,6 @@ class Game():
                 self._hide_highlight()
 
         self._test_for_bad_paths(self.grid.spr_to_grid(self._press))
-        self.show_connected_tiles()
         self._press = None
         self._release = None
         return True

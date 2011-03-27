@@ -43,9 +43,9 @@ class Hand:
         for i in range(COL):
             self.hand[i] = None
 
-    def deal(self, deck):
+    def deal(self, deck, number=COL):
         ''' Deal an initial set of cards to the hand '''
-        for i in range(COL):
+        for i in range(number):
             self.hand[i] = deck.deal_next_card()
             if self.hand[i] is not None:
                 self.hand[i].spr.move(self.hand_to_xy(i))
