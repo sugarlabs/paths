@@ -1,5 +1,11 @@
 NEWS
 
+7
+
+* fixed regression in robot play
+* fixed problem with restore when sharing
+* fixed problem with short deal when sharing with 3 players
+
 6
 
 * fixed scaling problem on old-style Sugar that caused clipping of bottom row
@@ -7,8 +13,6 @@ NEWS
 * animate dragging tiles
 * added scoring
 * added hint button
-
-Note: there are some restore issues when sharing.
 
 5
 
