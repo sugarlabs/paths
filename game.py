@@ -189,7 +189,7 @@ class Game():
             self._redeal()
         if self._running_sugar:
             self._activity.set_player_on_toolbar(self._activity.nick)
-            self._activity.dialog_button.set_icon('dialog-ok')
+            self._activity.dialog_button.set_icon('go-next')
             self._activity.dialog_button.set_tooltip(
                 _('Click after taking your turn.'))
         self._set_label(_('It is your turn.'))
@@ -202,7 +202,8 @@ class Game():
                 self.hands[ROBOT_HAND].deal(self.deck)
             if self.hands[self._my_hand].cards_in_hand() == 0:
                 if self._running_sugar:
-                    self._activity.dialog_button.set_icon('dialog-cancel')
+                    self._activity.dialog_button.set_icon(
+                        'media-playback-stop-insensitive')
                     self._activity.dialog_button.set_tooltip(_('Game over'))
                 self._set_label(_('Game over'))
 
@@ -278,7 +279,7 @@ class Game():
         if self._running_sugar:
             if not self.playing_with_robot:
                 self._activity.set_player_on_toolbar(nick)
-            self._activity.dialog_button.set_icon('dialog-cancel')
+            self._activity.dialog_button.set_icon('media-playback-stop')
             self._activity.dialog_button.set_tooltip(_('Wait your turn.'))
         self._set_label(_('Waiting for') + ' ' + nick)
         self._waiting_for_my_turn = True  # I am still waiting.

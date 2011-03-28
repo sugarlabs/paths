@@ -186,10 +186,10 @@ class PathsActivity(activity.Activity):
 
         self.player = _image_factory(
             svg_str_to_pixbuf(generate_xo(scale=0.8,
-                                          colors=['#404040', '#000000'])),
+                                          colors=['#303030', '#303030'])),
             self.toolbar, tooltip=self.nick)
 
-        self.dialog_button = _button_factory('dialog-ok',
+        self.dialog_button = _button_factory('go-next',
                                              _('Turn complete'),
                                              self._dialog_cb, self.toolbar)
 
