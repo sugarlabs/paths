@@ -258,15 +258,14 @@ class Game():
             gobject.timeout_add(1000, self._robot_turn)
         elif not self.we_are_sharing():
             self.its_my_turn()
-        else:
+        elif self._initiating():
             self.whos_turn += 1
             if self.whos_turn == len(self.buddies):
                 self.whos_turn = 0
             else:
-                print "it's %s's turn" % (self.buddies[self.whos_turn])
                 self.its_their_turn(self.buddies[self.whos_turn])
                 self._activity.send_event('t|%s' % (
-                        self.buddies[self.whos_turn]))
+                    self.buddies[self.whos_turn]))
 
     def _robot_turn(self):
         self._robot_play()
@@ -478,7 +477,7 @@ class Game():
                             pos=self.grid.grid_to_xy(order[i]))
                         return
         # Nowhere to play.
-        self._set_label(_('Nowhere to play. Game over'))
+        self._set_label(_('Nowhere to play.'))
 
     def _robot_play(self):
         ''' The robot tries random cards in random locations. '''

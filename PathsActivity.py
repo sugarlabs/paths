@@ -469,7 +469,9 @@ state=%d' % (id, initiator, type, service, params, state))
         if self.initiating:
             # First, remove the piece from whatever hand it was played.
             for i in range(COL):
-                if self._game.hands[self._game.whos_turn].hand[i].number == \
+                if self._game.hands[self._game.whos_turn].hand[i] is not None \
+                   and \
+                   self._game.hands[self._game.whos_turn].hand[i].number == \
                         tile_number:
                     self._game.hands[self._game.whos_turn].hand[i] = None
                     break
