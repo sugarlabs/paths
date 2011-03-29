@@ -189,7 +189,7 @@ class Game():
             self._redeal()
         if self._running_sugar:
             self._activity.set_player_on_toolbar(self._activity.nick)
-            self._activity.dialog_button.set_icon('dialog-ok')
+            self._activity.dialog_button.set_icon('go-next')
             self._activity.dialog_button.set_tooltip(
                 _('Click after taking your turn.'))
         self._set_label(_('It is your turn.'))
@@ -202,7 +202,8 @@ class Game():
                 self.hands[ROBOT_HAND].deal(self.deck)
             if self.hands[self._my_hand].cards_in_hand() == 0:
                 if self._running_sugar:
-                    self._activity.dialog_button.set_icon('dialog-cancel')
+                    self._activity.dialog_button.set_icon(
+                        'media-playback-stop-insensitive')
                     self._activity.dialog_button.set_tooltip(_('Game over'))
                 self._set_label(_('Game over'))
 
@@ -257,15 +258,14 @@ class Game():
             gobject.timeout_add(1000, self._robot_turn)
         elif not self.we_are_sharing():
             self.its_my_turn()
-        else:
+        elif self._initiating():
             self.whos_turn += 1
             if self.whos_turn == len(self.buddies):
                 self.whos_turn = 0
             else:
-                print "it's %s's turn" % (self.buddies[self.whos_turn])
                 self.its_their_turn(self.buddies[self.whos_turn])
                 self._activity.send_event('t|%s' % (
-                        self.buddies[self.whos_turn]))
+                    self.buddies[self.whos_turn]))
 
     def _robot_turn(self):
         self._robot_play()
@@ -278,7 +278,7 @@ class Game():
         if self._running_sugar:
             if not self.playing_with_robot:
                 self._activity.set_player_on_toolbar(nick)
-            self._activity.dialog_button.set_icon('dialog-cancel')
+            self._activity.dialog_button.set_icon('media-playback-stop')
             self._activity.dialog_button.set_tooltip(_('Wait your turn.'))
         self._set_label(_('Waiting for') + ' ' + nick)
         self._waiting_for_my_turn = True  # I am still waiting.
@@ -477,7 +477,7 @@ class Game():
                             pos=self.grid.grid_to_xy(order[i]))
                         return
         # Nowhere to play.
-        self._set_label(_('Nowhere to play. Game over'))
+        self._set_label(_('Nowhere to play.'))
 
     def _robot_play(self):
         ''' The robot tries random cards in random locations. '''
