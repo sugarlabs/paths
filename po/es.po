@@ -6,45 +6,73 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-09 18:44-0500\n"
-"PO-Revision-Date: 2011-03-17 21:26+0200\n"
-"Last-Translator: Rafael Ortiz <rafael@laptop.org>\n"
+"POT-Creation-Date: 2011-03-21 00:30-0400\n"
+"PO-Revision-Date: 2011-03-22 21:21+0200\n"
+"Last-Translator: Gustavo S <ibarrags@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Pootle 2.0.1\n"
 
-#: activity/activity.info:2 /home/walter/Desktop/Activities/paths/path.py:31
+#: activity/activity.info:2 path.py:31
 msgid "Paths"
 msgstr "Caminos"
 
-#: /home/walter/Desktop/Activities/paths/PathsActivity.py:139
+#: PathsActivity.py:164
 msgid "Game"
 msgstr "Juego"
 
-#: /home/walter/Desktop/Activities/paths/PathsActivity.py:151
+#: PathsActivity.py:170
 msgid "Start a new game."
 msgstr "Empieza juego nuevo."
 
-#: /home/walter/Desktop/Activities/paths/PathsActivity.py:155
+#: PathsActivity.py:174
 msgid "Play with the computer."
 msgstr "Juege con el computador"
 
-#: /home/walter/Desktop/Activities/paths/game.py:143
+#: PathsActivity.py:178
+msgid "Turn complete"
+msgstr "Turno completo"
+
+#: PathsActivity.py:181
 msgid "It is your turn."
 msgstr "Es su turno"
 
-#: /home/walter/Desktop/Activities/paths/game.py:234
+#: PathsActivity.py:377
+msgid "has joined."
+msgstr "Se a unido"
+
+#: PathsActivity.py:440
+msgid "take a turn."
+msgstr "Tomar un turno "
+
+#: game.py:197
+msgid "It is my turn."
+msgstr "Es su turno"
+
+#: game.py:216
+msgid "I took my turn."
+msgstr "Tome mi turno "
+
+#: game.py:225
+msgid "Waiting for "
+msgstr "Esperando a"
+
+#: game.py:248
+msgid "robot"
+msgstr "Robot"
+
+#: game.py:351
 msgid "Game over"
 msgstr "Juego teminado."
 
-#: /home/walter/Desktop/Activities/paths/game.py:287
+#: game.py:406
 msgid "Robot unable to play"
 msgstr "El robot no puede Jugar"
 
-#: /home/walter/Desktop/Activities/paths/path.py:32
+#: path.py:32
 msgid "Move tiles to make a path."
 msgstr "Mueva los bloques para hacer un sendero"
