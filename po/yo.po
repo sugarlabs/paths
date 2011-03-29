@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-09 18:44-0500\n"
+"POT-Creation-Date: 2011-03-28 00:30-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,34 +17,94 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Translate Toolkit 1.7.0\n"
 
-#: activity/activity.info:2 /home/walter/Desktop/Activities/paths/path.py:31
+#: activity/activity.info:2 game.py:179 path.py:30
 msgid "Paths"
 msgstr ""
 
-#: /home/walter/Desktop/Activities/paths/PathsActivity.py:139
+#: PathsActivity.py:174
 msgid "Game"
 msgstr ""
 
-#: /home/walter/Desktop/Activities/paths/PathsActivity.py:151
+#: PathsActivity.py:180
 msgid "Start a new game."
 msgstr ""
 
-#: /home/walter/Desktop/Activities/paths/PathsActivity.py:155
+#: PathsActivity.py:184
 msgid "Play with the computer."
 msgstr ""
 
-#: /home/walter/Desktop/Activities/paths/game.py:143
+#: PathsActivity.py:193
+msgid "Turn complete"
+msgstr ""
+
+#: PathsActivity.py:199
+msgid "Help"
+msgstr ""
+
+#: PathsActivity.py:202 game.py:177
+msgid "Score: "
+msgstr ""
+
+#: PathsActivity.py:344
+msgid "Start a new game once everyone has joined."
+msgstr ""
+
+#: PathsActivity.py:353
+msgid "Only the sharer can start a new game."
+msgstr ""
+
+#: PathsActivity.py:356
+msgid "The robot is disabled when sharing."
+msgstr ""
+
+#: PathsActivity.py:418
+msgid "has joined."
+msgstr ""
+
+#: PathsActivity.py:481
+msgid "take a turn."
+msgstr ""
+
+#: game.py:194
+msgid "Click after taking your turn."
+msgstr ""
+
+#: game.py:195
 msgid "It is your turn."
 msgstr ""
 
-#: /home/walter/Desktop/Activities/paths/game.py:234
+#: game.py:206 game.py:207 game.py:211 game.py:436
 msgid "Game over"
 msgstr ""
 
-#: /home/walter/Desktop/Activities/paths/game.py:287
+#: game.py:230
+msgid "There are errors—it is still your turn."
+msgstr ""
+
+#: game.py:252
+msgid "You took your turn."
+msgstr ""
+
+#: game.py:255
+msgid "robot"
+msgstr ""
+
+#: game.py:282
+msgid "Wait your turn."
+msgstr ""
+
+#: game.py:283
+msgid "Waiting for"
+msgstr ""
+
+#: game.py:480
+msgid "Nowhere to play. Game over"
+msgstr ""
+
+#: game.py:507
 msgid "Robot unable to play"
 msgstr ""
 
-#: /home/walter/Desktop/Activities/paths/path.py:32
+#: path.py:31
 msgid "Move tiles to make a path."
 msgstr ""

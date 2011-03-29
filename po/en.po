@@ -6,45 +6,73 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-09 18:44-0500\n"
-"PO-Revision-Date: 2011-03-11 08:57+0200\n"
+"POT-Creation-Date: 2011-03-21 00:30-0400\n"
+"PO-Revision-Date: 2011-03-22 18:17+0200\n"
 "Last-Translator: Chris <cjl@laptop.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language: en\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Pootle 2.0.1\n"
 
-#: activity/activity.info:2 /home/walter/Desktop/Activities/paths/path.py:31
+#: activity/activity.info:2 path.py:31
 msgid "Paths"
 msgstr "Paths"
 
-#: /home/walter/Desktop/Activities/paths/PathsActivity.py:139
+#: PathsActivity.py:164
 msgid "Game"
 msgstr "Game"
 
-#: /home/walter/Desktop/Activities/paths/PathsActivity.py:151
+#: PathsActivity.py:170
 msgid "Start a new game."
 msgstr "Start a new game."
 
-#: /home/walter/Desktop/Activities/paths/PathsActivity.py:155
+#: PathsActivity.py:174
 msgid "Play with the computer."
 msgstr "Play with the computer."
 
-#: /home/walter/Desktop/Activities/paths/game.py:143
+#: PathsActivity.py:178
+msgid "Turn complete"
+msgstr "Turn complete"
+
+#: PathsActivity.py:181
 msgid "It is your turn."
 msgstr "It is your turn."
 
-#: /home/walter/Desktop/Activities/paths/game.py:234
+#: PathsActivity.py:377
+msgid "has joined."
+msgstr "has joined."
+
+#: PathsActivity.py:440
+msgid "take a turn."
+msgstr "take a turn."
+
+#: game.py:197
+msgid "It is my turn."
+msgstr "It is my turn."
+
+#: game.py:216
+msgid "I took my turn."
+msgstr "I took my turn."
+
+#: game.py:225
+msgid "Waiting for "
+msgstr "Waiting for "
+
+#: game.py:248
+msgid "robot"
+msgstr "robot"
+
+#: game.py:351
 msgid "Game over"
 msgstr "Game over"
 
-#: /home/walter/Desktop/Activities/paths/game.py:287
+#: game.py:406
 msgid "Robot unable to play"
 msgstr "Robot unable to play"
 
-#: /home/walter/Desktop/Activities/paths/path.py:32
+#: path.py:32
 msgid "Move tiles to make a path."
 msgstr "Move tiles to make a path."
