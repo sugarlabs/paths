@@ -27,10 +27,10 @@ except ImportError:
 from grid import Grid
 from hand import Hand
 from deck import Deck
-from card import error_card, highlight_cards
+from tile import error_graphic, highlight_graphic
 from utils import json_dump
-from constants import ROW, COL, NORTH, EAST, SOUTH, WEST, CARD_WIDTH, \
-    CARD_HEIGHT, HIDE, BOARD, GRID, CARDS, TOP, OVER_THE_TOP
+from constants import ROW, COL, NORTH, EAST, SOUTH, WEST, TILE_WIDTH, \
+    TILE_HEIGHT, HIDE, BOARD, GRID, TILES, TOP, OVER_THE_TOP
 from sprites import Sprites
 
 OFFSETS = [-COL, 1, COL, -1]
@@ -65,23 +65,23 @@ class Game():
 
         self._width = gtk.gdk.screen_width()
         self._height = gtk.gdk.screen_height() - (GRID_CELL_SIZE * 1.5)
-        self._scale = self._height / (8.0 * CARD_HEIGHT)
-        self.card_width = CARD_WIDTH * self._scale
-        self.card_height = CARD_HEIGHT * self._scale
+        self._scale = self._height / (8.0 * TILE_HEIGHT)
+        self.tile_width = TILE_WIDTH * self._scale
+        self.tile_height = TILE_HEIGHT * self._scale
 
         # Generate the sprites we'll need...
         self._sprites = Sprites(self._canvas)
         self.grid = Grid(self._sprites, self._width, self._height,
-                         self.card_width, self.card_height, self._scale,
+                         self.tile_width, self.tile_height, self._scale,
                          colors[0])
         self.deck = Deck(self._sprites, self._scale, colors[1])
         self.deck.board.move((self.grid.left, self.grid.top))
         self.hands = []
-        self.hands.append(Hand(self.card_width, self.card_height))
+        self.hands.append(Hand(self.tile_width, self.tile_height))
         self._errormsg = []
         for i in range(4):
-            self._errormsg.append(error_card(self._sprites))
-        self._highlight = highlight_cards(self._sprites, self._scale)
+            self._errormsg.append(error_graphic(self._sprites))
+        self._highlight = highlight_graphic(self._sprites, self._scale)
 
         # and initialize a few variables we'll need.
         self.buddies = []
@@ -144,7 +144,7 @@ class Game():
             # ...deal a hand to the robot...
             if self.playing_with_robot:
                 if len(self.hands) < ROBOT_HAND + 1:
-                    self.hands.append(Hand(self.card_width, self.card_height,
+                    self.hands.append(Hand(self.tile_width, self.tile_height,
                                            remote=True))
                 self.hands[ROBOT_HAND].deal(self.deck)
             # ...or deal hands to the joiners.
@@ -152,7 +152,7 @@ class Game():
                 for i, buddy in enumerate(self.buddies):
                     if buddy != self._activity.nick:
                         self.hands.append(Hand(
-                            self.card_width, self.card_height, remote=True))
+                            self.tile_width, self.tile_height, remote=True))
                         self.hands[i].deal(self.deck)
                         self._activity.send_event('h|%s' % \
                             (self.hands[i].serialize(buddy=buddy)))
@@ -185,7 +185,7 @@ class Game():
         # and I am no longer waiting for my turn.
         self._waiting_for_my_turn = False
         # If I don't have any tiles left, time to redeal.
-        if self.hands[self._my_hand].cards_in_hand() == 0:
+        if self.hands[self._my_hand].tiles_in_hand() == 0:
             self._redeal()
         if self._running_sugar:
             self._activity.set_player_on_toolbar(self._activity.nick)
@@ -195,12 +195,12 @@ class Game():
         self._set_label(_('It is your turn.'))
 
     def _redeal(self):
-        # Only the sharer deals cards.
+        # Only the sharer deals tiles.
         if not self.we_are_sharing():
             self.hands[self._my_hand].deal(self.deck)
             if self.playing_with_robot:
                 self.hands[ROBOT_HAND].deal(self.deck)
-            if self.hands[self._my_hand].cards_in_hand() == 0:
+            if self.hands[self._my_hand].tiles_in_hand() == 0:
                 if self._running_sugar:
                     self._activity.dialog_button.set_icon(
                         'media-playback-stop-insensitive')
@@ -211,15 +211,15 @@ class Game():
             if self.deck.empty():
                 self._set_label(_('Game over'))
                 return
-            if self.deck.cards_remaining() < COL * len(self.buddies):
-                number_of_cards_to_deal = \
-                    int(self.deck.cards_remaining() / len(self.buddies))
-                if number_of_cards_to_deal == 0:
-                    number_of_cards_to_deal = 1  # Deal last card in deck.
+            if self.deck.tiles_remaining() < COL * len(self.buddies):
+                number_of_tiles_to_deal = \
+                    int(self.deck.tiles_remaining() / len(self.buddies))
+                if number_of_tiles_to_deal == 0:
+                    number_of_tiles_to_deal = 1  # Deal last tile in deck.
             else:
-                number_of_cards_to_deal = COL
+                number_of_tiles_to_deal = COL
             for i, nick in enumerate(self.buddies):
-                self.hands[i].deal(self.deck, number_of_cards_to_deal)
+                self.hands[i].deal(self.deck, number_of_tiles_to_deal)
                 # Send the joiners their new hands.
                 if nick != self._activity.nick:
                     self._activity.send_event('h|%s' % \
@@ -247,7 +247,7 @@ class Game():
         # I took my turn, so I am waiting again.
         self._waiting_for_my_turn = True
         if self.last_spr_moved is not None:
-            self.last_spr_moved.set_layer(CARDS)
+            self.last_spr_moved.set_layer(TILES)
             self.last_spr_moved = None
         self._hide_highlight()
         self._set_label(_('You took your turn.'))
@@ -359,29 +359,29 @@ class Game():
 
         if grid_pos is not None:  # Placing tile in grid
             if self.grid.grid[grid_pos] is None:
-                card = self.deck.spr_to_card(self._press)
-                card.spr.move(self.grid.grid_to_xy(grid_pos))
+                tile = self.deck.spr_to_tile(self._press)
+                tile.spr.move(self.grid.grid_to_xy(grid_pos))
                 i = self.grid.spr_to_grid(self._press)
                 if i is not None:
                     self.grid.grid[i] = None
 
-                self.grid.grid[grid_pos] = card
+                self.grid.grid[grid_pos] = tile
                 self.placed_a_tile = True
-                self._last_tile_played = card.number
+                self._last_tile_played = tile.number
                 self._last_grid_played = grid_pos
 
                 i = self.hands[self._my_hand].spr_to_hand(self._press)
                 if i is not None:
                     self.hands[self._my_hand].hand[i] = None
 
-                if self.last_spr_moved != card.spr:
-                    self.last_spr_moved = card.spr
+                if self.last_spr_moved != tile.spr:
+                    self.last_spr_moved = tile.spr
                 self._show_highlight()
         elif hand_pos is not None:  # Returning tile to hand
             i = self.hands[self._my_hand].find_empty_slot()
             if i is not None:
-                card = self.deck.spr_to_card(self._press)
-                card.spr.move(self.hands[self._my_hand].hand_to_xy(i))
+                tile = self.deck.spr_to_tile(self._press)
+                tile.spr.move(self.hands[self._my_hand].hand_to_xy(i))
                 if self.hands[self._my_hand].spr_to_hand(
                     self._press) is not None:
                     self.hands[self._my_hand].hand[
@@ -389,7 +389,7 @@ class Game():
                             self._press)] = None
                 elif self.grid.spr_to_grid(self._press) is not None:
                     self.grid.grid[self.grid.spr_to_grid(self._press)] = None
-                self.hands[self._my_hand].hand[i] = card
+                self.hands[self._my_hand].hand[i] = tile
                 if spr == self.last_spr_moved:
                     self.last_spr_moved = None
                 self._hide_errormsgs()
@@ -397,8 +397,8 @@ class Game():
             else:  # Or return tile to the grid
                 grid_pos = self.grid.spr_to_grid(self._press)
                 if grid_pos is not None:
-                    card = self.deck.spr_to_card(self._press)
-                    card.spr.move(self.grid.grid_to_xy(grid_pos))
+                    tile = self.deck.spr_to_tile(self._press)
+                    tile.spr.move(self.grid.grid_to_xy(grid_pos))
             self._hide_highlight()
             self._press = None
             self._release = None
@@ -407,18 +407,18 @@ class Game():
 
         self._release = spr
         if self._press == self._release and not self._it_is_a_drag():  # Rotate
-            card = self.deck.spr_to_card(spr)
-            card.rotate_clockwise()
-            self._last_tile_orientation = card.orientation
-            if self.last_spr_moved != card.spr:
-                self.last_spr_moved = card.spr
+            tile = self.deck.spr_to_tile(spr)
+            tile.rotate_clockwise()
+            self._last_tile_orientation = tile.orientation
+            if self.last_spr_moved != tile.spr:
+                self.last_spr_moved = tile.spr
             self._show_highlight()
 
         if hand_pos is None and x < self.grid.left:  # In limbo: return to grid
             grid_pos = self.grid.spr_to_grid(self._press)
             if grid_pos is not None:
-                card = self.deck.spr_to_card(self._press)
-                card.spr.move(self.grid.grid_to_xy(grid_pos))
+                tile = self.deck.spr_to_tile(self._press)
+                tile.spr.move(self.grid.grid_to_xy(grid_pos))
                 self._hide_highlight()
 
         self._test_for_bad_paths(self.grid.spr_to_grid(self._press))
@@ -429,7 +429,7 @@ class Game():
     def _it_is_a_drag(self):
         if self._total_drag[0] * self._total_drag[0] + \
            self._total_drag[1] * self._total_drag[1] > \
-           self.card_width * self.card_height:
+           self.tile_width * self.tile_height:
             return True
         return False
 
@@ -480,7 +480,7 @@ class Game():
         self._set_label(_('Nowhere to play.'))
 
     def _robot_play(self):
-        ''' The robot tries random cards in random locations. '''
+        ''' The robot tries random tiles in random locations. '''
         # TODO: strategy try to complete paths
         order = self.deck.random_order(ROW * COL)
         for i in range(ROW * COL):
@@ -491,7 +491,7 @@ class Game():
                         self.hands[ROBOT_HAND].hand[
                             self.hands[ROBOT_HAND].hand.index(tile)] = None
                         tile.spr.move(self.grid.grid_to_xy(order[i]))
-                        tile.spr.set_layer(CARDS)
+                        tile.spr.set_layer(TILES)
                         self._waiting_for_robot = False
                         return
 
@@ -617,16 +617,16 @@ class Game():
         self._hide_errormsgs()
         self._there_are_errors = False
         if tile is not None:
-            self._check_card(tile, [int(tile / COL), 0], NORTH,
+            self._check_tile(tile, [int(tile / COL), 0], NORTH,
                              tile + OFFSETS[0])
-            self._check_card(tile, [tile % ROW, ROW - 1], EAST,
+            self._check_tile(tile, [tile % ROW, ROW - 1], EAST,
                              tile + OFFSETS[1])
-            self._check_card(tile, [int(tile / COL), COL - 1], SOUTH,
+            self._check_tile(tile, [int(tile / COL), COL - 1], SOUTH,
                              tile + OFFSETS[2])
-            self._check_card(tile, [tile % ROW, 0], WEST, tile + OFFSETS[3])
+            self._check_tile(tile, [tile % ROW, 0], WEST, tile + OFFSETS[3])
 
-    def _check_card(self, i, edge_check, direction, neighbor):
-        ''' Can a card be placed at position i? '''
+    def _check_tile(self, i, edge_check, direction, neighbor):
+        ''' Can a tile be placed at position i? '''
         if edge_check[0] == edge_check[1]:
             for path in self.grid.grid[i].paths:
                 if path[direction] == 1:
@@ -651,8 +651,8 @@ class Game():
                     [-0.125, 0.375]]
             x, y = self._press.get_xy()
             self._errormsg[direction].move(
-                (x + dxdy[direction][0] * self.card_width,
-                 y + dxdy[direction][1] * self.card_height))
+                (x + dxdy[direction][0] * self.tile_width,
+                 y + dxdy[direction][1] * self.tile_height))
             self._errormsg[direction].set_layer(OVER_THE_TOP)
         self._there_are_errors = True
 
@@ -682,10 +682,10 @@ class Game():
             else:  # Giving a hint.
                 x, y = pos
             self._highlight[0].move((x, y))
-            self._highlight[1].move((x + 7 * self.card_width / 8, y))
-            self._highlight[2].move((x + 7 * self.card_width / 8,
-                                    y + 7 * self.card_height / 8))
-            self._highlight[3].move((x, y + 7 * self.card_height / 8))
+            self._highlight[1].move((x + 7 * self.tile_width / 8, y))
+            self._highlight[2].move((x + 7 * self.tile_width / 8,
+                                    y + 7 * self.tile_height / 8))
+            self._highlight[3].move((x, y + 7 * self.tile_height / 8))
             for i in range(4):
                 self._highlight[i].set_layer(OVER_THE_TOP)
 

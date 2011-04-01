@@ -13,15 +13,15 @@
 import gtk
 
 from deck import Deck
-from card import blank_card
+from tile import blank_tile
 from utils import json_dump, json_load
-from constants import ROW, COL, GRID, CARDS
+from constants import ROW, COL, GRID, TILES
 
 
 class Grid:
-    ''' Class for managing ROWxCOL matrix of cards '''
+    ''' Class for managing ROWxCOL matrix of tiles '''
 
-    def __init__(self, sprites, width, height, card_width, card_height, scale,
+    def __init__(self, sprites, width, height, tile_width, tile_height, scale,
                  color):
         # the playing surface
         self.grid = []
@@ -30,15 +30,15 @@ class Grid:
         for i in range(ROW * COL):
             self.grid.append(None)
 
-        # card spacing
-        self.left_hand = int(card_width / 2)
-        self.left = int((width - (card_width * COL)) / 2 + card_width)
-        self.xinc = int(card_width)
+        # tile spacing
+        self.left_hand = int(tile_width / 2)
+        self.left = int((width - (tile_width * COL)) / 2 + tile_width)
+        self.xinc = int(tile_width)
         self.top = 0
-        self.yinc = int(card_height)
+        self.yinc = int(tile_height)
 
         for i in range(ROW * COL):
-            self.blanks.append(blank_card(sprites, scale=scale, color=color))
+            self.blanks.append(blank_tile(sprites, scale=scale, color=color))
             self.blanks[i].move(self.grid_to_xy(i))
             self.blanks[i].set_layer(GRID)
 
@@ -46,8 +46,8 @@ class Grid:
         for i in range(ROW * COL):
             self.grid[i] = None
 
-    def cards_in_grid(self):
-        ''' How many cards are on the grid? '''
+    def tiles_in_grid(self):
+        ''' How many tiles are on the grid? '''
         return ROW * COL - self.grid.count(None)
 
     def serialize(self):
@@ -61,7 +61,7 @@ class Grid:
         return json_dump(grid)
 
     def restore(self, grid_as_text, deck):
-        ''' Restore cards to grid upon resume or share. '''
+        ''' Restore tiles to grid upon resume or share. '''
         self.hide()
         grid = json_load(grid_as_text)
         for i in range(ROW * COL):
@@ -69,25 +69,25 @@ class Grid:
                 self.grid[i] = None
             else:
                 for k in range(ROW * COL):
-                    if deck.cards[k].number == grid[i][0]:
-                        self.add_card_to_grid(k, grid[i][1], i, deck)
+                    if deck.tiles[k].number == grid[i][0]:
+                        self.add_tile_to_grid(k, grid[i][1], i, deck)
                         break
         self.show()
 
-    def add_card_to_grid(self, card_number, orientation, grid_number, deck):
-        ''' Add cards[card_number] to grid[grid_number] at orientation '''
-        self.grid[grid_number] = deck.cards[card_number]
+    def add_tile_to_grid(self, tile_number, orientation, grid_number, deck):
+        ''' Add tiles[tile_number] to grid[grid_number] at orientation '''
+        self.grid[grid_number] = deck.tiles[tile_number]
         self.grid[grid_number].spr.move(self.grid_to_xy(grid_number))
-        self.grid[grid_number].spr.set_layer(CARDS)
+        self.grid[grid_number].spr.set_layer(TILES)
         while orientation > 0:
             self.grid[grid_number].rotate_clockwise()
             orientation -= 90
 
-    def place_a_card(self, c, x, y):
-        ''' Place a card at position x,y and display it. '''
+    def place_a_tile(self, c, x, y):
+        ''' Place a tile at position x,y and display it. '''
         if c is not None:
             c.spr.move((x, y))
-            c.spr.set_layer(CARDS)
+            c.spr.set_layer(TILES)
 
     def xy_to_grid(self, x, y):
         ''' Convert from sprite x,y to grid index. '''
@@ -114,13 +114,13 @@ class Grid:
         return None
 
     def hide(self):
-        ''' Hide all of the cards on the grid. '''
+        ''' Hide all of the tiles on the grid. '''
         for i in range(ROW * COL):
             if self.grid[i] is not None:
                 self.grid[i].hide()
 
     def show(self):
-        ''' Restore all card on the grid to their x,y positions. '''
+        ''' Restore all tile on the grid to their x,y positions. '''
         for i in range(ROW * COL):
-            self.place_a_card(self.grid[i], self.grid_to_xy(i)[0],
+            self.place_a_tile(self.grid[i], self.grid_to_xy(i)[0],
                               self.grid_to_xy(i)[1])

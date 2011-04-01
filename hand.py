@@ -16,13 +16,13 @@ from utils import json_dump, json_load
 
 ROW = 8
 COL = 8
-CARDS = 3
+TILES = 3
 
 
 class Hand:
-    ''' Class for managing COL matrix of cards '''
+    ''' Class for managing COL matrix of tiles '''
 
-    def __init__(self, card_width, card_height, remote=False):
+    def __init__(self, tile_width, tile_height, remote=False):
         # The tiles in your hand
         self.hand = []
         self.remote = remote  # Does this hand belong to someone remote?
@@ -30,26 +30,26 @@ class Hand:
         for i in range(COL):
             self.hand.append(None)
 
-        # Card spacing
-        self.xinc = int(card_width)
+        # Tile spacing
+        self.xinc = int(tile_width)
         if self.remote:
             self.left = -self.xinc
         else:
-            self.left = int(card_width / 2)
+            self.left = int(tile_width / 2)
         self.top = 0
-        self.yinc = int(card_height)
+        self.yinc = int(tile_height)
 
     def clear(self):
         for i in range(COL):
             self.hand[i] = None
 
     def deal(self, deck, number=COL):
-        ''' Deal an initial set of cards to the hand '''
+        ''' Deal an initial set of tiles to the hand '''
         for i in range(number):
-            self.hand[i] = deck.deal_next_card()
+            self.hand[i] = deck.deal_next_tile()
             if self.hand[i] is not None:
                 self.hand[i].spr.move(self.hand_to_xy(i))
-                self.hand[i].spr.set_layer(CARDS)
+                self.hand[i].spr.set_layer(TILES)
         return True
 
     def find_empty_slot(self):
@@ -59,8 +59,8 @@ class Hand:
                 return i
         return None
 
-    def cards_in_hand(self):
-        ''' How many cards are in the hand? '''
+    def tiles_in_hand(self):
+        ''' How many tiles are in the hand? '''
         return COL - self.hand.count(None)
 
     def serialize(self, buddy=None):
@@ -77,22 +77,22 @@ class Hand:
         return json_dump(hand)
 
     def restore(self, hand_as_text, deck, buddy=False):
-        ''' Restore cards to hand upon resume or share. '''
+        ''' Restore tiles to hand upon resume or share. '''
         hand = json_load(hand_as_text)
         if buddy:
             offset = 1  # skip the buddy
         else:
             offset = 0
-        for card in range(COL):
-            i = card + offset
+        for tile in range(COL):
+            i = tile + offset
             if hand[i] is None:
                 self.hand[i] = None
             else:
                 for k in range(ROW * COL):
-                    if deck.cards[k].number == hand[i]:
-                        self.hand[card] = deck.cards[k]
-                        self.hand[card].spr.move(self.hand_to_xy(card))
-                        self.hand[card].spr.set_layer(CARDS)
+                    if deck.tiles[k].number == hand[i]:
+                        self.hand[tile] = deck.tiles[k]
+                        self.hand[tile].spr.move(self.hand_to_xy(tile))
+                        self.hand[tile].spr.set_layer(TILES)
                         break
 
     def xy_to_hand(self, x, y):

@@ -13,54 +13,54 @@
 import gtk
 from random import randrange
 
-from card import Card, board_card
+from tile import Tile, board_card
 from genpieces import generate_tile_1_line, generate_tile_2_lines
 from utils import json_dump, json_load
 from constants import HIDE, BOARD, ROW, COL
 
 
 class Deck:
-    ''' Class for defining deck of cards. '''
+    ''' Class for defining deck of tiles. '''
 
     def __init__(self, sprites, scale=1.0, color='#000000'):
-        ''' Create the deck of cards. '''
-        self.cards = []
+        ''' Create the deck of tiles. '''
+        self.tiles = []
         i = 0
         for a in range(16):
-            self.cards.append(Card(sprites,
+            self.tiles.append(Tile(sprites,
                 generate_tile_1_line(-1, 0, 0, 0, scale),
                 [generate_tile_1_line(-1, 0, 0, 0, scale, color)], number=i))
-            self.cards[-1].set_paths([[0, 0, 0, 1]])
+            self.tiles[-1].set_paths([[0, 0, 0, 1]])
             i += 1
         for a in range(4):
-            self.cards.append(Card(sprites,
+            self.tiles.append(Tile(sprites,
                 generate_tile_1_line(-1, 0, 1, 0, scale),
                 [generate_tile_1_line(-1, 0, 1, 0, scale, color)], number=i))
-            self.cards[-1].set_paths([[0, 1, 0, 1]])
+            self.tiles[-1].set_paths([[0, 1, 0, 1]])
             i += 1
         for a in range(12):
-            self.cards.append(Card(sprites,
+            self.tiles.append(Tile(sprites,
                 generate_tile_2_lines(-1, 0, 1, 0, 0, 0, 0, 1, scale),
                 [generate_tile_2_lines(-1, 0, 1, 0, 0, 0, 0, 1, scale,
                                         [color, color])], number=i))
-            self.cards[-1].set_paths([[0, 1, 1, 1]])
+            self.tiles[-1].set_paths([[0, 1, 1, 1]])
             i += 1
         for a in range(16):
-            self.cards.append(Card(sprites,
+            self.tiles.append(Tile(sprites,
                 generate_tile_2_lines(-1, 0, 0, 0, 0, -1, 0, 0, scale),
                 [generate_tile_2_lines(-1, 0, 0, 0, 0, -1, 0, 0, scale,
                                         [color, color])], number=i))
-            self.cards[-1].set_paths([[1, 0, 0, 1]])
+            self.tiles[-1].set_paths([[1, 0, 0, 1]])
             i += 1
         for a in range(4):
-            self.cards.append(Card(sprites,
+            self.tiles.append(Tile(sprites,
                 generate_tile_2_lines(-1, 0, 1, 0, 0, -1, 0, 1, scale),
                 [generate_tile_2_lines(-1, 0, 1, 0, 0, -1, 0, 1, scale,
                                         [color, color])], number=i))
-            self.cards[-1].set_paths([[1, 1, 1, 1]])
+            self.tiles[-1].set_paths([[1, 1, 1, 1]])
             i += 1
         for a in range(8):
-            self.cards.append(Card(sprites,
+            self.tiles.append(Tile(sprites,
                 generate_tile_2_lines(0, -1, 1, 0, -1, 0, 0, 1, scale),
                 [generate_tile_2_lines(0, -1, 1, 0, -1, 0, 0, 1, scale,
                                        [color, '#000000']),
@@ -68,10 +68,10 @@ class Deck:
                                        ['#000000', color]),
                  generate_tile_2_lines(0, -1, 1, 0, -1, 0, 0, 1, scale,
                                        [color, color])], number=i))
-            self.cards[-1].set_paths([[1, 1, 0, 0], [0, 0, 1, 1]])
+            self.tiles[-1].set_paths([[1, 1, 0, 0], [0, 0, 1, 1]])
             i += 1
         for a in range(4):
-            self.cards.append(Card(sprites,
+            self.tiles.append(Tile(sprites,
                 generate_tile_2_lines(0, -1, 1, 0, -1, 0, 0, 0, scale),
                 [generate_tile_2_lines(0, -1, 1, 0, -1, 0, 0, 0, scale,
                                        [color, '#000000']),
@@ -79,7 +79,7 @@ class Deck:
                                        ['#000000', color]),
                  generate_tile_2_lines(0, -1, 1, 0, -1, 0, 0, 0, scale,
                                        [color, color])], number=i))
-            self.cards[-1].set_paths([[1, 1, 0, 0], [0, 0, 0, 1]])
+            self.tiles[-1].set_paths([[1, 1, 0, 0], [0, 0, 0, 1]])
             i += 1
 
         # Remember the current position in the deck.
@@ -92,13 +92,13 @@ class Deck:
     def shuffle(self):
         ''' Shuffle the deck (Knuth algorithm). '''
         decksize = self.count()
-        # Hide all the cards and make sure they are back to orientation 0
-        for card in self.cards:
-            card.reset()
-        # Randomize the card order.
+        # Hide all the tiles and make sure they are back to orientation 0
+        for tile in self.tiles:
+            tile.reset()
+        # Randomize the tile order.
         for n in range(decksize):
             i = randrange(decksize - n)
-            self.swap_cards(n, decksize - 1 - i)
+            self.swap_tiles(n, decksize - 1 - i)
         # Reset the index to the beginning of the deck after a shuffle,
         self.index = 0
         self.hide()
@@ -120,7 +120,7 @@ class Deck:
         ''' Serialize the deck for passing to share and saving '''
         order = []
         for i in range(ROW * COL):
-            order.append(self.cards[i].number)
+            order.append(self.tiles[i].number)
         return json_dump(order)
 
     def restore(self, deck_as_text):
@@ -128,60 +128,60 @@ class Deck:
         deck = []
         order = json_load(deck_as_text)
         for i in order:
-            deck.append(self.cards[order[i]])
-        self.cards = deck[:]
+            deck.append(self.tiles[order[i]])
+        self.tiles = deck[:]
 
     def clear(self):
-        ''' Remove any highlight from the cards. '''
-        for card in self.cards:
-            card.reset()
+        ''' Remove any highlight from the tiles. '''
+        for tile in self.tiles:
+            tile.reset()
 
-    def swap_cards(self, i, j):
-        ''' Swap the position of two cards in the deck. '''
-        tmp = self.cards[j]
-        self.cards[j] = self.cards[i]
-        self.cards[i] = tmp
+    def swap_tiles(self, i, j):
+        ''' Swap the position of two tiles in the deck. '''
+        tmp = self.tiles[j]
+        self.tiles[j] = self.tiles[i]
+        self.tiles[i] = tmp
         return
 
-    def spr_to_card(self, spr):
-        ''' Given a sprite, find the corresponding card in the deck. '''
-        for card in self.cards:
-            if card.spr == spr:
-                return card
+    def spr_to_tile(self, spr):
+        ''' Given a sprite, find the corresponding tile in the deck. '''
+        for tile in self.tiles:
+            if tile.spr == spr:
+                return tile
         return None
 
-    def index_to_card(self, i):
-        ''' Given a card index, find the corresponding card in the deck. '''
-        for card in self.cards:
-            if card.index == i:
-                return card
+    def index_to_tile(self, i):
+        ''' Given a tile index, find the corresponding tile in the deck. '''
+        for tile in self.tiles:
+            if tile.index == i:
+                return tile
         return None
 
-    def deal_next_card(self):
-        ''' Return the next card from the deck. '''
+    def deal_next_tile(self):
+        ''' Return the next tile from the deck. '''
         if self.empty():
             return None
-        next_card = self.cards[self.index]
+        next_tile = self.tiles[self.index]
         self.index += 1
-        return next_card
+        return next_tile
 
     def empty(self):
         ''' Is the deck empty? '''
-        if self.cards_remaining() > 0:
+        if self.tiles_remaining() > 0:
             return False
         else:
             return True
 
-    def cards_remaining(self):
-        ''' Return how many cards are remaining in the deck. '''
+    def tiles_remaining(self):
+        ''' Return how many tiles are remaining in the deck. '''
         return(self.count() - self.index)
 
     def hide(self):
         ''' Hide the deck. '''
-        for card in self.cards:
-            if card is not None:
-                card.hide()
+        for tile in self.tiles:
+            if tile is not None:
+                tile.hide()
 
     def count(self):
         ''' Return the length of the deck. '''
-        return len(self.cards)
+        return len(self.tiles)

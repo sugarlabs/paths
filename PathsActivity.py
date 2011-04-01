@@ -43,7 +43,7 @@ from gettext import gettext as _
 import locale
 import os.path
 
-from game import Game, CARDS
+from game import Game, TILES
 from hand import Hand
 from genpieces import generate_xo
 from utils import json_load, json_dump, svg_str_to_pixbuf
@@ -181,7 +181,7 @@ class PathsActivity(activity.Activity):
             self.toolbar)
 
         self.robot_button = _button_factory(
-            'robot-off', _('Play with the computer.'), self._robot_cb,
+            'robot-off', _('Play with the robot.'), self._robot_cb,
             self.toolbar)
 
         self.player = _image_factory(
@@ -276,21 +276,21 @@ class PathsActivity(activity.Activity):
             if 'hand-' + str(i) in self.metadata:
                 if len(self._game.hands) < i + 1:  # Add robot or shared hand?
                     self._game.hands.append(
-                        Hand(self._game.card_width, self._game.card_height,
+                        Hand(self._game.tile_width, self._game.tile_height,
                              remote=True))
                 self._game.hands[i].restore(self.metadata['hand-' + str(i)],
                                             self._game.deck)
 
-        self._game.deck.index = ROW * COL - self._game.grid.cards_in_grid()
+        self._game.deck.index = ROW * COL - self._game.grid.tiles_in_grid()
         for h in self._game.hands:
-            self._game.deck.index += (COL - h.cards_in_hand())
+            self._game.deck.index += (COL - h.tiles_in_hand())
 
         self._game.last_spr_moved = None
         if 'last' in self.metadata:
             j = int(self.metadata['last'])
             for k in range(ROW * COL):
-                if self._game.deck.cards[k].number == j:
-                    self._game.last_spr_moved = self._game.deck.cards[k].spr
+                if self._game.deck.tiles[k].number == j:
+                    self._game.last_spr_moved = self._game.deck.tiles[k].spr
                     return
 
     # Collaboration-related methods
@@ -443,9 +443,9 @@ state=%d' % (id, initiator, type, service, params, state))
     def _sending_deck(self, payload):
         ''' Sharer sends the deck. '''
         self._game.deck.restore(payload)
-        for card in self._game.deck.cards:
-            card.reset()
-            card.hide()
+        for tile in self._game.deck.tiles:
+            tile.reset()
+            tile.hide()
 
     def _sending_hand(self, payload):
         ''' Sharer sends a hand. '''
@@ -459,10 +459,10 @@ state=%d' % (id, initiator, type, service, params, state))
         ''' When a piece is played, everyone should move it into position. '''
         tile_number, orientation, grid_position = json_load(payload)
         for i in range(ROW * COL):  # find the tile with this number
-            if self._game.deck.cards[i].number == tile_number:
+            if self._game.deck.tiles[i].number == tile_number:
                 tile_to_move = i
                 break
-        self._game.grid.add_card_to_grid(tile_to_move, orientation,
+        self._game.grid.add_tile_to_grid(tile_to_move, orientation,
                                          grid_position, self._game.deck)
         self._game.show_connected_tiles()
 
