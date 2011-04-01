@@ -359,43 +359,56 @@ class Game():
         hand_pos = self.hands[self._my_hand].xy_to_hand(x, y)
 
         # Placing tile in grid
-        if grid_pos is not None and self._it_is_a_drag():
+        if grid_pos is not None and self._it_is_a_drag() and \
+                self.grid.blanks[grid_pos].get_layer() > HIDE:
+
+            # Moving to an empty grid position
             if self.grid.grid[grid_pos] is None:
                 tile = self.deck.spr_to_tile(self._press)
                 tile.spr.move(self.grid.grid_to_xy(grid_pos))
+                # If the tile was previously in the grid, empty its old pos.
                 i = self.grid.spr_to_grid(self._press)
                 if i is not None:
                     self.grid.grid[i] = None
 
+                # Assign the tile to the new grid position.
                 self.grid.grid[grid_pos] = tile
                 self.placed_a_tile = True
                 self._last_tile_played = tile.number
                 self._last_grid_played = grid_pos
 
+                # If the tile came from the hand, empty its old position.
                 i = self.hands[self._my_hand].spr_to_hand(self._press)
                 if i is not None:
                     self.hands[self._my_hand].hand[i] = None
 
+                # Remember which tile moved.
                 if self.last_spr_moved != tile.spr:
                     self.last_spr_moved = tile.spr
 
                 self._show_highlight()
         # Returning tile to hand
         elif hand_pos is not None:
+            # Make sure there is somewhere to place the tile.
             i = self.hands[self._my_hand].find_empty_slot()
             if i is not None:
                 tile = self.deck.spr_to_tile(self._press)
                 tile.spr.move(self.hands[self._my_hand].hand_to_xy(i))
+                # Did the tile come from elsewhere in the hand?
                 if self.hands[self._my_hand].spr_to_hand(
                     self._press) is not None:
                     self.hands[self._my_hand].hand[
                         self.hands[self._my_hand].spr_to_hand(
                             self._press)] = None
+                # or from the grid?
                 elif self.grid.spr_to_grid(self._press) is not None:
                     self.grid.grid[self.grid.spr_to_grid(self._press)] = None
                 self.hands[self._my_hand].hand[i] = tile
+
+                # Remember which tile moved.
                 if spr == self.last_spr_moved:
                     self.last_spr_moved = None
+
                 self._hide_errormsgs()
                 self._there_are_errors = False
             else:  # Or return tile to the grid
@@ -403,6 +416,7 @@ class Game():
                 if grid_pos is not None:
                     tile = self.deck.spr_to_tile(self._press)
                     tile.spr.move(self.grid.grid_to_xy(grid_pos))
+
             self._hide_highlight()
             self._press = None
             self._release = None
@@ -413,13 +427,14 @@ class Game():
             tile = self.deck.spr_to_tile(spr)
             tile.rotate_clockwise()
             self._last_tile_orientation = tile.orientation
-            # Reset position if there was a short drag while rotating.
-            # tile.spr.move_relative((-self._total_drag[0], -self._total_drag[1]))
+
+            # Remember which tile moved.
             if self.last_spr_moved != tile.spr:
                 self.last_spr_moved = tile.spr
             self._show_highlight()
 
-        if hand_pos is None and x < self.grid.left:  # In limbo: return to grid
+        # In limbo: return to grid
+        if hand_pos is None and x < self.grid.left:
             grid_pos = self.grid.spr_to_grid(self._press)
             if grid_pos is not None:
                 tile = self.deck.spr_to_tile(self._press)
@@ -441,6 +456,8 @@ class Game():
                     self._move_highlight(self.grid.grid_to_xy(i))
 
     def _it_is_a_drag(self):
+        ''' The movement was large enough to be consider a drag as opposed
+        to a tile rotate. '''
         if self._total_drag[0] * self._total_drag[0] + \
            self._total_drag[1] * self._total_drag[1] > \
            self.tile_width * self.tile_height:
@@ -448,6 +465,7 @@ class Game():
         return False
 
     def _game_over(self, msg=_('Game over')):
+        ''' Nothing left to do except show the results. '''
         self._set_label(msg)
         if self._running_sugar:
             self._activity.robot_button.set_icon('robot-off')
