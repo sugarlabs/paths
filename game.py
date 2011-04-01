@@ -27,7 +27,7 @@ except ImportError:
 from grid import Grid
 from hand import Hand
 from deck import Deck
-from tile import error_graphic, highlight_graphic
+from tile import error_graphic, highlight_graphic, blank_tile
 from utils import json_dump
 from constants import ROW, COL, NORTH, EAST, SOUTH, WEST, TILE_WIDTH, \
     TILE_HEIGHT, HIDE, BOARD, GRID, TILES, TOP, OVER_THE_TOP
@@ -82,6 +82,11 @@ class Game():
         for i in range(4):
             self._errormsg.append(error_graphic(self._sprites))
         self._highlight = highlight_graphic(self._sprites, self._scale)
+        self._score_card = blank_tile(self._sprites, scale=self._scale * 2,
+                                      color=colors[1])
+        self._score_card.set_label_attributes(64)
+        self._score_card.move(((int(self._width / 2) - self.tile_width),
+                               int(self._height / 2) - self.tile_height))
 
         # and initialize a few variables we'll need.
         self.buddies = []
@@ -115,7 +120,10 @@ class Game():
         self.placed_a_tile = False
         self._there_are_errors = False
 
-        self.score = 0
+        self._score = 0
+        self._score_card.set_layer(HIDE)
+        self._score_card.move(((int(self._width / 2) - self.tile_width),
+                               int(self._height / 2) - self.tile_height))
 
     def _initiating(self):
         if not self._running_sugar:
@@ -174,10 +182,10 @@ class Game():
         ''' Set the label in the toolbar or the window frame. '''
         if self._running_sugar:
             self._activity.status.set_label(string)
-            self._activity.score.set_label(_('Score: ') + str(self.score))
+            self._activity.score.set_label(_('Score: ') + str(self._score))
         elif hasattr(self, 'win'):
             self.win.set_title('%s: %s [%d]' % (_('Paths'), string,
-                                                self.score))
+                                                self._score))
 
     def its_my_turn(self):
         # I need to play a piece...
@@ -205,11 +213,10 @@ class Game():
                     self._activity.dialog_button.set_icon(
                         'media-playback-stop-insensitive')
                     self._activity.dialog_button.set_tooltip(_('Game over'))
-                self._set_label(_('Game over'))
-
+                self._game_over()
         elif self._initiating():
             if self.deck.empty():
-                self._set_label(_('Game over'))
+                self._game_over()
                 return
             if self.deck.tiles_remaining() < COL * len(self.buddies):
                 number_of_tiles_to_deal = \
@@ -257,7 +264,11 @@ class Game():
             self._waiting_for_robot = True
             gobject.timeout_add(1000, self._robot_turn)
         elif not self.we_are_sharing():
-            self.its_my_turn()
+            if self.deck.empty() and \
+               self.hands[self._my_hand].tiles_in_hand() == 0:
+                self._game_over()
+            else:
+                self.its_my_turn()
         elif self._initiating():
             self.whos_turn += 1
             if self.whos_turn == len(self.buddies):
@@ -390,16 +401,15 @@ class Game():
         # Returning tile to hand
         elif hand_pos is not None:
             # Make sure there is somewhere to place the tile.
-            i = self.hands[self._my_hand].find_empty_slot()
-            if i is not None:
+            empty = self.hands[self._my_hand].find_empty_slot()
+            if empty is not None:
                 tile = self.deck.spr_to_tile(self._press)
-                tile.spr.move(self.hands[self._my_hand].hand_to_xy(i))
+                tile.spr.move(self.hands[self._my_hand].hand_to_xy(empty))
                 # Did the tile come from elsewhere in the hand?
                 if self.hands[self._my_hand].spr_to_hand(
                     self._press) is not None:
-                    self.hands[self._my_hand].hand[
-                        self.hands[self._my_hand].spr_to_hand(
-                            self._press)] = None
+                    self.hands[self._my_hand].hand[self.hands[
+                            self._my_hand].spr_to_hand(self._press)] = None
                 # or from the grid?
                 elif self.grid.spr_to_grid(self._press) is not None:
                     self.grid.grid[self.grid.spr_to_grid(self._press)] = None
@@ -464,11 +474,33 @@ class Game():
             return True
         return False
 
+    def _shuffle_up(self, hand):
+        ''' Shuffle all the tiles in a hand to the top. '''
+        for i, tile in enumerate(self.hands[hand].hand):
+            if tile is None:
+                continue
+            empty = self.hands[self._my_hand].find_empty_slot()
+            if empty is not None:
+                tile.spr.move(self.hands[hand].hand_to_xy(empty))
+                self.hands[hand].hand[empty] = tile
+                self.hands[hand].hand[i] = None
+
     def _game_over(self, msg=_('Game over')):
         ''' Nothing left to do except show the results. '''
         self._set_label(msg)
+        if self.hands[self._my_hand].tiles_in_hand() == 0:
+            self._score += 50  # Bonus points
+        else:
+            for tile in self.hands[self._my_hand].hand:
+                if tile is not None:
+                    self._score -= 2 * tile.get_value()  # Penalty
+            self._shuffle_up(self._my_hand)
         if self._running_sugar:
-            self._activity.robot_button.set_icon('robot-off')
+            self._activity.score.set_label(_('Score: ') + str(self._score))
+        self._score_card.set_label(str(self._score))
+        self._score_card.set_layer(OVER_THE_TOP)
+        self._score_card.move((int(self.tile_width / 2),
+                               int(self._height / 2) + 2 * self.tile_height))
 
     def show_connected_tiles(self):
         ''' Highlight the squares that surround the tiles already on the grid.
@@ -500,7 +532,6 @@ class Game():
         if tile % ROW > 0 and self.grid.grid[tile + OFFSETS[3]] is not None:
             return True
         return False
-            
 
     def give_a_hint(self):
         ''' Try to find an open place on the grid for any tile in my_hand. '''
@@ -515,7 +546,7 @@ class Game():
                             pos=self.grid.grid_to_xy(order[i]))
                         return
         # Nowhere to play.
-        self._set_label(_('Nowhere to play.'))
+        self._game_over(_('Nowhere to play.'))
 
     def _robot_play(self):
         ''' The robot tries random tiles in random locations. '''
@@ -537,6 +568,7 @@ class Game():
         if self._running_sugar:
             self._activity.set_robot_status(False, 'robot-off')
         # At the end of the game, show any tiles remaining in the robot's hand.
+        self._shuffle_up(ROBOT_HAND)
         for i in range(COL):
             if self.hands[ROBOT_HAND].hand[i] is not None:
                 x, y = self.hands[ROBOT_HAND].hand_to_xy(i)
@@ -584,7 +616,7 @@ class Game():
             if not break_in_path[p] and len(self._paths[p]) > 0:
                 for i in self._paths[p]:
                     self.grid.grid[i[0]].set_shape(i[1])
-                    self.score += self.grid.grid[i[0]].get_value()
+                    self._score += self.grid.grid[i[0]].get_value()
 
     def _tile_to_test(self, test_path):
         ''' Find a tile that needs testing. '''
