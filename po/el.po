@@ -7,10 +7,10 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-03-21 00:30-0400\n"
-"PO-Revision-Date: 2011-03-22 18:08+0200\n"
-"Last-Translator: Chris <cjl@laptop.org>\n"
+"PO-Revision-Date: 2011-03-28 20:21+0200\n"
+"Last-Translator: Yannis <kiolalis@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: en_US\n"
+"Language: el\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,60 +19,61 @@ msgstr ""
 
 #: activity/activity.info:2 path.py:31
 msgid "Paths"
-msgstr "Paths"
+msgstr "Μονοπάτια"
 
 #: PathsActivity.py:164
 msgid "Game"
-msgstr "Game"
+msgstr "Παιχνίδι"
 
 #: PathsActivity.py:170
 msgid "Start a new game."
-msgstr "Start a new game."
+msgstr "Έναρξη νέου παιχνιδιού"
 
 #: PathsActivity.py:174
 msgid "Play with the computer."
-msgstr "Play with the computer."
+msgstr "Παίξε με αντίπαλο τον υπολογιστή"
 
 #: PathsActivity.py:178
 msgid "Turn complete"
-msgstr "Turn complete"
+msgstr ""
 
 #: PathsActivity.py:181
 msgid "It is your turn."
-msgstr "It is your turn."
+msgstr "Είναι η σειρά σου"
 
 #: PathsActivity.py:377
 msgid "has joined."
-msgstr "has joined."
+msgstr "έχει ενωθεί."
 
 #: PathsActivity.py:440
 msgid "take a turn."
-msgstr "take a turn."
+msgstr ""
 
 #: game.py:197
+#, fuzzy
 msgid "It is my turn."
-msgstr "It is my turn."
+msgstr "Είναι η σειρά σου"
 
 #: game.py:216
 msgid "I took my turn."
-msgstr "I took my turn."
+msgstr ""
 
 #: game.py:225
 msgid "Waiting for "
-msgstr "Waiting for "
+msgstr ""
 
 #: game.py:248
 msgid "robot"
-msgstr "robot"
+msgstr ""
 
 #: game.py:351
 msgid "Game over"
-msgstr "Game over"
+msgstr "Τέλος παιχνιδιού"
 
 #: game.py:406
 msgid "Robot unable to play"
-msgstr "Robot unable to play"
+msgstr "Το ρομπότ δεν είναι σε θέση να παίξει"
 
 #: path.py:32
 msgid "Move tiles to make a path."
-msgstr "Move tiles to make a path."
+msgstr "Μετακίνησε τις πλάκες για να δημιουργήσεις ένα μονοπάτι."

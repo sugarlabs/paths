@@ -7,10 +7,10 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-03-21 00:30-0400\n"
-"PO-Revision-Date: 2011-03-22 18:08+0200\n"
+"PO-Revision-Date: 2011-03-12 03:33+0200\n"
 "Last-Translator: Chris <cjl@laptop.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: en_US\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -35,7 +35,7 @@ msgstr "Play with the computer."
 
 #: PathsActivity.py:178
 msgid "Turn complete"
-msgstr "Turn complete"
+msgstr ""
 
 #: PathsActivity.py:181
 msgid "It is your turn."
@@ -43,27 +43,28 @@ msgstr "It is your turn."
 
 #: PathsActivity.py:377
 msgid "has joined."
-msgstr "has joined."
+msgstr ""
 
 #: PathsActivity.py:440
 msgid "take a turn."
-msgstr "take a turn."
+msgstr ""
 
 #: game.py:197
+#, fuzzy
 msgid "It is my turn."
-msgstr "It is my turn."
+msgstr "It is your turn."
 
 #: game.py:216
 msgid "I took my turn."
-msgstr "I took my turn."
+msgstr ""
 
 #: game.py:225
 msgid "Waiting for "
-msgstr "Waiting for "
+msgstr ""
 
 #: game.py:248
 msgid "robot"
-msgstr "robot"
+msgstr ""
 
 #: game.py:351
 msgid "Game over"
