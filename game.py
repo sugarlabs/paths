@@ -13,7 +13,6 @@
 
 import gtk
 import gobject
-from gettext import gettext as _
 
 import logging
 _logger = logging.getLogger('paths-activity')
@@ -413,7 +412,7 @@ class Game():
                 # or from the grid?
                 elif self.grid.spr_to_grid(self._press) is not None:
                     self.grid.grid[self.grid.spr_to_grid(self._press)] = None
-                self.hands[self._my_hand].hand[i] = tile
+                self.hands[self._my_hand].hand[empty] = tile
 
                 # Remember which tile moved.
                 if spr == self.last_spr_moved:
@@ -477,10 +476,8 @@ class Game():
     def _shuffle_up(self, hand):
         ''' Shuffle all the tiles in a hand to the top. '''
         for i, tile in enumerate(self.hands[hand].hand):
-            if tile is None:
-                continue
-            empty = self.hands[self._my_hand].find_empty_slot()
-            if empty is not None:
+            empty = self.hands[hand].find_empty_slot()
+            if i > 0 and tile is not None and empty is not None:
                 tile.spr.move(self.hands[hand].hand_to_xy(empty))
                 self.hands[hand].hand[empty] = tile
                 self.hands[hand].hand[i] = None
@@ -501,6 +498,15 @@ class Game():
         self._score_card.set_layer(OVER_THE_TOP)
         self._score_card.move((int(self.tile_width / 2),
                                int(self._height / 2) + 2 * self.tile_height))
+        if self.playing_with_robot:
+            self._shuffle_up(ROBOT_HAND)
+            for tile in range(COL):
+                if self.hands[ROBOT_HAND].hand[tile] is not None:
+                    x, y = self.hands[ROBOT_HAND].hand_to_xy(tile)
+                    self.hands[ROBOT_HAND].hand[tile].spr.move(
+                        (self.grid.left_hand + self.grid.xinc, y))
+            if self._running_sugar:
+                self._activity.set_robot_status(False, 'robot-off')
 
     def show_connected_tiles(self):
         ''' Highlight the squares that surround the tiles already on the grid.
@@ -565,15 +571,6 @@ class Game():
                         return
 
         # If we didn't return above, we were unable to play a tile.
-        if self._running_sugar:
-            self._activity.set_robot_status(False, 'robot-off')
-        # At the end of the game, show any tiles remaining in the robot's hand.
-        self._shuffle_up(ROBOT_HAND)
-        for i in range(COL):
-            if self.hands[ROBOT_HAND].hand[i] is not None:
-                x, y = self.hands[ROBOT_HAND].hand_to_xy(i)
-                self.hands[ROBOT_HAND].hand[i].spr.move(
-                    (self.grid.left_hand + self.grid.xinc, y))
         self._game_over(_('Robot unable to play'))
 
     def _try_placement(self, tile, i):
