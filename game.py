@@ -336,7 +336,7 @@ class Game():
         dx = x - self._dragpos[0]
         dy = y - self._dragpos[1]
         spr.move_relative([dx, dy])
-        self._move_highlight([dx, dy])
+        self._move_relative_highlight([dx, dy])
         self._dragpos = [x, y]
         self._total_drag[0] += dx
         self._total_drag[1] += dy
@@ -354,10 +354,12 @@ class Game():
 
         x, y = map(int, event.get_coords())
         spr = self._sprites.find_sprite((x, y))
+        self._release = spr
         grid_pos = self.grid.xy_to_grid(x, y)
         hand_pos = self.hands[self._my_hand].xy_to_hand(x, y)
 
-        if grid_pos is not None:  # Placing tile in grid
+        # Placing tile in grid
+        if grid_pos is not None and self._it_is_a_drag():
             if self.grid.grid[grid_pos] is None:
                 tile = self.deck.spr_to_tile(self._press)
                 tile.spr.move(self.grid.grid_to_xy(grid_pos))
@@ -376,8 +378,10 @@ class Game():
 
                 if self.last_spr_moved != tile.spr:
                     self.last_spr_moved = tile.spr
+
                 self._show_highlight()
-        elif hand_pos is not None:  # Returning tile to hand
+        # Returning tile to hand
+        elif hand_pos is not None:
             i = self.hands[self._my_hand].find_empty_slot()
             if i is not None:
                 tile = self.deck.spr_to_tile(self._press)
@@ -404,12 +408,13 @@ class Game():
             self._release = None
             self.placed_a_tile = False
             return True
-
-        self._release = spr
-        if self._press == self._release and not self._it_is_a_drag():  # Rotate
+        # Rotate
+        elif self._press == self._release and not self._it_is_a_drag():
             tile = self.deck.spr_to_tile(spr)
             tile.rotate_clockwise()
             self._last_tile_orientation = tile.orientation
+            # Reset position if there was a short drag while rotating.
+            # tile.spr.move_relative((-self._total_drag[0], -self._total_drag[1]))
             if self.last_spr_moved != tile.spr:
                 self.last_spr_moved = tile.spr
             self._show_highlight()
@@ -421,10 +426,19 @@ class Game():
                 tile.spr.move(self.grid.grid_to_xy(grid_pos))
                 self._hide_highlight()
 
+        self._snap_to_grid(self._release)
         self._test_for_bad_paths(self.grid.spr_to_grid(self._press))
         self._press = None
         self._release = None
         return True
+
+    def _snap_to_grid(self, spr):
+        ''' make sure a tile is aligned in its grid position '''
+        for i in range(COL * ROW):
+            if self.grid.grid[i] is not None:
+                self.grid.grid[i].spr.move(self.grid.grid_to_xy(i))
+                if self.grid.grid[i].spr == spr:
+                    self._move_highlight(self.grid.grid_to_xy(i))
 
     def _it_is_a_drag(self):
         if self._total_drag[0] * self._total_drag[0] + \
@@ -668,9 +682,17 @@ class Game():
             self._highlight[i].move((self.grid.left, self.grid.top))
             self._highlight[i].set_layer(HIDE)
 
-    def _move_highlight(self, pos):
+    def _move_relative_highlight(self, pos):
             for i in range(4):
                 self._highlight[i].move_relative(pos)
+
+    def _move_highlight(self, pos):
+        x, y = pos
+        self._highlight[0].move((x, y))
+        self._highlight[1].move((x + 7 * self.tile_width / 8, y))
+        self._highlight[2].move((x + 7 * self.tile_width / 8,
+                                 y + 7 * self.tile_height / 8))
+        self._highlight[3].move((x, y + 7 * self.tile_height / 8))
 
     def _show_highlight(self, pos=None):
         ''' Highlight the tile that is selected. '''
@@ -681,11 +703,7 @@ class Game():
                 x, y = self.last_spr_moved.get_xy()
             else:  # Giving a hint.
                 x, y = pos
-            self._highlight[0].move((x, y))
-            self._highlight[1].move((x + 7 * self.tile_width / 8, y))
-            self._highlight[2].move((x + 7 * self.tile_width / 8,
-                                    y + 7 * self.tile_height / 8))
-            self._highlight[3].move((x, y + 7 * self.tile_height / 8))
+            self._move_highlight((x, y))
             for i in range(4):
                 self._highlight[i].set_layer(OVER_THE_TOP)
 
