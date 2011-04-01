@@ -39,7 +39,7 @@ from dbus.gobject_service import ExportedGObject
 from sugar.presence import presenceservice
 from sugar.presence.tubeconn import TubeConnection
 
-from gettext import gettext as _
+import gettextutil
 import locale
 import os.path
 
@@ -137,21 +137,15 @@ class PathsActivity(activity.Activity):
         self._setup_presence_service()
 
         # Restore game state from Journal or start new game
-        # TODO: Sort out restore issues for sharer;
-        #       Sort out init issues for joiner.
         if 'deck' in self.metadata:
             self._restore()
-        elif not hasattr(self, 'initiating'):
-            self._game.new_game()
-        elif not self.initiating:
-            self._game.new_game()
-        elif len(self._game.buddies) == 1:
+        else:
             self._game.new_game()
 
     def _setup_toolbars(self, have_toolbox):
         """ Setup the toolbars. """
 
-        self.max_participants = 4
+        self.max_participants = MAX_HANDS
 
         if have_toolbox:
             toolbox = ToolbarBox()
@@ -241,6 +235,11 @@ class PathsActivity(activity.Activity):
         """ Write the grid status to the Journal """
         if not hasattr(self, '_game'):
             return
+        for i in range(MAX_HANDS):
+            if 'hand-' + str(i) in self.metadata:
+                del self.metadata['hand-' + str(i)]
+        if 'robot' in self.metadata:
+            del self.metadata['robot']
         self.metadata['deck'] = self._game.deck.serialize()
         self.metadata['grid'] = self._game.grid.serialize()
         if self._game.we_are_sharing():
@@ -251,12 +250,9 @@ class PathsActivity(activity.Activity):
             if self._game.playing_with_robot:
                 self.metadata['hand-1'] = self._game.hands[1].serialize()
                 self.metadata['robot'] = 'True'
-            else:
-                if 'hand-1' in self.metadata:
-                    del self.metadata['hand-1']
-                if 'robot' in self.metadata:
-                    del self.metadata['robot']
 
+        self.metadata['score'] = str(self._game.score)
+        self.metadata['index'] = str(self._game.deck.index)
         if self._game.last_spr_moved is not None and \
            self._game.grid.spr_to_grid(self._game.last_spr_moved) is not None:
             self.metadata['last'] = str(self._game.grid.grid[
@@ -274,16 +270,25 @@ class PathsActivity(activity.Activity):
 
         for i in range(MAX_HANDS):
             if 'hand-' + str(i) in self.metadata:
-                if len(self._game.hands) < i + 1:  # Add robot or shared hand?
+                # hand-0 is already appended
+                if i > 0:  # Add robot or shared hand?
                     self._game.hands.append(
                         Hand(self._game.tile_width, self._game.tile_height,
                              remote=True))
                 self._game.hands[i].restore(self.metadata['hand-' + str(i)],
                                             self._game.deck)
 
-        self._game.deck.index = ROW * COL - self._game.grid.tiles_in_grid()
-        for h in self._game.hands:
-            self._game.deck.index += (COL - h.tiles_in_hand())
+        if 'index' in self.metadata:
+            print 'deck index', self.metadata['index']
+            self._game.deck.index = int(self.metadata['index'])
+        else:
+            self._game.deck.index = ROW * COL - self._game.grid.tiles_in_grid()
+            for hand in self._game.hands:
+                self._game.deck.index += (COL - hand.tiles_in_hand())
+
+        if 'score' in self.metadata:
+            self._game.score = int(self.metadata['score'])
+            self.score.set_label(_('Score: ') + str(self._game.score))
 
         self._game.last_spr_moved = None
         if 'last' in self.metadata:
@@ -291,7 +296,7 @@ class PathsActivity(activity.Activity):
             for k in range(ROW * COL):
                 if self._game.deck.tiles[k].number == j:
                     self._game.last_spr_moved = self._game.deck.tiles[k].spr
-                    return
+                    break
 
     # Collaboration-related methods
 
@@ -398,7 +403,8 @@ state=%d' % (id, initiator, type, service, params, state))
             'd': [self._sending_deck, 'sending deck'],
             'h': [self._sending_hand, 'sending hand'],
             'p': [self._play_a_piece, 'play a piece'],
-            't': [self._take_a_turn, 'take a turn']
+            't': [self._take_a_turn, 'take a turn'],
+            'g': [self._game_over, 'game over']
             }
 
     def event_received_cb(self, event_message):
@@ -439,6 +445,10 @@ state=%d' % (id, initiator, type, service, params, state))
         ''' Sharer can start a new game. '''
         if not self.initiating:
             self._game.new_game()
+
+    def _game_over(self, payload):
+        ''' Someone cannot plce a tile. '''
+        self._game.game_over()
 
     def _sending_deck(self, payload):
         ''' Sharer sends the deck. '''

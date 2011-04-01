@@ -132,8 +132,12 @@ class Deck:
         deck = []
         order = json_load(deck_as_text)
         for i in order:
-            deck.append(self.tiles[order[i]])
+            # deck.append(self.tiles[order[i]])
+            deck.append(self.tiles[i])
         self.tiles = deck[:]
+        print 'restoring deck'
+        for i in range(COL * ROW):
+            print self.tiles[i].number
 
     def clear(self):
         ''' Remove any highlight from the tiles. '''

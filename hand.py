@@ -79,6 +79,7 @@ class Hand:
     def restore(self, hand_as_text, deck, buddy=False):
         ''' Restore tiles to hand upon resume or share. '''
         hand = json_load(hand_as_text)
+        print 'restoring hand'
         if buddy:
             offset = 1  # skip the buddy
         else:
@@ -90,6 +91,7 @@ class Hand:
             else:
                 for k in range(ROW * COL):
                     if deck.tiles[k].number == hand[i]:
+                        print k, '-->', tile
                         self.hand[tile] = deck.tiles[k]
                         self.hand[tile].spr.move(self.hand_to_xy(tile))
                         self.hand[tile].spr.set_layer(TILES)
