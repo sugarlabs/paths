@@ -51,6 +51,7 @@ class Deck:
                 [generate_tile_2_lines(-1, 0, 0, 0, 0, -1, 0, 0, scale,
                                         [color, color])], number=i))
             self.tiles[-1].set_paths([[1, 0, 0, 1]])
+            self.tiles[-1].set_value(2)
             i += 1
         for a in range(4):
             self.tiles.append(Tile(sprites,
@@ -58,6 +59,7 @@ class Deck:
                 [generate_tile_2_lines(-1, 0, 1, 0, 0, -1, 0, 1, scale,
                                         [color, color])], number=i))
             self.tiles[-1].set_paths([[1, 1, 1, 1]])
+            self.tiles[-1].set_value(4)
             i += 1
         for a in range(8):
             self.tiles.append(Tile(sprites,
@@ -69,6 +71,7 @@ class Deck:
                  generate_tile_2_lines(0, -1, 1, 0, -1, 0, 0, 1, scale,
                                        [color, color])], number=i))
             self.tiles[-1].set_paths([[1, 1, 0, 0], [0, 0, 1, 1]])
+            self.tiles[-1].set_value(4)
             i += 1
         for a in range(4):
             self.tiles.append(Tile(sprites,
@@ -80,6 +83,7 @@ class Deck:
                  generate_tile_2_lines(0, -1, 1, 0, -1, 0, 0, 0, scale,
                                        [color, color])], number=i))
             self.tiles[-1].set_paths([[1, 1, 0, 0], [0, 0, 0, 1]])
+            self.tiles[-1].set_value(3)
             i += 1
 
         # Remember the current position in the deck.

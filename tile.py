@@ -28,9 +28,16 @@ class Tile:
         self.orientation = 0
         self.type = tile_type
         self.number = number
+        self.value = 1
         self.spr.set_label_color('#FF0000')
         # self.spr.set_label_attributes(32)
         # self.spr.set_label(str(number))
+
+    def set_value(self, value):
+        self.value = value
+
+    def get_value(self):
+        return self.value
 
     def set_paths(self, paths):
         for c in paths:

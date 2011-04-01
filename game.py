@@ -546,7 +546,7 @@ class Game():
             if not break_in_path[p] and len(self._paths[p]) > 0:
                 for i in self._paths[p]:
                     self.grid.grid[i[0]].set_shape(i[1])
-                self.score += len(self._paths[p])
+                    self.score += self.grid.grid[i[0]].get_value()
 
     def _tile_to_test(self, test_path):
         ''' Find a tile that needs testing. '''
