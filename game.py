@@ -485,16 +485,22 @@ class Game():
             return True
         if self.grid.grid[tile] is not None:  # already has a tile
             return False
-        if tile > COL and self.grid.grid[tile + OFFSETS[0]] is not None:
+        # Looking north
+        if tile >= COL and self.grid.grid[tile + OFFSETS[0]] is not None:
             return True
+        # Looking east
         if tile % ROW < ROW - 1 and \
            self.grid.grid[tile + OFFSETS[1]] is not None:
             return True
+        # Looking south
         if tile < (ROW - 1) * COL and \
            self.grid.grid[tile + OFFSETS[2]] is not None:
             return True
+        # Looking west
         if tile % ROW > 0 and self.grid.grid[tile + OFFSETS[3]] is not None:
             return True
+        return False
+            
 
     def give_a_hint(self):
         ''' Try to find an open place on the grid for any tile in my_hand. '''
