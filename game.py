@@ -14,6 +14,8 @@
 import gtk
 import gobject
 
+from gettext import gettext as _
+
 import logging
 _logger = logging.getLogger('paths-activity')
 
@@ -123,6 +125,7 @@ class Game():
         self._score_card.set_layer(HIDE)
         self._score_card.move(((int(self._width / 2) - self.tile_width),
                                int(self._height / 2) - self.tile_height))
+        self.saw_game_over = False
 
     def _initiating(self):
         if not self._running_sugar:
@@ -485,6 +488,7 @@ class Game():
     def game_over(self, msg=_('Game over')):
         ''' Nothing left to do except show the results. '''
         self._set_label(msg)
+        self.saw_game_over = True
         if self.hands[self._my_hand].tiles_in_hand() == 0:
             self.score += 50  # Bonus points
         else:

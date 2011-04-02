@@ -64,14 +64,12 @@ class Grid:
         ''' Restore tiles to grid upon resume or share. '''
         self.hide()
         grid = json_load(grid_as_text)
-        print 'restoring grid'
         for i in range(ROW * COL):
             if grid[i][0] is None:
                 self.grid[i] = None
             else:
                 for k in range(ROW * COL):
                     if deck.tiles[k].number == grid[i][0]:
-                        print k, '-->', i
                         self.add_tile_to_grid(k, grid[i][1], i, deck)
                         break
         self.show()

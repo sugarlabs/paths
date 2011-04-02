@@ -39,7 +39,7 @@ from dbus.gobject_service import ExportedGObject
 from sugar.presence import presenceservice
 from sugar.presence.tubeconn import TubeConnection
 
-import gettextutil
+from gettext import gettext as _
 import locale
 import os.path
 
@@ -279,7 +279,6 @@ class PathsActivity(activity.Activity):
                                             self._game.deck)
 
         if 'index' in self.metadata:
-            print 'deck index', self.metadata['index']
             self._game.deck.index = int(self.metadata['index'])
         else:
             self._game.deck.index = ROW * COL - self._game.grid.tiles_in_grid()
@@ -448,7 +447,8 @@ state=%d' % (id, initiator, type, service, params, state))
 
     def _game_over(self, payload):
         ''' Someone cannot plce a tile. '''
-        self._game.game_over()
+        if not self._game.saw_game_over:
+            self._game.game_over()
 
     def _sending_deck(self, payload):
         ''' Sharer sends the deck. '''

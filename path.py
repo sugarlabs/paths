@@ -14,7 +14,7 @@
 
 import gtk
 
-import gettextutil
+from gettext import gettext as _
 import os
 
 from game import Game
