@@ -1,5 +1,11 @@
 NEWS
 
+8
+
+* es, it translations
+* scoring based on tile complexity
+* fixed some regression in tile placement due to 'drag' animation
+
 7
 
 * fixed regression in robot play
