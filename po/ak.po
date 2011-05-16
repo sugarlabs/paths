@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-28 00:30-0400\n"
+"POT-Creation-Date: 2011-04-01 00:30-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,7 +29,7 @@ msgid "Start a new game."
 msgstr ""
 
 #: PathsActivity.py:184
-msgid "Play with the computer."
+msgid "Play with the robot."
 msgstr ""
 
 #: PathsActivity.py:193
@@ -60,7 +60,7 @@ msgstr ""
 msgid "has joined."
 msgstr ""
 
-#: PathsActivity.py:481
+#: PathsActivity.py:483
 msgid "take a turn."
 msgstr ""
 
@@ -72,19 +72,19 @@ msgstr ""
 msgid "It is your turn."
 msgstr ""
 
-#: game.py:206 game.py:207 game.py:211 game.py:436
+#: game.py:207 game.py:208 game.py:212 game.py:450
 msgid "Game over"
 msgstr ""
 
-#: game.py:230
+#: game.py:231
 msgid "There are errors—it is still your turn."
 msgstr ""
 
-#: game.py:252
+#: game.py:253
 msgid "You took your turn."
 msgstr ""
 
-#: game.py:255
+#: game.py:256
 msgid "robot"
 msgstr ""
 
@@ -96,11 +96,11 @@ msgstr ""
 msgid "Waiting for"
 msgstr ""
 
-#: game.py:480
-msgid "Nowhere to play. Game over"
+#: game.py:494
+msgid "Nowhere to play."
 msgstr ""
 
-#: game.py:507
+#: game.py:521
 msgid "Robot unable to play"
 msgstr ""
 

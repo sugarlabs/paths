@@ -6,9 +6,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-28 00:30-0400\n"
-"PO-Revision-Date: 2011-03-29 18:42+0200\n"
-"Last-Translator: Rafael Ortiz <rafael@laptop.org>\n"
+"POT-Creation-Date: 2011-04-01 00:30-0400\n"
+"PO-Revision-Date: 2011-05-12 16:52+0200\n"
+"Last-Translator: Walter Bender <walter@laptop.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
@@ -19,7 +19,7 @@ msgstr ""
 
 #: activity/activity.info:2 game.py:179 path.py:30
 msgid "Paths"
-msgstr "Caminos"
+msgstr "Senderos"
 
 #: PathsActivity.py:174
 msgid "Game"
@@ -30,8 +30,8 @@ msgid "Start a new game."
 msgstr "Empieza juego nuevo."
 
 #: PathsActivity.py:184
-msgid "Play with the computer."
-msgstr "Juege con el computador"
+msgid "Play with the robot."
+msgstr "Juege con el robot"
 
 #: PathsActivity.py:193
 msgid "Turn complete"
@@ -39,7 +39,7 @@ msgstr "Turno completo"
 
 #: PathsActivity.py:199
 msgid "Help"
-msgstr ""
+msgstr "Ayuda"
 
 #: PathsActivity.py:202 game.py:177
 msgid "Score: "
@@ -51,65 +51,66 @@ msgstr "Iniciar un juego después de que todos se hayan unido"
 
 #: PathsActivity.py:353
 msgid "Only the sharer can start a new game."
-msgstr ""
+msgstr "Sólo quien comparte puede empezar una partida nueva."
 
 #: PathsActivity.py:356
 msgid "The robot is disabled when sharing."
-msgstr ""
+msgstr "El robot se desactiva cuando se juega con otra persona."
 
 #: PathsActivity.py:418
 msgid "has joined."
 msgstr "Se a unido"
 
-#: PathsActivity.py:481
+#: PathsActivity.py:483
 msgid "take a turn."
 msgstr "Tomar un turno "
 
 #: game.py:194
 msgid "Click after taking your turn."
-msgstr ""
+msgstr "Haga clic después de tomar su turno."
 
 #: game.py:195
 msgid "It is your turn."
 msgstr "Es su turno"
 
-#: game.py:206 game.py:207 game.py:211 game.py:436
+#: game.py:207 game.py:208 game.py:212 game.py:450
 msgid "Game over"
 msgstr "Juego teminado."
 
-#: game.py:230
+#: game.py:231
 msgid "There are errors—it is still your turn."
-msgstr ""
+msgstr "Hay errores - todavía es su turno."
 
-#: game.py:252
+#: game.py:253
 msgid "You took your turn."
-msgstr ""
+msgstr "Ya tomó su turno."
 
-#: game.py:255
+#: game.py:256
 msgid "robot"
 msgstr "Robot"
 
 #: game.py:282
-#, fuzzy
 msgid "Wait your turn."
-msgstr "Es su turno"
+msgstr "Espere su turno."
 
 #: game.py:283
-#, fuzzy
 msgid "Waiting for"
 msgstr "Esperando a"
 
-#: game.py:480
-msgid "Nowhere to play. Game over"
-msgstr ""
+#: game.py:494
+msgid "Nowhere to play."
+msgstr "No se puede jugar."
 
-#: game.py:507
+#: game.py:521
 msgid "Robot unable to play"
 msgstr "El robot no puede Jugar"
 
 #: path.py:31
 msgid "Move tiles to make a path."
 msgstr "Mueva los bloques para hacer un sendero"
+
+#~ msgid "Play with the computer."
+#~ msgstr "Juege con el computador"
 
 #~ msgid "It is my turn."
 #~ msgstr "Es su turno"
