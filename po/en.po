@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-21 00:30-0400\n"
-"PO-Revision-Date: 2011-03-22 18:17+0200\n"
+"POT-Creation-Date: 2011-04-01 00:30-0400\n"
+"PO-Revision-Date: 2011-06-03 07:41+0200\n"
 "Last-Translator: Chris <cjl@laptop.org>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: en\n"
@@ -17,62 +17,103 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Pootle 2.0.1\n"
 
-#: activity/activity.info:2 path.py:31
+#: activity/activity.info:2 game.py:179 path.py:30
 msgid "Paths"
 msgstr "Paths"
 
-#: PathsActivity.py:164
+#: PathsActivity.py:174
 msgid "Game"
 msgstr "Game"
 
-#: PathsActivity.py:170
+#: PathsActivity.py:180
 msgid "Start a new game."
 msgstr "Start a new game."
 
-#: PathsActivity.py:174
-msgid "Play with the computer."
-msgstr "Play with the computer."
+#: PathsActivity.py:184
+msgid "Play with the robot."
+msgstr "Play with the robot."
 
-#: PathsActivity.py:178
+#: PathsActivity.py:193
 msgid "Turn complete"
 msgstr "Turn complete"
 
-#: PathsActivity.py:181
-msgid "It is your turn."
-msgstr "It is your turn."
+#: PathsActivity.py:199
+msgid "Help"
+msgstr "Help"
 
-#: PathsActivity.py:377
+#: PathsActivity.py:202 game.py:177
+msgid "Score: "
+msgstr "Score: "
+
+#: PathsActivity.py:344
+msgid "Start a new game once everyone has joined."
+msgstr "Start a new game once everyone has joined."
+
+#: PathsActivity.py:353
+msgid "Only the sharer can start a new game."
+msgstr "Only the sharer can start a new game."
+
+#: PathsActivity.py:356
+msgid "The robot is disabled when sharing."
+msgstr "The robot is disabled when sharing."
+
+#: PathsActivity.py:418
 msgid "has joined."
 msgstr "has joined."
 
-#: PathsActivity.py:440
+#: PathsActivity.py:483
 msgid "take a turn."
 msgstr "take a turn."
 
-#: game.py:197
-msgid "It is my turn."
-msgstr "It is my turn."
+#: game.py:194
+msgid "Click after taking your turn."
+msgstr "Click after taking your turn."
 
-#: game.py:216
-msgid "I took my turn."
-msgstr "I took my turn."
+#: game.py:195
+msgid "It is your turn."
+msgstr "It is your turn."
 
-#: game.py:225
-msgid "Waiting for "
-msgstr "Waiting for "
-
-#: game.py:248
-msgid "robot"
-msgstr "robot"
-
-#: game.py:351
+#: game.py:207 game.py:208 game.py:212 game.py:450
 msgid "Game over"
 msgstr "Game over"
 
-#: game.py:406
+#: game.py:231
+msgid "There are errors—it is still your turn."
+msgstr "There are errors—it is still your turn."
+
+#: game.py:253
+msgid "You took your turn."
+msgstr "You took your turn."
+
+#: game.py:256
+msgid "robot"
+msgstr "robot"
+
+#: game.py:282
+msgid "Wait your turn."
+msgstr "Wait your turn."
+
+#: game.py:283
+msgid "Waiting for"
+msgstr "Waiting for"
+
+#: game.py:494
+msgid "Nowhere to play."
+msgstr "Nowhere to play."
+
+#: game.py:521
 msgid "Robot unable to play"
 msgstr "Robot unable to play"
 
-#: path.py:32
+#: path.py:31
 msgid "Move tiles to make a path."
 msgstr "Move tiles to make a path."
+
+#~ msgid "Play with the computer."
+#~ msgstr "Play with the computer."
+
+#~ msgid "It is my turn."
+#~ msgstr "It is my turn."
+
+#~ msgid "I took my turn."
+#~ msgstr "I took my turn."
