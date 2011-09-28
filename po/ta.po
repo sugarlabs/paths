@@ -6,73 +6,105 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-03-21 00:30-0400\n"
-"PO-Revision-Date: 2011-04-12 06:12+0200\n"
-"Last-Translator: Chris <cjl@laptop.org>\n"
+"POT-Creation-Date: 2011-08-03 10:34-0400\n"
+"PO-Revision-Date: 2011-07-31 19:58+0200\n"
+"Last-Translator: Thangamani <thangam.arunx@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: ta\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Pootle 2.0.1\n"
 
-#: activity/activity.info:2 path.py:31
+#: activity/activity.info:2 game.py:189 path.py:30
 msgid "Paths"
-msgstr ""
+msgstr "வழிகள்"
 
-#: PathsActivity.py:164
+#: PathsActivity.py:168
 msgid "Game"
 msgstr "ஆட்டம்"
 
-#: PathsActivity.py:170
-msgid "Start a new game."
-msgstr ""
-
 #: PathsActivity.py:174
-msgid "Play with the computer."
-msgstr ""
+msgid "Start a new game."
+msgstr "புதிய ஆட்டம் ஒன்றை ஆரம்பி."
 
 #: PathsActivity.py:178
+msgid "Play with the robot."
+msgstr "எந்நதிரனுடன் விளையாடு."
+
+#: PathsActivity.py:187
 msgid "Turn complete"
-msgstr ""
+msgstr "திருப்பம் முடிவு"
 
-#: PathsActivity.py:181
-msgid "It is your turn."
-msgstr ""
+#: PathsActivity.py:193
+msgid "Help"
+msgstr "உதவி"
 
-#: PathsActivity.py:377
+#: PathsActivity.py:196 PathsActivity.py:290 game.py:187 game.py:500
+msgid "Score: "
+msgstr "பெற்ற புள்ளி:"
+
+#: PathsActivity.py:348
+msgid "Start a new game once everyone has joined."
+msgstr "எல்லோரும் இணைந்தப்பின் ஒரு புதிய ஆட்டத்தை ஆரம்பி."
+
+#: PathsActivity.py:357
+msgid "Only the sharer can start a new game."
+msgstr "பங்குள்ளவர் மட்டுமே ஒரு புதிய ஆட்டத்தை ஆரம்பிக்கலாம்."
+
+#: PathsActivity.py:360
+msgid "The robot is disabled when sharing."
+msgstr "பங்கில் இருக்கும்போது எந்திரன் முடக்கப்படும்."
+
+#: PathsActivity.py:423
 msgid "has joined."
-msgstr ""
+msgstr "யாரோ இணைந்துள்ளார்."
 
-#: PathsActivity.py:440
+#: PathsActivity.py:493
 msgid "take a turn."
-msgstr ""
+msgstr "உங்களது முறை."
 
-#: game.py:197
-msgid "It is my turn."
-msgstr ""
+#: game.py:204
+msgid "Click after taking your turn."
+msgstr "உங்களது முறையை எடுக்கும்பொருட்டு சொடுக்குவும்."
 
-#: game.py:216
-msgid "I took my turn."
-msgstr ""
+#: game.py:205
+msgid "It is your turn."
+msgstr "இது உங்களுடைய முறை."
 
-#: game.py:225
-msgid "Waiting for "
-msgstr ""
-
-#: game.py:248
-msgid "robot"
-msgstr ""
-
-#: game.py:351
+#: game.py:217 game.py:488
 msgid "Game over"
-msgstr ""
+msgstr "ஆட்டம் முடிந்தது"
 
-#: game.py:406
+#: game.py:240
+msgid "There are errors—it is still your turn."
+msgstr "அங்கே சில பிழைகள்-இது இன்னமும் உங்களுடைய திருப்பம்தான்."
+
+#: game.py:262
+msgid "You took your turn."
+msgstr "நீங்கள் உங்களுடைய திருப்பத்தை எடுத்துள்ளீர்கள்"
+
+#: game.py:265
+msgid "robot"
+msgstr "எந்திரன்"
+
+#: game.py:295
+msgid "Wait your turn."
+msgstr "உங்களுடைய திருப்பத்திற்கு காத்திருக்கவும்."
+
+#: game.py:296
+msgid "Waiting for"
+msgstr "க்காக காத்திரு"
+
+#: game.py:561
+msgid "Nowhere to play."
+msgstr "வேறு எங்கு விளையாடுவது."
+
+#: game.py:580
 msgid "Robot unable to play"
-msgstr ""
+msgstr "எந்திரனால் விளையாட முடியவில்லை"
 
-#: path.py:32
+#: path.py:31
 msgid "Move tiles to make a path."
-msgstr ""
+msgstr "டைல்ஸை நகர்த்தி பாதையை உருவாக்கவும்."
