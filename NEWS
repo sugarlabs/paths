@@ -1,42 +1,61 @@
 NEWS
 
+10
+
+ENHANCEMENT
+* New translations
+
+BUG FIX
+* Fixed address in license
+
 9
 
+ENHANCEMENTS
 * Added COPYING file
 * New translations
 
 8
 
+ENHANCEMENTS
 * es, it translations
 * scoring based on tile complexity
+
+BUG FIX
 * fixed some regression in tile placement due to 'drag' animation
 
 7
 
+BUG FIXES
 * fixed regression in robot play
 * fixed problem with restore when sharing
 * fixed problem with short deal when sharing with 3 players
 
 6
 
-* fixed scaling problem on old-style Sugar that caused clipping of bottom row
+ENHANCEMENTS
 * refactoring to enable sharing
 * animate dragging tiles
 * added scoring
 * added hint button
 
+BUG FIX
+* fixed scaling problem on old-style Sugar that caused clipping of bottom row
+
 5
 
+ENHANCEMENTS
 * reset card highlight between games
 * .es translations
 
 4
 
+ENHANCEMENTS
 * play with a robot
 * highlights closed paths
 
 3
 
+ENHANCEMENTS
 * new game button
 * enabled save/restore to Journal
 * highlight active tile
@@ -44,6 +63,7 @@ NEWS
 
 2
 
+BUG FIXES
 * fixed regression preventing launch from GNONE
 * prevent new tile play while a path error is on the board
 

@@ -2,109 +2,133 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-01 00:30-0400\n"
+"POT-Creation-Date: 2010-10-02 10:20-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 1.7.0\n"
+"X-Generator: Translate Toolkit 1.6.0\n"
 
-#: activity/activity.info:2 game.py:179 path.py:30
-msgid "Paths"
+#: activity/activity.info:2 /home/walter/Desktop/abacus/abacus.py:49
+msgid "Abacus"
 msgstr ""
 
-#: PathsActivity.py:174
-msgid "Game"
+#: /home/walter/Desktop/abacus/abacus_window.py:548
+#: /home/walter/Desktop/abacus/abacus.py:70
+msgid "Reset"
 msgstr ""
 
-#: PathsActivity.py:180
-msgid "Start a new game."
+#: /home/walter/Desktop/abacus/AbacusActivity.py:136
+#: /home/walter/Desktop/abacus/AbacusActivity.py:160
+msgid "Edit"
 msgstr ""
 
-#: PathsActivity.py:184
-msgid "Play with the robot."
+#: /home/walter/Desktop/abacus/AbacusActivity.py:146
+msgid "<Ctrl>Q"
 msgstr ""
 
-#: PathsActivity.py:193
-msgid "Turn complete"
+#: /home/walter/Desktop/abacus/AbacusActivity.py:158
+msgid "Project"
 msgstr ""
 
-#: PathsActivity.py:199
-msgid "Help"
+#: /home/walter/Desktop/abacus/AbacusActivity.py:159
+#: /home/walter/Desktop/abacus/AbacusActivity.py:208
+msgid "Custom"
 msgstr ""
 
-#: PathsActivity.py:202 game.py:177
-msgid "Score: "
+#: /home/walter/Desktop/abacus/AbacusActivity.py:173
+#: /home/walter/Desktop/abacus/abacus.py:54
+msgid "Soroban"
 msgstr ""
 
-#: PathsActivity.py:344
-msgid "Start a new game once everyone has joined."
+#: /home/walter/Desktop/abacus/AbacusActivity.py:176
+#: /home/walter/Desktop/abacus/abacus.py:56
+msgid "Nepohualtzintzin"
 msgstr ""
 
-#: PathsActivity.py:353
-msgid "Only the sharer can start a new game."
+#: /home/walter/Desktop/abacus/AbacusActivity.py:178
+#: /home/walter/Desktop/abacus/abacus.py:58
+msgid "Hexadecimal"
 msgstr ""
 
-#: PathsActivity.py:356
-msgid "The robot is disabled when sharing."
+#: /home/walter/Desktop/abacus/AbacusActivity.py:180
+#: /home/walter/Desktop/abacus/abacus.py:57
+msgid "Binary"
 msgstr ""
 
-#: PathsActivity.py:418
-msgid "has joined."
+#: /home/walter/Desktop/abacus/AbacusActivity.py:182
+#: /home/walter/Desktop/abacus/abacus.py:55
+msgid "Schety"
 msgstr ""
 
-#: PathsActivity.py:483
-msgid "take a turn."
+#: /home/walter/Desktop/abacus/AbacusActivity.py:184
+#: /home/walter/Desktop/abacus/abacus.py:59
+msgid "Fraction"
 msgstr ""
 
-#: game.py:194
-msgid "Click after taking your turn."
+#: /home/walter/Desktop/abacus/AbacusActivity.py:186
+#: /home/walter/Desktop/abacus/abacus.py:61
+msgid "Caacupé"
 msgstr ""
 
-#: game.py:195
-msgid "It is your turn."
+#: /home/walter/Desktop/abacus/AbacusActivity.py:188
+#: /home/walter/Desktop/abacus/abacus.py:62
+msgid "Rods"
 msgstr ""
 
-#: game.py:207 game.py:208 game.py:212 game.py:450
-msgid "Game over"
+#: /home/walter/Desktop/abacus/AbacusActivity.py:191
+msgid "Rods:"
 msgstr ""
 
-#: game.py:231
-msgid "There are errors—it is still your turn."
+#: /home/walter/Desktop/abacus/AbacusActivity.py:194
+msgid "Top:"
 msgstr ""
 
-#: game.py:253
-msgid "You took your turn."
+#: /home/walter/Desktop/abacus/AbacusActivity.py:197
+msgid "Bottom:"
 msgstr ""
 
-#: game.py:256
-msgid "robot"
+#: /home/walter/Desktop/abacus/AbacusActivity.py:201
+msgid "Factor:"
 msgstr ""
 
-#: game.py:282
-msgid "Wait your turn."
+#: /home/walter/Desktop/abacus/AbacusActivity.py:204
+msgid "Base:"
 msgstr ""
 
-#: game.py:283
-msgid "Waiting for"
+#: /home/walter/Desktop/abacus/AbacusActivity.py:211
+msgid "Copy"
 msgstr ""
 
-#: game.py:494
-msgid "Nowhere to play."
+#: /home/walter/Desktop/abacus/AbacusActivity.py:213
+msgid "Paste"
 msgstr ""
 
-#: game.py:521
-msgid "Robot unable to play"
+#: /home/walter/Desktop/abacus/AbacusActivity.py:279
+#: /home/walter/Desktop/abacus/abacus.py:53
+msgid "Suanpan"
 msgstr ""
 
-#: path.py:31
-msgid "Move tiles to make a path."
+#: /home/walter/Desktop/abacus/AbacusActivity.py:281
+#: /home/walter/Desktop/abacus/abacus.py:60
+msgid "Decimal"
+msgstr ""
+
+#: /home/walter/Desktop/abacus/abacus.py:73
+msgid "Quit"
 msgstr ""

@@ -30,7 +30,7 @@ msgid "Start a new game."
 msgstr "Avvia una nuova partita"
 
 #: PathsActivity.py:174
-msgid "Play with the computer."
+msgid "Play with the robot."
 msgstr "Gioca contro il computer."
 
 #: PathsActivity.py:178
