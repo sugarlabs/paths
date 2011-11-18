@@ -770,8 +770,19 @@ class Game():
         return True
 
     def _expose_cb(self, win, event):
-        self._sprites.redraw_sprites()
+        ''' Callback to handle window expose events '''
+        self.do_expose_event(event)
         return True
+
+    def do_expose_event(self, event):
+        ''' Handle the expose-event by drawing '''
+        # Restrict Cairo to the exposed area
+        cr = self._canvas.window.cairo_create()
+        cr.rectangle(event.area.x, event.area.y,
+                event.area.width, event.area.height)
+        cr.clip()
+        # Refresh sprite list
+        self._sprites.redraw_sprites(cr=cr)
 
     def _destroy_cb(self, win, event):
         gtk.main_quit()

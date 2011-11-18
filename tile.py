@@ -19,8 +19,8 @@ from utils import svg_str_to_pixbuf
 class Tile:
 
     def __init__(self, sprites, svg, svgs, tile_type='tile', number=0):
-        self.spr = Sprite(sprites, 0, 0, svg_str_to_pixbuf(svg))
-        self.highlight = [self.spr.images[0]]
+        self.highlight = [svg_str_to_pixbuf(svg)]
+        self.spr = Sprite(sprites, 0, 0, self.highlight[0])
         for s in svgs:
             self.highlight.append(svg_str_to_pixbuf(s))
         self.paths = []  # [[N, E, S, W], [N, E, S, W]]
@@ -30,8 +30,6 @@ class Tile:
         self.number = number
         self.value = 1
         self.spr.set_label_color('#FF0000')
-        # self.spr.set_label_attributes(32)
-        # self.spr.set_label(str(number))
 
     def set_value(self, value):
         self.value = value
@@ -68,19 +66,17 @@ class Tile:
             self.paths[i][SOUTH] = self.paths[i][EAST]
             self.paths[i][EAST] = self.paths[i][NORTH]
             self.paths[i][NORTH] = west
-        self.spr.images[0] = self.spr.images[0].rotate_simple(270)
         for h in range(len(self.highlight)):
             self.highlight[h] = self.highlight[h].rotate_simple(270)
-        self.spr.draw()
+        self.spr.set_shape(self.highlight[0])
         self.orientation += 90
         self.orientation %= 360
 
     def show_tile(self):
         self.spr.set_layer(CARDS)
-        self.spr.draw()
 
     def hide(self):
-        self.spr.move((-self.spr.images[0].get_width(), 0))
+        self.spr.move((-self.spr.get_dimensions()[0], 0))
 
 
 #
