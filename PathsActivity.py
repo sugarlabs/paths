@@ -33,6 +33,9 @@ from sugar.graphics.menuitem import MenuItem
 from sugar.graphics.icon import Icon
 from sugar.datastore import datastore
 
+from toolbar_utils import button_factory, image_factory, label_factory, \
+    separator_factory
+
 import telepathy
 from dbus.service import signal
 from dbus.gobject_service import ExportedGObject
@@ -54,60 +57,6 @@ MAX_HANDS = 4
 SERVICE = 'org.sugarlabs.PathsActivity'
 IFACE = SERVICE
 PATH = '/org/augarlabs/PathsActivity'
-
-
-def _button_factory(icon_name, tooltip, callback, toolbar, cb_arg=None,
-                    accelerator=None):
-    """Factory for making toolbar buttons"""
-    my_button = ToolButton(icon_name)
-    my_button.set_tooltip(tooltip)
-    my_button.props.sensitive = True
-    if accelerator is not None:
-        my_button.props.accelerator = accelerator
-    if cb_arg is not None:
-        my_button.connect('clicked', callback, cb_arg)
-    else:
-        my_button.connect('clicked', callback)
-    if hasattr(toolbar, 'insert'):  # the main toolbar
-        toolbar.insert(my_button, -1)
-    else:  # or a secondary toolbar
-        toolbar.props.page.insert(my_button, -1)
-    my_button.show()
-    return my_button
-
-
-def _label_factory(label, toolbar):
-    """ Factory for adding a label to a toolbar """
-    my_label = gtk.Label(label)
-    my_label.set_line_wrap(True)
-    my_label.show()
-    toolitem = gtk.ToolItem()
-    toolitem.add(my_label)
-    toolbar.insert(toolitem, -1)
-    toolitem.show()
-    return my_label
-
-
-def _separator_factory(toolbar, visible=True, expand=False):
-    """ Factory for adding a separator to a toolbar """
-    separator = gtk.SeparatorToolItem()
-    separator.props.draw = visible
-    separator.set_expand(expand)
-    toolbar.insert(separator, -1)
-    separator.show()
-
-
-def _image_factory(image, toolbar, tooltip=None):
-    """ Add an image to the toolbar """
-    img = gtk.Image()
-    img.set_from_pixbuf(image)
-    img_tool = gtk.ToolItem()
-    img_tool.add(img)
-    if tooltip is not None:
-        img.set_tooltip_text(tooltip)
-    toolbar.insert(img_tool, -1)
-    img_tool.show()
-    return img
 
 
 class PathsActivity(activity.Activity):
@@ -170,33 +119,33 @@ class PathsActivity(activity.Activity):
             toolbox.set_current_toolbar(1)
             self.toolbar = games_toolbar
 
-        self._new_game_button = _button_factory(
-            'new-game', _('Start a new game.'), self._new_game_cb,
-            self.toolbar)
+        self._new_game_button = button_factory(
+            'new-game', self.toolbar, self._new_game_cb,
+            tooltip=_('Start a new game.'))
 
-        self.robot_button = _button_factory(
-            'robot-off', _('Play with the robot.'), self._robot_cb,
-            self.toolbar)
+        self.robot_button = button_factory(
+            'robot-off', self.toolbar, self._robot_cb,
+            tooltip= _('Play with the robot.'))
 
-        self.player = _image_factory(
+        self.player = image_factory(
             svg_str_to_pixbuf(generate_xo(scale=0.8,
                                           colors=['#303030', '#303030'])),
             self.toolbar, tooltip=self.nick)
 
-        self.dialog_button = _button_factory('go-next',
-                                             _('Turn complete'),
-                                             self._dialog_cb, self.toolbar)
+        self.dialog_button = button_factory(
+            'go-next', self.toolbar, self._dialog_cb,
+            tooltip=_('Turn complete'))
 
-        self.status = _label_factory('', self.toolbar)
+        self.status = label_factory(self.toolbar, '')
 
-        self.hint_button = _button_factory('help-toolbar',
-                                             _('Help'),
-                                             self._hint_cb, self.toolbar)
+        self.hint_button = button_factory(
+            'help-toolbar', self.toolbar, self._hint_cb,
+            tooltip=_('Help'))
 
-        self.score = _label_factory(_('Score: ') + '0', self.toolbar)
+        self.score = label_factory(self.toolbar, _('Score: ') + '0')
 
         if _have_toolbox:
-            _separator_factory(toolbox.toolbar, False, True)
+            separator_factory(toolbox.toolbar, True, False)
 
             stop_button = StopButton(self)
             stop_button.props.accelerator = '<Ctrl>q'
