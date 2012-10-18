@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 #Copyright (c) 2011 Walter Bender
+# Port To GTK3:
+# Ignacio Rodriguez <ignaciorodriguez@sugarlabs.org>
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -10,9 +12,7 @@
 # along with this library; if not, write to the Free Software
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
-
-import gtk
-import gobject
+from gi.repository import Gtk, Gdk, GdkPixbuf, GObject
 
 from gettext import gettext as _
 
@@ -20,7 +20,7 @@ import logging
 _logger = logging.getLogger('paths-activity')
 
 try:
-    from sugar.graphics import style
+    from sugar3.graphics import style
     GRID_CELL_SIZE = style.GRID_CELL_SIZE
 except ImportError:
     GRID_CELL_SIZE = 0
@@ -54,18 +54,17 @@ class Game():
             self._canvas = canvas
             parent.show_all()
 
-        self._canvas.set_flags(gtk.CAN_FOCUS)
-        self._canvas.add_events(gtk.gdk.BUTTON_PRESS_MASK)
-        self._canvas.add_events(gtk.gdk.BUTTON_RELEASE_MASK)
-        self._canvas.add_events(gtk.gdk.POINTER_MOTION_MASK)
-        self._canvas.connect("expose-event", self._expose_cb)
+        self._canvas.add_events(Gdk.EventMask.BUTTON_PRESS_MASK)
+        self._canvas.add_events(Gdk.EventMask.BUTTON_RELEASE_MASK)
+        self._canvas.add_events(Gdk.EventMask.POINTER_MOTION_MASK)
+        self._canvas.connect("draw", self.__draw_cb)
         self._canvas.connect("button-press-event", self._button_press_cb)
         self._canvas.connect("button-release-event", self._button_release_cb)
         self._canvas.connect("motion-notify-event", self._mouse_move_cb)
         self._canvas.connect("key_press_event", self._keypress_cb)
 
-        self._width = gtk.gdk.screen_width()
-        self._height = gtk.gdk.screen_height() - (GRID_CELL_SIZE * 1.5)
+        self._width = Gdk.Screen.width()
+        self._height = Gdk.Screen.height() - (GRID_CELL_SIZE * 1.5)
         self._scale = self._height / (8.0 * TILE_HEIGHT)
         self.tile_width = TILE_WIDTH * self._scale
         self.tile_height = TILE_HEIGHT * self._scale
@@ -199,7 +198,7 @@ class Game():
             self._redeal()
         if self._running_sugar:
             self._activity.set_player_on_toolbar(self._activity.nick)
-            self._activity.dialog_button.set_icon('go-next')
+            self._activity.dialog_button.set_icon_name('go-next')
             self._activity.dialog_button.set_tooltip(
                 _('Click after taking your turn.'))
         self._set_label(_('It is your turn.'))
@@ -212,7 +211,7 @@ class Game():
                 self.hands[ROBOT_HAND].deal(self.deck)
             if self.hands[self._my_hand].tiles_in_hand() == 0:
                 if self._running_sugar:
-                    self._activity.dialog_button.set_icon(
+                    self._activity.dialog_button.set_icon_name(
                         'media-playback-stop-insensitive')
                     self._activity.dialog_button.set_tooltip(_('Game over'))
                 self.game_over()
@@ -264,7 +263,7 @@ class Game():
         if self.playing_with_robot:
             self.its_their_turn(_('robot'))
             self._waiting_for_robot = True
-            gobject.timeout_add(1000, self._robot_turn)
+            GObject.timeout_add(1000, self._robot_turn)
         elif not self.we_are_sharing():
             if self.deck.empty() and \
                self.hands[self._my_hand].tiles_in_hand() == 0:
@@ -291,7 +290,7 @@ class Game():
         if self._running_sugar:
             if not self.playing_with_robot:
                 self._activity.set_player_on_toolbar(nick)
-            self._activity.dialog_button.set_icon('media-playback-stop')
+            self._activity.dialog_button.set_icon_name('media-playback-stop')
             self._activity.dialog_button.set_tooltip(_('Wait your turn.'))
         self._set_label(_('Waiting for') + ' ' + nick)
         self._waiting_for_my_turn = True  # I am still waiting.
@@ -769,10 +768,10 @@ class Game():
     def _keypress_cb(self, area, event):
         return True
 
-    def _expose_cb(self, win, event):
+    def __draw_cb(self, canvas, cr):
         ''' Callback to handle window expose events '''
-        self.do_expose_event(event)
-        return True
+        self._sprites.redraw_sprites(cr=cr)
+
 
     def do_expose_event(self, event):
         ''' Handle the expose-event by drawing '''
@@ -785,4 +784,4 @@ class Game():
         self._sprites.redraw_sprites(cr=cr)
 
     def _destroy_cb(self, win, event):
-        gtk.main_quit()
+        Gtk.main_quit()

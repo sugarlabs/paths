@@ -1,5 +1,6 @@
 #Copyright (c) 2011 Walter Bender
-
+# Port To GTK3:
+# Ignacio Rodriguez <ignaciorodriguez@sugarlabs.org>
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
@@ -10,7 +11,7 @@
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
 
-import gtk
+from gi.repository import Gdk, Gtk
 from constants import NORTH, EAST, SOUTH, WEST, HIDE, TILES
 from sprites import Sprite
 from utils import svg_str_to_pixbuf

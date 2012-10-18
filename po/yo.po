@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-03 10:34-0400\n"
+"POT-Creation-Date: 2011-04-01 00:30-0400\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,91 +17,91 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Translate Toolkit 1.7.0\n"
 
-#: activity/activity.info:2 game.py:189 path.py:30
+#: activity/activity.info:2 game.py:179 path.py:30
 msgid "Paths"
 msgstr ""
 
-#: PathsActivity.py:168
+#: PathsActivity.py:174
 msgid "Game"
 msgstr ""
 
-#: PathsActivity.py:174
+#: PathsActivity.py:180
 msgid "Start a new game."
 msgstr ""
 
-#: PathsActivity.py:178
+#: PathsActivity.py:184
 msgid "Play with the robot."
 msgstr ""
 
-#: PathsActivity.py:187
+#: PathsActivity.py:193
 msgid "Turn complete"
 msgstr ""
 
-#: PathsActivity.py:193
+#: PathsActivity.py:199
 msgid "Help"
 msgstr ""
 
-#: PathsActivity.py:196 PathsActivity.py:290 game.py:187 game.py:500
+#: PathsActivity.py:202 game.py:177
 msgid "Score: "
 msgstr ""
 
-#: PathsActivity.py:348
+#: PathsActivity.py:344
 msgid "Start a new game once everyone has joined."
 msgstr ""
 
-#: PathsActivity.py:357
+#: PathsActivity.py:353
 msgid "Only the sharer can start a new game."
 msgstr ""
 
-#: PathsActivity.py:360
+#: PathsActivity.py:356
 msgid "The robot is disabled when sharing."
 msgstr ""
 
-#: PathsActivity.py:423
+#: PathsActivity.py:418
 msgid "has joined."
 msgstr ""
 
-#: PathsActivity.py:493
+#: PathsActivity.py:483
 msgid "take a turn."
 msgstr ""
 
-#: game.py:204
+#: game.py:194
 msgid "Click after taking your turn."
 msgstr ""
 
-#: game.py:205
+#: game.py:195
 msgid "It is your turn."
 msgstr ""
 
-#: game.py:217 game.py:488
+#: game.py:207 game.py:208 game.py:212 game.py:450
 msgid "Game over"
 msgstr ""
 
-#: game.py:240
+#: game.py:231
 msgid "There are errors—it is still your turn."
 msgstr ""
 
-#: game.py:262
+#: game.py:253
 msgid "You took your turn."
 msgstr ""
 
-#: game.py:265
+#: game.py:256
 msgid "robot"
 msgstr ""
 
-#: game.py:295
+#: game.py:282
 msgid "Wait your turn."
 msgstr ""
 
-#: game.py:296
+#: game.py:283
 msgid "Waiting for"
 msgstr ""
 
-#: game.py:561
+#: game.py:494
 msgid "Nowhere to play."
 msgstr ""
 
-#: game.py:580
+#: game.py:521
 msgid "Robot unable to play"
 msgstr ""
 

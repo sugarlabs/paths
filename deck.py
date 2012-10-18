@@ -1,4 +1,6 @@
 #Copyright (c) 2011 Walter Bender
+# Port To GTK3:
+# Ignacio Rodriguez <ignaciorodriguez@sugarlabs.org>
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -9,8 +11,7 @@
 # along with this library; if not, write to the Free Software
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
-
-import gtk
+from gi.repository import Gtk, Gdk
 from random import randrange
 
 from tile import Tile, board_card

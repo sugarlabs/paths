@@ -1,4 +1,6 @@
 #Copyright (c) 2011 Walter Bender
+# Port To GTK3:
+# Ignacio Rodriguez <ignaciorodriguez@sugarlabs.org>
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -10,7 +12,7 @@
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
 
-import gtk
+from gi.repository import Gtk, Gdk, GdkPixbuf, GObject
 
 from deck import Deck
 from tile import blank_tile

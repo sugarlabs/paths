@@ -1,4 +1,6 @@
 #Copyright (c) 2011 Walter Bender
+# Port To GTK3:
+# Ignacio Rodriguez <ignaciorodriguez@sugarlabs.org>
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -9,29 +11,27 @@
 # along with this library; if not, write to the Free Software
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
+from gi.repository import Gtk, Gdk, GdkPixbuf, GObject
 
-import gtk
-import gobject
-
-import sugar
-from sugar.activity import activity
-from sugar import profile
+import sugar3
+from sugar3.activity import activity
+from sugar3 import profile
 try:
-    from sugar.graphics.toolbarbox import ToolbarBox
+    from sugar3.graphics.toolbarbox import ToolbarBox
     _have_toolbox = True
 except ImportError:
     _have_toolbox = False
 
 if _have_toolbox:
-    from sugar.bundle.activitybundle import ActivityBundle
-    from sugar.activity.widgets import ActivityToolbarButton
-    from sugar.activity.widgets import StopButton
-    from sugar.graphics.toolbarbox import ToolbarButton
+    from sugar3.bundle.activitybundle import ActivityBundle
+    from sugar3.activity.widgets import ActivityToolbarButton
+    from sugar3.activity.widgets import StopButton
+    from sugar3.graphics.toolbarbox import ToolbarButton
 
-from sugar.graphics.toolbutton import ToolButton
-from sugar.graphics.menuitem import MenuItem
-from sugar.graphics.icon import Icon
-from sugar.datastore import datastore
+from sugar3.graphics.toolbutton import ToolButton
+from sugar3.graphics.menuitem import MenuItem
+from sugar3.graphics.icon import Icon
+from sugar3.datastore import datastore
 
 from toolbar_utils import button_factory, image_factory, label_factory, \
     separator_factory
@@ -39,8 +39,8 @@ from toolbar_utils import button_factory, image_factory, label_factory, \
 import telepathy
 from dbus.service import signal
 from dbus.gobject_service import ExportedGObject
-from sugar.presence import presenceservice
-from sugar.presence.tubeconn import TubeConnection
+from sugar3.presence import presenceservice
+from sugar3.presence.tubeconn import TubeConnection
 
 from gettext import gettext as _
 import locale
@@ -75,9 +75,9 @@ class PathsActivity(activity.Activity):
         self._setup_dispatch_table()
 
         # Create a canvas
-        canvas = gtk.DrawingArea()
-        canvas.set_size_request(gtk.gdk.screen_width(), \
-                                gtk.gdk.screen_height())
+        canvas = Gtk.DrawingArea()
+        canvas.set_size_request(Gdk.Screen.width(), \
+                                Gdk.Screen.height())
         self.set_canvas(canvas)
         canvas.show()
         self.show_all()
@@ -111,7 +111,7 @@ class PathsActivity(activity.Activity):
 
         else:
             # Use pre-0.86 toolbar design
-            games_toolbar = gtk.Toolbar()
+            games_toolbar = Gtk.Toolbar()
             toolbox = activity.ActivityToolbox(self)
             self.set_toolbox(toolbox)
             toolbox.add_toolbar(_('Game'), games_toolbar)
@@ -168,7 +168,7 @@ class PathsActivity(activity.Activity):
     def set_robot_status(self, status, icon):
         ''' Reset robot icon and status '''
         self._game.playing_with_robot = status
-        self.robot_button.set_icon(icon)
+        self.robot_button.set_icon_name(icon)
 
     def _dialog_cb(self, button=None):
         ''' Send end of turn '''
@@ -301,11 +301,11 @@ class PathsActivity(activity.Activity):
                 reply_handler=self._list_tubes_reply_cb,
                 error_handler=self._list_tubes_error_cb)
 
-            self._new_game_button.set_icon('no-new-game')
+            self._new_game_button.set_icon_name('no-new-game')
             self._new_game_button.set_tooltip(
                 _('Only the sharer can start a new game.'))
 
-        self.robot_button.set_icon('no-robot')
+        self.robot_button.set_icon_name('no-robot')
         self.robot_button.set_tooltip(_('The robot is disabled when sharing.'))
 
         # display your XO on the toolbar
