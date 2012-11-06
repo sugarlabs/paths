@@ -7,8 +7,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-08-03 10:34-0400\n"
-"PO-Revision-Date: 2011-10-30 03:44+0200\n"
-"Last-Translator: Chris <cjl@laptop.org>\n"
+"PO-Revision-Date: 2012-09-06 07:58+0200\n"
+"Last-Translator: arosella <arosella@yahoo.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
@@ -90,9 +90,8 @@ msgid "robot"
 msgstr ""
 
 #: game.py:295
-#, fuzzy
 msgid "Wait your turn."
-msgstr "E' il tuo turno."
+msgstr "Aspetta il tuo turno."
 
 #: game.py:296
 msgid "Waiting for"
