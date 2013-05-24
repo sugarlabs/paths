@@ -1,8 +1,9 @@
 [Activity]
 name = Paths
-activity_version = 14
+activity_version = 15
 license = GPLv3
 bundle_id = org.sugarlabs.PathsActivity
 exec = sugar-activity PathsActivity.PathsActivity
 icon = activity-paths
 show_launcher = yes
+summary = multi-player pattern matching game
