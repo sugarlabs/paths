@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-03 10:34-0400\n"
+"POT-Creation-Date: 2013-05-25 00:31-0400\n"
 "PO-Revision-Date: 2012-04-03 00:09+0200\n"
 "Last-Translator: Eduardo H. <hoboprimate@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,51 +17,57 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Pootle 2.0.5\n"
 
-#: activity/activity.info:2 game.py:189 path.py:30
+#. TRANS: "name" option from activity.info file
+#: game.py:189 path.py:30
 msgid "Paths"
 msgstr "Caminhos"
 
-#: PathsActivity.py:168
+#. TRANS: "summary" option from activity.info file
+#. TRANS: "description" option from activity.info file
+msgid "multi-player pattern matching game"
+msgstr ""
+
+#: PathsActivity.py:117
 msgid "Game"
 msgstr "Jogo"
 
-#: PathsActivity.py:174
+#: PathsActivity.py:124
 msgid "Start a new game."
 msgstr "Iniciar um jogo novo."
 
-#: PathsActivity.py:178
+#: PathsActivity.py:128
 msgid "Play with the robot."
 msgstr "Jogar com o robô."
 
-#: PathsActivity.py:187
+#: PathsActivity.py:137
 msgid "Turn complete"
 msgstr "Turno completo"
 
-#: PathsActivity.py:193
+#: PathsActivity.py:143
 msgid "Help"
 msgstr "Ajuda"
 
-#: PathsActivity.py:196 PathsActivity.py:290 game.py:187 game.py:500
+#: PathsActivity.py:145 PathsActivity.py:239 game.py:187 game.py:500
 msgid "Score: "
 msgstr "Pontuação: "
 
-#: PathsActivity.py:348
+#: PathsActivity.py:297
 msgid "Start a new game once everyone has joined."
 msgstr "Inicia um novo jogo assim que todos se tenham juntado."
 
-#: PathsActivity.py:357
+#: PathsActivity.py:306
 msgid "Only the sharer can start a new game."
 msgstr "Apenas aquele que está a partilhar pode começar um novo jogo."
 
-#: PathsActivity.py:360
+#: PathsActivity.py:309
 msgid "The robot is disabled when sharing."
 msgstr "O robô está desabilitado quando se está em partilha."
 
-#: PathsActivity.py:423
+#: PathsActivity.py:372
 msgid "has joined."
 msgstr "juntou-se."
 
-#: PathsActivity.py:493
+#: PathsActivity.py:442
 msgid "take a turn."
 msgstr "fez um turno."
 
