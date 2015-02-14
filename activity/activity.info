@@ -7,3 +7,4 @@ exec = sugar-activity PathsActivity.PathsActivity
 icon = activity-paths
 show_launcher = yes
 summary = multi-player pattern matching game
+category = game
