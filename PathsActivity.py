@@ -352,7 +352,7 @@ state=%d' % (id, initiator, type, service, params, state))
         self._append_player(nick, colors)
         if self.initiating:
             payload = json_dump([self._game.buddies, self._player_colors])
-            self.send_event("b" payload)
+            self.send_event("b", payload)
 
     def _append_player(self, nick, colors):
         ''' Keep a list of players, their colors, and an XO pixbuf '''
