@@ -10,8 +10,6 @@
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
 
-import gtk
-
 from deck import Deck
 from tile import blank_tile
 from utils import json_dump, json_load

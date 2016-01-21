@@ -68,7 +68,7 @@ Example usage:
 
 # method for converting SVG to a gtk pixbuf
 def svg_str_to_pixbuf(svg_string):
-    pl = gtk.gdk.PixbufLoader('svg')
+    pl = GdkPixbuf.PixbufLoader.new_with_type('svg')
     pl.write(svg_string)
     pl.close()
     pixbuf = pl.get_pixbuf()
@@ -76,14 +76,20 @@ def svg_str_to_pixbuf(svg_string):
 
 '''
 
-import pygtk
-pygtk.require('2.0')
-import gtk
-import pango
-import pangocairo
 import cairo
 
+import gi
+gi.require_version("Gtk", "3.0")
+
+from gi.repository import Gtk
+from gi.repository import GdkPixbuf
+from gi.repository import Gdk
+from gi.repository import Pango
+from gi.repository import PangoCairo
+
+
 class Sprites:
+
     ''' A class for the list of sprites and everything they share in common '''
 
     def __init__(self, widget):
@@ -91,6 +97,10 @@ class Sprites:
         self.widget = widget
         self.list = []
         self.cr = None
+        self.defer_draw = False
+
+    def set_defer_draw(self, state):
+        self.defer_draw = state
 
     def set_cairo_context(self, cr):
         ''' Cairo context may be set or reset after __init__ '''
@@ -105,7 +115,7 @@ class Sprites:
 
     def length_of_list(self):
         ''' How many sprites are there? '''
-        return(len(self.list))
+        return len(self.list)
 
     def append_to_list(self, spr):
         ''' Append a new sprite to the end of the list. '''
@@ -120,23 +130,27 @@ class Sprites:
         else:
             self.list.insert(i, spr)
 
+    def find_in_list(self, spr):
+        return (spr in self.list)
+
     def remove_from_list(self, spr):
         ''' Remove a sprite from the list. '''
         if spr in self.list:
             self.list.remove(spr)
 
-    def find_sprite(self, pos):
+    def find_sprite(self, pos, region=False):
         ''' Search based on (x, y) position. Return the 'top/first' one. '''
         list = self.list[:]
         list.reverse()
         for spr in list:
-            if spr.hit(pos):
+            if spr.hit(pos, readpixel=not region):
                 return spr
         return None
 
     def redraw_sprites(self, area=None, cr=None):
         ''' Redraw the sprites that intersect area. '''
         # I think I need to do this to save Cairo some work
+        self.defer_draw = False
         if cr is None:
             cr = self.cr
         else:
@@ -145,7 +159,7 @@ class Sprites:
             print 'sprites.redraw_sprites: no Cairo context'
             return
         for spr in self.list:
-            if area == None:
+            if area is None:
                 spr.draw(cr=cr)
             else:
                 intersection = spr.rect.intersect(area)
@@ -154,17 +168,20 @@ class Sprites:
 
 
 class Sprite:
+
     ''' A class for the individual sprites '''
 
     def __init__(self, sprites, x, y, image):
         ''' Initialize an individual sprite '''
         self._sprites = sprites
         self.save_xy = (x, y)  # remember initial (x, y) position
-        self.rect = gtk.gdk.Rectangle(int(x), int(y), 0, 0)
+        self.rect = Gdk.Rectangle()
         self._scale = [12]
         self._rescale = [True]
-        self._horiz_align = ["center"]
-        self._vert_align = ["middle"]
+        self._horiz_align = ['center']
+        self._vert_align = ['middle']
+        self._x_pos = [None]
+        self._y_pos = [None]
         self._fd = None
         self._bold = False
         self._italic = False
@@ -179,15 +196,22 @@ class Sprite:
         self.set_image(image)
         self._sprites.append_to_list(self)
 
+        self.rect.x = int(x)
+        self.rect.y = int(y)
+        self.rect.width = image.get_height()
+        self.rect.height = image.get_width()
+
     def set_image(self, image, i=0, dx=0, dy=0):
         ''' Add an image to the sprite. '''
+
         while len(self.cached_surfaces) < i + 1:
             self.cached_surfaces.append(None)
             self._dx.append(0)
             self._dy.append(0)
         self._dx[i] = dx
         self._dy[i] = dy
-        if isinstance(image, gtk.gdk.Pixbuf):
+        if isinstance(image, GdkPixbuf.Pixbuf) or \
+           isinstance(image, cairo.ImageSurface):
             w = image.get_width()
             h = image.get_height()
         else:
@@ -200,14 +224,17 @@ class Sprite:
                 self.rect.width = w + dx
             if h + dy > self.rect.height:
                 self.rect.height = h + dy
-        surface = cairo.ImageSurface(
-            cairo.FORMAT_ARGB32, self.rect.width, self.rect.height)
-        context = cairo.Context(surface)
-        context = gtk.gdk.CairoContext(context)
-        context.set_source_pixbuf(image, 0, 0)
-        context.rectangle(0, 0, self.rect.width, self.rect.height)
-        context.fill()
-        self.cached_surfaces[i] = surface
+        if isinstance(image, cairo.ImageSurface):
+            self.cached_surfaces[i] = image
+        else:  # Convert to Cairo surface
+            surface = cairo.ImageSurface(
+                cairo.FORMAT_ARGB32, self.rect.width, self.rect.height)
+            context = cairo.Context(surface)
+            Gdk.cairo_set_source_pixbuf(context, image, 0, 0)
+            #context.set_source_pixbuf(image, 0, 0)
+            context.rectangle(0, 0, self.rect.width, self.rect.height)
+            context.fill()
+            self.cached_surfaces[i] = surface
 
     def move(self, pos):
         ''' Move to new (x, y) position '''
@@ -246,7 +273,8 @@ class Sprite:
         if layer is not None:
             self.layer = layer
         for i in range(self._sprites.length_of_list()):
-            if layer < self._sprites.get_sprite(i).layer:
+            spr = self._sprites.get_sprite(i)
+            if spr is not None and self.layer < spr.layer:
                 self._sprites.insert_in_list(self, i)
                 self.inval()
                 return
@@ -256,9 +284,9 @@ class Sprite:
     def set_label(self, new_label, i=0):
         ''' Set the label drawn on the sprite '''
         self._extend_labels_array(i)
-        if type(new_label) is str or type(new_label) is unicode:
+        if isinstance(new_label, (str, unicode)):
             # pango doesn't like nulls
-            self.labels[i] = new_label.replace("\0", " ")
+            self.labels[i] = new_label.replace('\0', ' ')
         else:
             self.labels[i] = str(new_label)
         self.inval()
@@ -274,15 +302,17 @@ class Sprite:
         if self._color is None:
             self._color = (0., 0., 0.)
         while len(self.labels) < i + 1:
-            self.labels.append(" ")
+            self.labels.append(' ')
             self._scale.append(self._scale[0])
             self._rescale.append(self._rescale[0])
             self._horiz_align.append(self._horiz_align[0])
             self._vert_align.append(self._vert_align[0])
+            self._x_pos.append(self._x_pos[0])
+            self._y_pos.append(self._y_pos[0])
 
     def set_font(self, font):
         ''' Set the font for a label '''
-        self._fd = pango.FontDescription(font)
+        self._fd = Pango.FontDescription(font)
 
     def set_label_color(self, rgb):
         ''' Set the font color for a label '''
@@ -299,14 +329,16 @@ class Sprite:
                        int('0x' + rgb[5:7], 16) / 256.)
         return
 
-    def set_label_attributes(self, scale, rescale=True, horiz_align="center",
-                             vert_align="middle", i=0):
+    def set_label_attributes(self, scale, rescale=True, horiz_align='center',
+                             vert_align='middle', x_pos=None, y_pos=None, i=0):
         ''' Set the various label attributes '''
         self._extend_labels_array(i)
         self._scale[i] = scale
         self._rescale[i] = rescale
         self._horiz_align[i] = horiz_align
         self._vert_align[i] = vert_align
+        self._x_pos[i] = x_pos
+        self._y_pos[i] = y_pos
 
     def hide(self):
         ''' Hide a sprite '''
@@ -326,6 +358,8 @@ class Sprite:
 
     def draw(self, cr=None):
         ''' Draw the sprite (and label) '''
+        if self._sprites.defer_draw:
+            return
         if cr is None:
             print 'sprite.draw: no Cairo context.'
             return
@@ -338,10 +372,11 @@ class Sprite:
                          self.rect.width,
                          self.rect.height)
             cr.fill()
+
         if len(self.labels) > 0:
             self.draw_label(cr)
 
-    def hit(self, pos):
+    def hit(self, pos, readpixel=False):
         ''' Is (x, y) on top of the sprite? '''
         x, y = pos
         if x < self.rect.x:
@@ -352,45 +387,53 @@ class Sprite:
             return False
         if y > self.rect.y + self.rect.height:
             return False
-        return True
+        if readpixel:
+            r, g, b, a = self.get_pixel(pos)
+            if r == g == b == a == 0:
+                return False
+            if a == -1:
+                return False
+        return self._sprites.find_in_list(self)
 
     def draw_label(self, cr):
         ''' Draw the label based on its attributes '''
-        # Create a pangocairo context
-        cr = pangocairo.CairoContext(cr)
         my_width = self.rect.width - self._margins[0] - self._margins[2]
         if my_width < 0:
             my_width = 0
         my_height = self.rect.height - self._margins[1] - self._margins[3]
         for i in range(len(self.labels)):
-            pl = cr.create_layout()
-            pl.set_text(str(self.labels[i]))
-            self._fd.set_size(int(self._scale[i] * pango.SCALE))
+            pl = PangoCairo.create_layout(cr)
+            pl.set_text(str(self.labels[i]), len(str(self.labels[i])))
+            self._fd.set_size(int(self._scale[i] * Pango.SCALE))
             pl.set_font_description(self._fd)
-            w = pl.get_size()[0] / pango.SCALE
+            w = pl.get_size()[0] / Pango.SCALE
             if w > my_width:
                 if self._rescale[i]:
                     self._fd.set_size(
-                            int(self._scale[i] * pango.SCALE * my_width / w))
+                            int(self._scale[i] * Pango.SCALE * my_width / w))
                     pl.set_font_description(self._fd)
-                    w = pl.get_size()[0] / pango.SCALE
+                    w = pl.get_size()[0] / Pango.SCALE
                 else:
                     j = len(self.labels[i]) - 1
                     while(w > my_width and j > 0):
-                        pl.set_text(
-                            "…" + self.labels[i][len(self.labels[i]) - j:])
-                        self._fd.set_size(int(self._scale[i] * pango.SCALE))
+                        t = "…" + self.labels[i][len(self.labels[i]) - j:]
+                        pl.set_text(t, len(t))
+                        self._fd.set_size(int(self._scale[i] * Pango.SCALE))
                         pl.set_font_description(self._fd)
-                        w = pl.get_size()[0] / pango.SCALE
+                        w = pl.get_size()[0] / Pango.SCALE
                         j -= 1
-            if self._horiz_align[i] == "center":
+            if self._x_pos[i] is not None:
+                x = int(self.rect.x + self._x_pos[i])
+            elif self._horiz_align[i] == "center":
                 x = int(self.rect.x + self._margins[0] + (my_width - w) / 2)
             elif self._horiz_align[i] == 'left':
                 x = int(self.rect.x + self._margins[0])
             else: # right
                 x = int(self.rect.x + self.rect.width - w - self._margins[2])
-            h = pl.get_size()[1] / pango.SCALE
-            if self._vert_align[i] == "middle":
+            h = pl.get_size()[1] / Pango.SCALE
+            if self._y_pos[i] is not None:
+                y = int(self.rect.y + self._y_pos[i])
+            elif self._vert_align[i] == "middle":
                 y = int(self.rect.y + self._margins[1] + (my_height - h) / 2)
             elif self._vert_align[i] == "top":
                 y = int(self.rect.y + self._margins[1])
@@ -399,21 +442,21 @@ class Sprite:
             cr.save()
             cr.translate(x, y)
             cr.set_source_rgb(self._color[0], self._color[1], self._color[2])
-            cr.update_layout(pl)
-            cr.show_layout(pl)
+            PangoCairo.update_layout(cr, pl)
+            PangoCairo.show_layout(cr, pl)
             cr.restore()
 
     def label_width(self):
         ''' Calculate the width of a label '''
-        cr = pangocairo.CairoContext(self._sprites.cr)
+        cr = self._sprites.cr
         if cr is not None:
             max = 0
             for i in range(len(self.labels)):
-                pl = cr.create_layout()
-                pl.set_text(self.labels[i])
-                self._fd.set_size(int(self._scale[i] * pango.SCALE))
+                pl = PangoCairo.create_layout(cr)
+                pl.set_text(self.labels[i], len(self.labels[i]))
+                self._fd.set_size(int(self._scale[i] * Pango.SCALE))
                 pl.set_font_description(self._fd)
-                w = pl.get_size()[0] / pango.SCALE
+                w = pl.get_size()[0] / Pango.SCALE
                 if w > max:
                     max = w
             return max
@@ -439,16 +482,13 @@ class Sprite:
         if x < 0 or x > (self.rect.width - 1) or \
                 y < 0 or y > (self.rect.height - 1):
             return(-1, -1, -1, -1)
-
-        # create a new 1x1 cairo surface
-        cs = cairo.ImageSurface(cairo.FORMAT_RGB24, 1, 1);
+        # Create a new 1x1 cairo surface.
+        cs = cairo.ImageSurface(cairo.FORMAT_RGB24, 1, 1)
         cr = cairo.Context(cs)
         cr.set_source_surface(self.cached_surfaces[i], -x, -y)
-        cr.rectangle(0,0,1,1)
+        cr.rectangle(0, 0, 1, 1)
         cr.set_operator(cairo.OPERATOR_SOURCE)
         cr.fill()
-        cs.flush() # ensure all writing is done
-        # Read the pixel
-        pixels = cs.get_data()
+        cs.flush()  # Ensure all the writing is done.
+        pixels = cs.get_data()  # Read the pixel.
         return (ord(pixels[2]), ord(pixels[1]), ord(pixels[0]), 0)
-
