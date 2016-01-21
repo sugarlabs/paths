@@ -33,7 +33,11 @@ import telepathy
 from dbus.service import signal
 from dbus.gobject_service import ExportedGObject
 from sugar3.presence import presenceservice
-from sugar3.presence.tubeconn import TubeConnection
+
+try:
+    from sugar3.presence.wrapper import CollabWrapper
+except ImportError:
+    from textchannelwrapper import CollabWrapper
 
 from gettext import gettext as _
 import locale
@@ -312,17 +316,13 @@ state=%d' % (id, initiator, type, service, params, state))
                 self.tubes_chan[ \
                               telepathy.CHANNEL_TYPE_TUBES].AcceptDBusTube(id)
 
-            tube_conn = TubeConnection(self.conn,
-                self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES], id, \
-                group_iface=self.text_chan[telepathy.CHANNEL_INTERFACE_GROUP])
-
-            self.chattube = ChatTube(tube_conn, self.initiating, \
-                self.event_received_cb)
+            self.collab = CollabWrapper(self)
+            self.collab.message.connect(self.event_received_cb)
+            self.collab.setup()
 
             # Let the sharer know joiner is waiting for a hand.
             if self.waiting_for_hand:
-                self.send_event('j|%s' % (json_dump([self.nick,
-                                                     self.colors])))
+                self.send_event("j", json_dump([self.nick, self.colors]))
 
     def _setup_dispatch_table(self):
         self._processing_methods = {
@@ -336,15 +336,13 @@ state=%d' % (id, initiator, type, service, params, state))
             'g': [self._game_over, 'game over']
             }
 
-    def event_received_cb(self, event_message):
+    def event_received_cb(self, collab, buddy, msg):
         ''' Data from a tube has arrived. '''
-        if len(event_message) == 0:
+        command = msg.get("command")
+        if action is None:
             return
-        try:
-            command, payload = event_message.split('|', 2)
-        except ValueError:
-            print('Could not split event message %s' % (event_message))
-            return
+
+        payload = msg.get("payload")
         self._processing_methods[command][0](payload)
 
     def _new_joiner(self, payload):
@@ -354,7 +352,7 @@ state=%d' % (id, initiator, type, service, params, state))
         self._append_player(nick, colors)
         if self.initiating:
             payload = json_dump([self._game.buddies, self._player_colors])
-            self.send_event('b|%s' % (payload))
+            self.send_event("b" payload)
 
     def _append_player(self, nick, colors):
         ''' Keep a list of players, their colors, and an XO pixbuf '''
@@ -422,8 +420,7 @@ state=%d' % (id, initiator, type, service, params, state))
                 self._game.whos_turn = 0
             self.status.set_label(self.nick + ': ' + _('take a turn.'))
             self._take_a_turn(self._game.buddies[self._game.whos_turn])
-            self.send_event('t|%s' % (
-                    self._game.buddies[self._game.whos_turn]))
+            self.send_event("t", self._game.buddies[self._game.whos_turn])
 
     def _take_a_turn(self, nick):
         ''' If it is your turn, take it, otherwise, wait. '''
@@ -432,36 +429,16 @@ state=%d' % (id, initiator, type, service, params, state))
         else:
             self._game.its_their_turn(nick)
 
-    def send_event(self, entry):
+    def send_event(self, command, payload):
         """ Send event through the tube. """
-        if hasattr(self, 'chattube') and self.chattube is not None:
-            self.chattube.SendText(entry)
+        if hasattr(self, 'chattube') and self.collab is not None:
+            self.collab.post(dict(
+                command=command,
+                payload=payload
+            ))
 
     def set_player_on_toolbar(self, nick):
         self.player.set_from_pixbuf(self._player_pixbuf[
                 self._game.buddies.index(nick)])
         self.player.set_tooltip_text(nick)
 
-
-class ChatTube(ExportedGObject):
-    """ Class for setting up tube for sharing """
-
-    def __init__(self, tube, is_initiator, stack_received_cb):
-        super(ChatTube, self).__init__(tube, PATH)
-        self.tube = tube
-        self.is_initiator = is_initiator  # Are we sharing or joining activity?
-        self.stack_received_cb = stack_received_cb
-        self.stack = ''
-
-        self.tube.add_signal_receiver(self.send_stack_cb, 'SendText', IFACE,
-                                      path=PATH, sender_keyword='sender')
-
-    def send_stack_cb(self, text, sender=None):
-        if sender == self.tube.get_unique_name():
-            return
-        self.stack = text
-        self.stack_received_cb(text)
-
-    @signal(dbus_interface=IFACE, signature='s')
-    def SendText(self, text):
-        self.stack = text
