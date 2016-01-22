@@ -137,13 +137,13 @@ class Game():
         if not self.we_are_sharing() or self._initiating():
             # Let joiners know we are starting a new game...
             if self.we_are_sharing():
-                self._activity.send_event('n| ')
+                self._activity.send_event("n", " ")
 
             # The initiator shuffles the deck...
             self.deck.shuffle()
             # ...and shares it.
             if self.we_are_sharing():
-                self._activity.send_event('d|%s' % (self.deck.serialize()))
+                self._activity.send_event("d", self.deck.serialize())
 
             # Deal a hand to yourself...
             self.hands[self._my_hand].deal(self.deck)
@@ -161,8 +161,8 @@ class Game():
                         self.hands.append(Hand(
                             self.tile_width, self.tile_height, remote=True))
                         self.hands[i].deal(self.deck)
-                        self._activity.send_event('h|%s' % \
-                            (self.hands[i].serialize(buddy=buddy)))
+                        self._activity.send_event("h",
+                            self.hands[i].serialize(buddy=buddy))
 
             # As initiator, you take the first turn.
             self.its_my_turn()
@@ -228,7 +228,7 @@ class Game():
                 self.hands[i].deal(self.deck, number_of_tiles_to_deal)
                 # Send the joiners their new hands.
                 if nick != self._activity.nick:
-                    self._activity.send_event('h|%s' % \
+                    self._activity.send_event("h",
                         (self.hands[i].serialize(buddy=nick)))
 
     def took_my_turn(self):
@@ -245,10 +245,10 @@ class Game():
 
         # If so, let everyone know what piece I moved.
         if self.we_are_sharing():
-            self._activity.send_event('p|%s' % \
-                (json_dump([self._last_tile_played,
-                                 self._last_tile_orientation,
-                                 self._last_grid_played])))
+            self._activity.send_event("p", json_dump([self._last_tile_played,
+                                                 self._last_tile_orientation,
+                                                 self._last_grid_played]))
+
             self._last_tile_orientation = 0  # Reset orientation.
         # I took my turn, so I am waiting again.
         self._waiting_for_my_turn = True
@@ -274,8 +274,7 @@ class Game():
                 self.whos_turn = 0
             else:
                 self.its_their_turn(self.buddies[self.whos_turn])
-                self._activity.send_event('t|%s' % (
-                    self.buddies[self.whos_turn]))
+                self._activity.send_event("t", self.buddies[self.whos_turn])
 
     def _robot_turn(self):
         self._robot_play()
@@ -509,7 +508,7 @@ class Game():
             if self._running_sugar:
                 self._activity.set_robot_status(False, 'robot-off')
         elif self.we_are_sharing():
-            self._activity.send_event('g| ')
+            self._activity.send_event("g", " ")
 
     def show_connected_tiles(self):
         ''' Highlight the squares that surround the tiles already on the grid.
