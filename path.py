@@ -12,7 +12,7 @@
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
 
-import gtk
+from gi.repository import Gtk
 
 from gettext import gettext as _
 import os
@@ -25,18 +25,18 @@ class PathMain:
         self.r = 0
 
         # create a new window
-        self.win = gtk.Window(gtk.WINDOW_TOPLEVEL)
+        self.win = Gtk.Window()
         self.win.maximize()
         self.win.set_title("%s: %s" % (_("Paths"),
                            _("Move tiles to make a path.")))
-        self.win.connect("delete_event", lambda w,e: gtk.main_quit())
+        self.win.connect("delete_event", lambda w,e: Gtk.main_quit())
 
         # A vbox to put a menu and the canvas in
-        vbox = gtk.VBox(False, 0)
+        vbox = Gtk.VBox(False, 0)
         self.win.add(vbox)
         vbox.show()
 
-        canvas = gtk.DrawingArea()
+        canvas = Gtk.DrawingArea()
         vbox.pack_end(canvas, True, True)
         canvas.show()
 
@@ -59,7 +59,7 @@ class PathMain:
 
 
 def main():
-    gtk.main()
+    Gtk.main()
     return 0
 
 if __name__ == "__main__":

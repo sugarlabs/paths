@@ -10,28 +10,21 @@
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
 
-import gtk
-import gobject
+from gi.repository import Gtk
+from gi.repository import Gdk
 
-import sugar
-from sugar.activity import activity
-from sugar import profile
-try:
-    from sugar.graphics.toolbarbox import ToolbarBox
-    _have_toolbox = True
-except ImportError:
-    _have_toolbox = False
-
-if _have_toolbox:
-    from sugar.bundle.activitybundle import ActivityBundle
-    from sugar.activity.widgets import ActivityToolbarButton
-    from sugar.activity.widgets import StopButton
-    from sugar.graphics.toolbarbox import ToolbarButton
-
-from sugar.graphics.toolbutton import ToolButton
-from sugar.graphics.menuitem import MenuItem
-from sugar.graphics.icon import Icon
-from sugar.datastore import datastore
+import sugar3
+from sugar3.activity import activity
+from sugar3 import profile
+from sugar3.graphics.toolbarbox import ToolbarBox
+from sugar3.bundle.activitybundle import ActivityBundle
+from sugar3.activity.widgets import ActivityToolbarButton
+from sugar3.activity.widgets import StopButton
+from sugar3.graphics.toolbarbox import ToolbarButton
+from sugar3.graphics.toolbutton import ToolButton
+from sugar3.graphics.menuitem import MenuItem
+from sugar3.graphics.icon import Icon
+from sugar3.datastore import datastore
 
 from toolbar_utils import button_factory, image_factory, label_factory, \
     separator_factory
@@ -39,8 +32,12 @@ from toolbar_utils import button_factory, image_factory, label_factory, \
 import telepathy
 from dbus.service import signal
 from dbus.gobject_service import ExportedGObject
-from sugar.presence import presenceservice
-from sugar.presence.tubeconn import TubeConnection
+from sugar3.presence import presenceservice
+
+try:
+    from sugar3.presence.wrapper import CollabWrapper
+except ImportError:
+    from textchannelwrapper import CollabWrapper
 
 from gettext import gettext as _
 import locale
@@ -65,19 +62,19 @@ class PathsActivity(activity.Activity):
     def __init__(self, handle):
         """ Initialize the toolbars and the game board """
         super(PathsActivity, self).__init__(handle)
+
         self.nick = profile.get_nick_name()
         if profile.get_color() is not None:
             self.colors = profile.get_color().to_string().split(',')
         else:
             self.colors = ['#A0FFA0', '#FF8080']
 
-        self._setup_toolbars(_have_toolbox)
+        self._setup_toolbars()
         self._setup_dispatch_table()
 
         # Create a canvas
-        canvas = gtk.DrawingArea()
-        canvas.set_size_request(gtk.gdk.screen_width(), \
-                                gtk.gdk.screen_height())
+        canvas = Gtk.DrawingArea()
+        canvas.set_size_request(Gdk.Screen.width(), Gdk.Screen.height())
         self.set_canvas(canvas)
         canvas.show()
         self.show_all()
@@ -91,33 +88,22 @@ class PathsActivity(activity.Activity):
         else:
             self._game.new_game()
 
-    def _setup_toolbars(self, have_toolbox):
+    def _setup_toolbars(self):
         """ Setup the toolbars. """
 
         self.max_participants = MAX_HANDS
 
-        if have_toolbox:
-            toolbox = ToolbarBox()
+        toolbox = ToolbarBox()
 
-            # Activity toolbar
-            activity_button = ActivityToolbarButton(self)
+        # Activity toolbar
+        activity_button = ActivityToolbarButton(self)
 
-            toolbox.toolbar.insert(activity_button, 0)
-            activity_button.show()
+        toolbox.toolbar.insert(activity_button, 0)
+        activity_button.show()
 
-            self.set_toolbar_box(toolbox)
-            toolbox.show()
-            self.toolbar = toolbox.toolbar
-
-        else:
-            # Use pre-0.86 toolbar design
-            games_toolbar = gtk.Toolbar()
-            toolbox = activity.ActivityToolbox(self)
-            self.set_toolbox(toolbox)
-            toolbox.add_toolbar(_('Game'), games_toolbar)
-            toolbox.show()
-            toolbox.set_current_toolbar(1)
-            self.toolbar = games_toolbar
+        self.set_toolbar_box(toolbox)
+        toolbox.show()
+        self.toolbar = toolbox.toolbar
 
         self._new_game_button = button_factory(
             'new-game', self.toolbar, self._new_game_cb,
@@ -144,13 +130,12 @@ class PathsActivity(activity.Activity):
 
         self.score = label_factory(self.toolbar, _('Score: ') + '0')
 
-        if _have_toolbox:
-            separator_factory(toolbox.toolbar, True, False)
+        separator_factory(toolbox.toolbar, True, False)
 
-            stop_button = StopButton(self)
-            stop_button.props.accelerator = '<Ctrl>q'
-            toolbox.toolbar.insert(stop_button, -1)
-            stop_button.show()
+        stop_button = StopButton(self)
+        stop_button.props.accelerator = '<Ctrl>q'
+        toolbox.toolbar.insert(stop_button, -1)
+        stop_button.show()
 
     def _new_game_cb(self, button=None):
         ''' Start a new game. '''
@@ -331,17 +316,13 @@ state=%d' % (id, initiator, type, service, params, state))
                 self.tubes_chan[ \
                               telepathy.CHANNEL_TYPE_TUBES].AcceptDBusTube(id)
 
-            tube_conn = TubeConnection(self.conn,
-                self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES], id, \
-                group_iface=self.text_chan[telepathy.CHANNEL_INTERFACE_GROUP])
-
-            self.chattube = ChatTube(tube_conn, self.initiating, \
-                self.event_received_cb)
+            self.collab = CollabWrapper(self)
+            self.collab.message.connect(self.event_received_cb)
+            self.collab.setup()
 
             # Let the sharer know joiner is waiting for a hand.
             if self.waiting_for_hand:
-                self.send_event('j|%s' % (json_dump([self.nick,
-                                                     self.colors])))
+                self.send_event("j", json_dump([self.nick, self.colors]))
 
     def _setup_dispatch_table(self):
         self._processing_methods = {
@@ -355,15 +336,13 @@ state=%d' % (id, initiator, type, service, params, state))
             'g': [self._game_over, 'game over']
             }
 
-    def event_received_cb(self, event_message):
+    def event_received_cb(self, collab, buddy, msg):
         ''' Data from a tube has arrived. '''
-        if len(event_message) == 0:
+        command = msg.get("command")
+        if action is None:
             return
-        try:
-            command, payload = event_message.split('|', 2)
-        except ValueError:
-            print('Could not split event message %s' % (event_message))
-            return
+
+        payload = msg.get("payload")
         self._processing_methods[command][0](payload)
 
     def _new_joiner(self, payload):
@@ -373,7 +352,7 @@ state=%d' % (id, initiator, type, service, params, state))
         self._append_player(nick, colors)
         if self.initiating:
             payload = json_dump([self._game.buddies, self._player_colors])
-            self.send_event('b|%s' % (payload))
+            self.send_event("b", payload)
 
     def _append_player(self, nick, colors):
         ''' Keep a list of players, their colors, and an XO pixbuf '''
@@ -441,8 +420,7 @@ state=%d' % (id, initiator, type, service, params, state))
                 self._game.whos_turn = 0
             self.status.set_label(self.nick + ': ' + _('take a turn.'))
             self._take_a_turn(self._game.buddies[self._game.whos_turn])
-            self.send_event('t|%s' % (
-                    self._game.buddies[self._game.whos_turn]))
+            self.send_event("t", self._game.buddies[self._game.whos_turn])
 
     def _take_a_turn(self, nick):
         ''' If it is your turn, take it, otherwise, wait. '''
@@ -451,36 +429,16 @@ state=%d' % (id, initiator, type, service, params, state))
         else:
             self._game.its_their_turn(nick)
 
-    def send_event(self, entry):
+    def send_event(self, command, payload):
         """ Send event through the tube. """
-        if hasattr(self, 'chattube') and self.chattube is not None:
-            self.chattube.SendText(entry)
+        if hasattr(self, 'chattube') and self.collab is not None:
+            self.collab.post(dict(
+                command=command,
+                payload=payload
+            ))
 
     def set_player_on_toolbar(self, nick):
         self.player.set_from_pixbuf(self._player_pixbuf[
                 self._game.buddies.index(nick)])
         self.player.set_tooltip_text(nick)
 
-
-class ChatTube(ExportedGObject):
-    """ Class for setting up tube for sharing """
-
-    def __init__(self, tube, is_initiator, stack_received_cb):
-        super(ChatTube, self).__init__(tube, PATH)
-        self.tube = tube
-        self.is_initiator = is_initiator  # Are we sharing or joining activity?
-        self.stack_received_cb = stack_received_cb
-        self.stack = ''
-
-        self.tube.add_signal_receiver(self.send_stack_cb, 'SendText', IFACE,
-                                      path=PATH, sender_keyword='sender')
-
-    def send_stack_cb(self, text, sender=None):
-        if sender == self.tube.get_unique_name():
-            return
-        self.stack = text
-        self.stack_received_cb(text)
-
-    @signal(dbus_interface=IFACE, signature='s')
-    def SendText(self, text):
-        self.stack = text

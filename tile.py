@@ -10,7 +10,6 @@
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
 
-import gtk
 from constants import NORTH, EAST, SOUTH, WEST, HIDE, TILES
 from sprites import Sprite
 from utils import svg_str_to_pixbuf

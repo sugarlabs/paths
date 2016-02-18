@@ -10,20 +10,17 @@
 # along with this library; if not, write to the Free Software
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
-
-import gtk
-import gobject
-
 from gettext import gettext as _
 
 import logging
 _logger = logging.getLogger('paths-activity')
 
-try:
-    from sugar.graphics import style
-    GRID_CELL_SIZE = style.GRID_CELL_SIZE
-except ImportError:
-    GRID_CELL_SIZE = 0
+from sugar3.graphics import style
+GRID_CELL_SIZE = style.GRID_CELL_SIZE
+
+from gi.repository import Gtk
+from gi.repository import Gdk
+from gi.repository import GObject
 
 from grid import Grid
 from hand import Hand
@@ -54,18 +51,18 @@ class Game():
             self._canvas = canvas
             parent.show_all()
 
-        self._canvas.set_flags(gtk.CAN_FOCUS)
-        self._canvas.add_events(gtk.gdk.BUTTON_PRESS_MASK)
-        self._canvas.add_events(gtk.gdk.BUTTON_RELEASE_MASK)
-        self._canvas.add_events(gtk.gdk.POINTER_MOTION_MASK)
-        self._canvas.connect("expose-event", self._expose_cb)
+        self._canvas.set_can_focus(True)
+        self._canvas.add_events(Gdk.EventMask.BUTTON_PRESS_MASK |
+                                Gdk.EventMask.BUTTON_RELEASE_MASK |
+                                Gdk.EventMask.POINTER_MOTION_MASK)
+        self._canvas.connect("draw", self._draw_cb)
         self._canvas.connect("button-press-event", self._button_press_cb)
         self._canvas.connect("button-release-event", self._button_release_cb)
         self._canvas.connect("motion-notify-event", self._mouse_move_cb)
         self._canvas.connect("key_press_event", self._keypress_cb)
 
-        self._width = gtk.gdk.screen_width()
-        self._height = gtk.gdk.screen_height() - (GRID_CELL_SIZE * 1.5)
+        self._width = Gdk.Screen.width()
+        self._height = Gdk.Screen.height() - (GRID_CELL_SIZE * 1.5)
         self._scale = self._height / (8.0 * TILE_HEIGHT)
         self.tile_width = TILE_WIDTH * self._scale
         self.tile_height = TILE_HEIGHT * self._scale
@@ -140,13 +137,13 @@ class Game():
         if not self.we_are_sharing() or self._initiating():
             # Let joiners know we are starting a new game...
             if self.we_are_sharing():
-                self._activity.send_event('n| ')
+                self._activity.send_event("n", " ")
 
             # The initiator shuffles the deck...
             self.deck.shuffle()
             # ...and shares it.
             if self.we_are_sharing():
-                self._activity.send_event('d|%s' % (self.deck.serialize()))
+                self._activity.send_event("d", self.deck.serialize())
 
             # Deal a hand to yourself...
             self.hands[self._my_hand].deal(self.deck)
@@ -164,8 +161,8 @@ class Game():
                         self.hands.append(Hand(
                             self.tile_width, self.tile_height, remote=True))
                         self.hands[i].deal(self.deck)
-                        self._activity.send_event('h|%s' % \
-                            (self.hands[i].serialize(buddy=buddy)))
+                        self._activity.send_event("h",
+                            self.hands[i].serialize(buddy=buddy))
 
             # As initiator, you take the first turn.
             self.its_my_turn()
@@ -199,7 +196,7 @@ class Game():
             self._redeal()
         if self._running_sugar:
             self._activity.set_player_on_toolbar(self._activity.nick)
-            self._activity.dialog_button.set_icon('go-next')
+            self._activity.dialog_button.set_icon_name('go-next')
             self._activity.dialog_button.set_tooltip(
                 _('Click after taking your turn.'))
         self._set_label(_('It is your turn.'))
@@ -212,7 +209,7 @@ class Game():
                 self.hands[ROBOT_HAND].deal(self.deck)
             if self.hands[self._my_hand].tiles_in_hand() == 0:
                 if self._running_sugar:
-                    self._activity.dialog_button.set_icon(
+                    self._activity.dialog_button.set_icon_name(
                         'media-playback-stop-insensitive')
                     self._activity.dialog_button.set_tooltip(_('Game over'))
                 self.game_over()
@@ -231,7 +228,7 @@ class Game():
                 self.hands[i].deal(self.deck, number_of_tiles_to_deal)
                 # Send the joiners their new hands.
                 if nick != self._activity.nick:
-                    self._activity.send_event('h|%s' % \
+                    self._activity.send_event("h",
                         (self.hands[i].serialize(buddy=nick)))
 
     def took_my_turn(self):
@@ -248,10 +245,10 @@ class Game():
 
         # If so, let everyone know what piece I moved.
         if self.we_are_sharing():
-            self._activity.send_event('p|%s' % \
-                (json_dump([self._last_tile_played,
-                                 self._last_tile_orientation,
-                                 self._last_grid_played])))
+            self._activity.send_event("p", json_dump([self._last_tile_played,
+                                                 self._last_tile_orientation,
+                                                 self._last_grid_played]))
+
             self._last_tile_orientation = 0  # Reset orientation.
         # I took my turn, so I am waiting again.
         self._waiting_for_my_turn = True
@@ -277,8 +274,7 @@ class Game():
                 self.whos_turn = 0
             else:
                 self.its_their_turn(self.buddies[self.whos_turn])
-                self._activity.send_event('t|%s' % (
-                    self.buddies[self.whos_turn]))
+                self._activity.send_event("t", self.buddies[self.whos_turn])
 
     def _robot_turn(self):
         self._robot_play()
@@ -291,7 +287,7 @@ class Game():
         if self._running_sugar:
             if not self.playing_with_robot:
                 self._activity.set_player_on_toolbar(nick)
-            self._activity.dialog_button.set_icon('media-playback-stop')
+            self._activity.dialog_button.set_icon_name('media-playback-stop')
             self._activity.dialog_button.set_tooltip(_('Wait your turn.'))
         self._set_label(_('Waiting for') + ' ' + nick)
         self._waiting_for_my_turn = True  # I am still waiting.
@@ -512,7 +508,7 @@ class Game():
             if self._running_sugar:
                 self._activity.set_robot_status(False, 'robot-off')
         elif self.we_are_sharing():
-            self._activity.send_event('g| ')
+            self._activity.send_event("g", " ")
 
     def show_connected_tiles(self):
         ''' Highlight the squares that surround the tiles already on the grid.
@@ -769,20 +765,21 @@ class Game():
     def _keypress_cb(self, area, event):
         return True
 
-    def _expose_cb(self, win, event):
+    def _draw_cb(self, win, context):
         ''' Callback to handle window expose events '''
-        self.do_expose_event(event)
+        self.do_draw(context)
         return True
 
-    def do_expose_event(self, event):
+    def do_draw(self, cr):
         ''' Handle the expose-event by drawing '''
         # Restrict Cairo to the exposed area
-        cr = self._canvas.window.cairo_create()
-        cr.rectangle(event.area.x, event.area.y,
-                event.area.width, event.area.height)
+        alloc = self._canvas.get_allocation()
+
+        cr.rectangle(alloc.x, alloc.y, alloc.width, alloc.height)
         cr.clip()
         # Refresh sprite list
         self._sprites.redraw_sprites(cr=cr)
 
     def _destroy_cb(self, win, event):
-        gtk.main_quit()
+        Gtk.main_quit()
+
