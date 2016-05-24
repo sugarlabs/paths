@@ -2,115 +2,117 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-05-25 00:31-0400\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2015-12-11 14:00+0000\n"
+"Last-Translator: Anatoly <dahacka94@mail.ru>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Translate Toolkit 1.7.0\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Pootle 2.5.1.1\n"
+"X-POOTLE-MTIME: 1449842415.000000\n"
 
 #. TRANS: "name" option from activity.info file
 #: game.py:189 path.py:30
 msgid "Paths"
-msgstr ""
+msgstr "Paths"
 
 #. TRANS: "summary" option from activity.info file
 #. TRANS: "description" option from activity.info file
 msgid "multi-player pattern matching game"
-msgstr ""
+msgstr "Многопользовательская игра сравнения"
 
 #: PathsActivity.py:117
 msgid "Game"
-msgstr ""
+msgstr "Игра"
 
 #: PathsActivity.py:124
 msgid "Start a new game."
-msgstr ""
+msgstr "Начать новую игру."
 
 #: PathsActivity.py:128
 msgid "Play with the robot."
-msgstr ""
+msgstr "Играть с роботом."
 
 #: PathsActivity.py:137
 msgid "Turn complete"
-msgstr ""
+msgstr "Ход закончен"
 
 #: PathsActivity.py:143
 msgid "Help"
-msgstr ""
+msgstr "Справка"
 
 #: PathsActivity.py:145 PathsActivity.py:239 game.py:187 game.py:500
 msgid "Score: "
-msgstr ""
+msgstr "Счет: "
 
 #: PathsActivity.py:297
 msgid "Start a new game once everyone has joined."
-msgstr ""
+msgstr "Когда все присоединятся, начните новую игру."
 
 #: PathsActivity.py:306
 msgid "Only the sharer can start a new game."
-msgstr ""
+msgstr "Только раздающий может начать новую игру."
 
 #: PathsActivity.py:309
 msgid "The robot is disabled when sharing."
-msgstr ""
+msgstr "Во время раздачи робот отключен."
 
 #: PathsActivity.py:372
 msgid "has joined."
-msgstr ""
+msgstr "присоединился."
 
 #: PathsActivity.py:442
 msgid "take a turn."
-msgstr ""
+msgstr "взять очередь."
 
 #: game.py:204
 msgid "Click after taking your turn."
-msgstr ""
+msgstr "Кликните после вашего хода."
 
 #: game.py:205
 msgid "It is your turn."
-msgstr ""
+msgstr "Ваш ход."
 
 #: game.py:217 game.py:488
 msgid "Game over"
-msgstr ""
+msgstr "Конец игры"
 
 #: game.py:240
 msgid "There are errors—it is still your turn."
-msgstr ""
+msgstr "Произошла ошибка — ваш ход продолжается."
 
 #: game.py:262
 msgid "You took your turn."
-msgstr ""
+msgstr "Вы взяли ход."
 
 #: game.py:265
 msgid "robot"
-msgstr ""
+msgstr "робот"
 
 #: game.py:295
 msgid "Wait your turn."
-msgstr ""
+msgstr "Ждите вашего хода."
 
 #: game.py:296
 msgid "Waiting for"
-msgstr ""
+msgstr "Ожидание"
 
 #: game.py:561
 msgid "Nowhere to play."
-msgstr ""
+msgstr "Играть негде."
 
 #: game.py:580
 msgid "Robot unable to play"
-msgstr ""
+msgstr "Робот не может играть"
 
 #: path.py:31
 msgid "Move tiles to make a path."
-msgstr ""
+msgstr "Перемещайте плитки, чтобы проложить путь."
