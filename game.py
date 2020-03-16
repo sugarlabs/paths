@@ -294,7 +294,7 @@ class Game():
 
     def _button_press_cb(self, win, event):
         win.grab_focus()
-        x, y = map(int, event.get_coords())
+        x, y = list(map(int, event.get_coords()))
 
         self._dragpos = [x, y]
         self._total_drag = [0, 0]
@@ -341,7 +341,7 @@ class Game():
             self._dragpos = [0, 0]
             return True
         win.grab_focus()
-        x, y = map(int, event.get_coords())
+        x, y = list(map(int, event.get_coords()))
         dx = x - self._dragpos[0]
         dy = y - self._dragpos[1]
         spr.move_relative([dx, dy])
@@ -361,7 +361,7 @@ class Game():
         if self._press is None:
             return
 
-        x, y = map(int, event.get_coords())
+        x, y = list(map(int, event.get_coords()))
         spr = self._sprites.find_sprite((x, y))
         self._release = spr
         grid_pos = self.grid.xy_to_grid(x, y)
