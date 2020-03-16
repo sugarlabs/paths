@@ -304,12 +304,12 @@ class PathsActivity(activity.Activity):
 
     def _list_tubes_error_cb(self, e):
         """ Log errors. """
-        print('Error: ListTubes() failed: %s', e)
+        print(('Error: ListTubes() failed: %s', e))
 
     def _new_tube_cb(self, id, initiator, type, service, params, state):
         """ Create a new tube. """
-        print('New tube: ID=%d initator=%d type=%d service=%s params=%r \
-state=%d' % (id, initiator, type, service, params, state))
+        print(('New tube: ID=%d initator=%d type=%d service=%s params=%r \
+state=%d' % (id, initiator, type, service, params, state)))
 
         if (type == telepathy.TUBE_TYPE_DBUS and service == SERVICE):
             if state == telepathy.TUBE_STATE_LOCAL_PENDING:

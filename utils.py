@@ -12,7 +12,7 @@
 
 from gi.repository import GdkPixbuf
 
-from StringIO import StringIO
+from io import StringIO
 try:
     OLD_SUGAR_SYSTEM = False
     import json
