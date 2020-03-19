@@ -33,7 +33,8 @@ from toolbar_utils import button_factory, image_factory, label_factory, \
 
 from dbus.service import signal
 #from dbus.gobject_service import ExportedGObject
-#from sugar3.presence import presenceservice
+from sugar3.presence import presenceservice
+from sugar3.presence.tubeconn import TubeConnection
 
 try:
     from sugar3.presence.wrapper import CollabWrapper
