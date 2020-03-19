@@ -476,7 +476,7 @@ class Sprite:
         return(self._margins[0], self._margins[1])
 
     def get_pixel(self, pos, i=0):
-        ''' Return the pixl at (x, y) '''
+       ''' Return the pixl at (x, y) '''
         x,y =pos 
         x = x-self.rect[0]
         y = y-self.rect[1]
