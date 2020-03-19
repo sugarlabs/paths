@@ -9,9 +9,10 @@
 # along with this library; if not, write to the Free Software
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
-
+import gi
 from gi.repository import Gtk
 from gi.repository import Gdk
+gi.require_version('TelepathyGLib', '0.12')
 
 import sugar3
 from sugar3.activity import activity
@@ -29,15 +30,15 @@ from sugar3.datastore import datastore
 from toolbar_utils import button_factory, image_factory, label_factory, \
     separator_factory
 
-import telepathy
+
 from dbus.service import signal
-from dbus.gobject_service import ExportedGObject
-from sugar3.presence import presenceservice
+#from dbus.gobject_service import ExportedGObject
+#from sugar3.presence import presenceservice
 
 try:
     from sugar3.presence.wrapper import CollabWrapper
 except ImportError:
-    from textchannelwrapper import CollabWrapper
+    from collabwrapper.collabwrapper import CollabWrapper
 
 from gettext import gettext as _
 import locale
