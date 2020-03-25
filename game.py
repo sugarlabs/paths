@@ -261,7 +261,7 @@ class Game():
         if self.playing_with_robot:
             self.its_their_turn(_('robot'))
             self._waiting_for_robot = True
-            gobject.timeout_add(1000, self._robot_turn)
+            GObject.timeout_add(1000, self._robot_turn)
         elif not self.we_are_sharing():
             if self.deck.empty() and \
                self.hands[self._my_hand].tiles_in_hand() == 0:
