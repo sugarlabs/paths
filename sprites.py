@@ -476,23 +476,19 @@ class Sprite:
         return(self._margins[0], self._margins[1])
 
     def get_pixel(self, pos, i=0):
-        ''' Return the pixl at (x, y) '''
-        x,y =pos 
-        x = x-self.rect[0]
-        y = y-self.rect[1]
-        if y> self.images[i].get_height() -1:
-            return (-1, -1, -1, -1) 
-        try:
-            array=self.images[i].get_pixels()
-            if array is not None:
-                offset = (y* self.images[i].get_width() + x )*4
-                r = ord(array[offset])
-                g = ord(array[offset+1])
-                b = ord(array[offset+2])
-                a = ord(array[offset+3])
-                return (r,g,b,a)
-            else:
-                return (-1,-1,-1,-1) 
-        except IndexError:
-            print ("Index Error: %d %d", len(array), offset)
-            return (-1,-1,-1,-1)
+        ''' Return the pixel at (x, y) '''
+        x = int(pos[0] - self.rect.x)
+        y = int(pos[1] - self.rect.y)
+        if x < 0 or x > (self.rect.width - 1) or \
+                y < 0 or y > (self.rect.height - 1):
+            return(-1, -1, -1, -1)
+        # Create a new 1x1 cairo surface.
+        cs = cairo.ImageSurface(cairo.FORMAT_RGB24, 1, 1)
+        cr = cairo.Context(cs)
+        cr.set_source_surface(self.cached_surfaces[i], -x, -y)
+        cr.rectangle(0, 0, 1, 1)
+        cr.set_operator(cairo.OPERATOR_SOURCE)
+        cr.fill()
+        cs.flush()  # Ensure all the writing is done.
+        pixels = cs.get_data()  # Read the pixel.
+        return (ord(pixels[2]), ord(pixels[1]), ord(pixels[0]), 0)
