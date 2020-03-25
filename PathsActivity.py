@@ -308,7 +308,7 @@ class PathsActivity(activity.Activity):
 
     def _list_tubes_error_cb(self, e):
         """ Log errors. """
-        print('Error: ListTubes() failed: %s', %(e))
+        print('Error: ListTubes() failed: %s', e)
 
     def _new_tube_cb(self, id, initiator, type, service, params, state):
         """ Create a new tube. """
