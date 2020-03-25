@@ -80,6 +80,7 @@ import cairo
 
 import gi
 gi.require_version("Gtk", "3.0")
+gi.require_version('PangoCairo', '1.0')
 
 from gi.repository import Gtk
 from gi.repository import GdkPixbuf
@@ -491,4 +492,4 @@ class Sprite:
         cr.fill()
         cs.flush()  # Ensure all the writing is done.
         pixels = cs.get_data()  # Read the pixel.
-        return (ord(pixels[2]), ord(pixels[1]), ord(pixels[0]), 0)
+        return (pixels[2], pixels[1], pixels[0], 0)

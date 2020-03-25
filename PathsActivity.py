@@ -10,6 +10,7 @@
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
 import gi
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import Gdk
 gi.require_version('TelepathyGLib', '0.12')
@@ -155,7 +156,7 @@ class PathsActivity(activity.Activity):
     def set_robot_status(self, status, icon):
         ''' Reset robot icon and status '''
         self._game.playing_with_robot = status
-        self.robot_button.set_icon(icon)
+        self.robot_button.set_icon_name(icon)
 
     def _dialog_cb(self, button=None):
         ''' Send end of turn '''
@@ -288,11 +289,11 @@ class PathsActivity(activity.Activity):
                 reply_handler=self._list_tubes_reply_cb,
                 error_handler=self._list_tubes_error_cb)
 
-            self._new_game_button.set_icon('no-new-game')
+            self._new_game_button.set_icon_name('no-new-game')
             self._new_game_button.set_tooltip(
                 _('Only the sharer can start a new game.'))
 
-        self.robot_button.set_icon('no-robot')
+        self.robot_button.set_icon_name('no-robot')
         self.robot_button.set_tooltip(_('The robot is disabled when sharing.'))
 
         # display your XO on the toolbar
