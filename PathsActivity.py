@@ -84,13 +84,12 @@ class PathsActivity(activity.Activity):
         self.show_all()
 
         self._game = Game(canvas, parent=self, colors=self.colors)
-        #self._setup_presence_service()
-        self.connect('shared', self._shared_cb)
-        self.connect('joined', self._joined_cb)
         self._game.buddies.append(self.nick)
         self._player_colors = [self.colors]
-        self._player_pixbuf =[svg_str_to_pixbuf(generate_xo(scale=0.8,colors=self.colors))]
- 
+        self._player_pixbuf = [svg_str_to_pixbuf(generate_xo(scale=0.8, colors=self.colors))]
+        self.connect('shared', self._shared_cb)
+        self.connect('joined', self._joined_cb)
+         
         self.collab = CollabWrapper(self)
         self.collab.message.connect(self._message_cb)
         self.collab.connect('joined',self._joined_cb)
@@ -247,24 +246,11 @@ class PathsActivity(activity.Activity):
 
     # Collaboration-related methods
 
-    #def _setup_presence_service(self):
-        #""" Setup the Presence Service. """
-        #self.pservice = presenceservice.get_instance()
-        #self.initiating = None  # sharing (True) or joining (False)
     def set_data(self,data):
         pass
    
     def get_data(self):
         return None
-
-        #owner = self.pservice.get_owner()
-        #self.owner = owner
-        #self._game.buddies.append(self.nick)
-        #self._player_colors = [self.colors]
-        #self._player_pixbuf = [svg_str_to_pixbuf(
-                #generate_xo(scale=0.8, colors=self.colors))]
-        #self._share = ""
-        
 
     def _shared_cb(self, activity):
         """ Either set up initial share..."""
@@ -274,14 +260,6 @@ class PathsActivity(activity.Activity):
         """ ...or join an exisiting share. """
         self.after_share_join(False)
 
-    #def _new_tube_common(self, sharer):
-        #""" Joining and sharing are mostly the same... """
-        #if self._shared_activity is None:
-            #print("Error: Failed to share or join activity ... \
-                #_shared_activity is null in _shared_cb()")
-            #return
-
-        #self.initiating = sharer
     def after_share_join(self,sharer):
         """ Joining and sharing are mostly the same... """
         self.waiting_for_hand = not sharer
@@ -289,26 +267,12 @@ class PathsActivity(activity.Activity):
         if self.waiting_for_hand:
            self.send_event("j", json_dump([self.nick, self.colors]))
 
-        #self.conn = self._shared_activity.telepathy_conn
-        #self.tubes_chan = self._shared_activity.telepathy_tubes_chan
-        #self.text_chan = self._shared_activity.telepathy_text_chan
-
-        #self.tubes_chan[TelepathyGLib.IFACE_CHANNEL_TYPE_TUBES].connect_to_signal(
-            #'NewTube', self._new_tube_cb)
-
         if sharer:
             print('This is my activity: making a tube...')
-            #id = self.tubes_chan[TelepathyGLib.IFACE_CHANNEL_TYPE_TUBES].OfferDBusTube(
-                #SERVICE, {})
-
             self._new_game_button.set_tooltip(
                 _('Start a new game once everyone has joined.'))
         else:
             print('I am joining an activity: waiting for a tube...')
-            #self.tubes_chan[TelepathyGLib.IFACE_CHANNEL_TYPE_TUBES].ListTubes(
-                #reply_handler=self._list_tubes_reply_cb,
-                #error_handler=self._list_tubes_error_cb)
-
             self._new_game_button.set_icon_name('no-new-game')
             self._new_game_button.set_tooltip(
                 _('Only the sharer can start a new game.'))
@@ -319,27 +283,6 @@ class PathsActivity(activity.Activity):
         # display your XO on the toolbar
         self.player.set_from_pixbuf(self._player_pixbuf[0])
         self.toolbar.show_all()
-
-    #def _list_tubes_reply_cb(self, tubes):
-        #""" Reply to a list request. """
-        #for tube_info in tubes:
-            #self._new_tube_cb(*tube_info)
-
-    #def _list_tubes_error_cb(self, e):
-        #""" Log errors. """
-        #print('Error: ListTubes() failed: %s', e)
-
-    '''def _new_tube_cb(self, id, initiator, type, service, params, state):
-        """ Create a new tube. """
-        print('New tube: ID=%d initator=%d type=%d service=%s params=%r \
-state=%d' % (id, initiator, type, service, params, state))
-
-        if (type == TelepathyGLib.TubeType.DBUS and service == SERVICE):
-            if state == TelepathyGLib.TubeState.LOCAL_PENDING:
-                self.tubes_chan[TelepathyGLib.IFACE_CHANNEL_TYPE_TUBES].AcceptDBusTube(id)
-'''
-
-            
 
     def _setup_dispatch_table(self):
         self._processing_methods = {
