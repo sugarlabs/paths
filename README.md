@@ -11,6 +11,9 @@ Paths is not a part of Sugar Desktop but can be added. Refer to the following li
 * [How to use Sugar](https://help.sugarlabs.org/), and;
 * [How to use Paths](https://wiki.sugarlabs.org/go/Activities/Paths) 
 
+<img src="screenshots/en/1.png" width="75%" title="Paths Activity">
+Start by dragging a tile onto the grid. Drag more tiles onto grid squares that are highlighted such that the paths are connected across the tiles. Whenever you close a path, it is highlighted in your 'XO' colors and it evaluates your score. Keep going until no move is left. You can play with buddies, too! When playing with more than one player, you'll be prompted when it is your turn.
+
 How to upgrade?
 ===============
 On Sugar Desktop systems;
