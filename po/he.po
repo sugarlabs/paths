@@ -7,120 +7,111 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-05-25 00:31-0400\n"
-"PO-Revision-Date: 2019-01-22 11:51+0000\n"
-"Last-Translator: Yuan <yuanchao@gmail.com>\n"
+"PO-Revision-Date: 2016-11-21 07:21+0000\n"
+"Last-Translator: Yaron <sh.yaron@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: zh_TW\n"
+"Language: he\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Pootle 2.5.1.1\n"
-"X-POOTLE-MTIME: 1548157912.000000\n"
+"X-POOTLE-MTIME: 1479712882.000000\n"
 
 #. TRANS: "name" option from activity.info file
 #: game.py:189 path.py:30
 msgid "Paths"
-msgstr "找路"
+msgstr "נתיבים"
 
 #. TRANS: "summary" option from activity.info file
 #. TRANS: "description" option from activity.info file
 msgid "multi-player pattern matching game"
-msgstr "多人圖樣配對遊戲"
+msgstr "משחק מרובה שחקנים להתאמת תבניות"
 
 #: PathsActivity.py:117
 msgid "Game"
-msgstr "遊戲"
+msgstr "משחק"
 
 #: PathsActivity.py:124
 msgid "Start a new game."
-msgstr "開始新遊戲"
+msgstr "התחלת משחק חדש."
 
 #: PathsActivity.py:128
 msgid "Play with the robot."
-msgstr "和電腦進行遊戲"
+msgstr "לשחק מול רובוט."
 
 #: PathsActivity.py:137
 msgid "Turn complete"
-msgstr "回合結束"
+msgstr "התור הושלם"
 
 #: PathsActivity.py:143
 msgid "Help"
-msgstr "幫助"
+msgstr "עזרה"
 
 #: PathsActivity.py:145 PathsActivity.py:239 game.py:187 game.py:500
 msgid "Score: "
-msgstr "分數："
+msgstr "ניקוד: "
 
 #: PathsActivity.py:297
 msgid "Start a new game once everyone has joined."
-msgstr "大家都加入了，開始新遊戲吧"
+msgstr "להתחיל במשחק לאחר שכל השחקנים הצטרפו."
 
 #: PathsActivity.py:306
 msgid "Only the sharer can start a new game."
-msgstr "只有發起者能開始新遊戲"
+msgstr "רק המשתף יכול להתחיל משחק חדש."
 
 #: PathsActivity.py:309
 msgid "The robot is disabled when sharing."
-msgstr "分享模式時電腦不參加遊戲"
+msgstr "הרובוט מנוטרל בעת שיתוף."
 
 #: PathsActivity.py:372
 msgid "has joined."
-msgstr "剛剛加入"
+msgstr "הצטרף/ה."
 
 #: PathsActivity.py:442
 msgid "take a turn."
-msgstr "一個接一個"
+msgstr "תורך."
 
 #: game.py:204
 msgid "Click after taking your turn."
-msgstr "回合結束後請點選"
+msgstr "יש ללחוץ כאן לאחר סיום המהלך."
 
 #: game.py:205
 msgid "It is your turn."
-msgstr "換你了"
+msgstr "תורך."
 
 #: game.py:217 game.py:488
 msgid "Game over"
-msgstr "遊戲結束"
+msgstr "המשחק נגמר"
 
 #: game.py:240
 msgid "There are errors—it is still your turn."
-msgstr "出錯囉！仍然是你的回合"
+msgstr "ישנן שגיאות–התור עדיין שלך."
 
 #: game.py:262
 msgid "You took your turn."
-msgstr "你已經完成回合"
+msgstr "כבר שיחקת בתורך."
 
 #: game.py:265
 msgid "robot"
-msgstr "機器人"
+msgstr "רובוט"
 
 #: game.py:295
 msgid "Wait your turn."
-msgstr "等待你的回合"
+msgstr "נא להמתין לתורך."
 
 #: game.py:296
 msgid "Waiting for"
-msgstr "等待"
+msgstr "בהמתנה לשחקן"
 
 #: game.py:561
 msgid "Nowhere to play."
-msgstr "現在不是你的回合"
+msgstr "אין היכן לשחק."
 
 #: game.py:580
 msgid "Robot unable to play"
-msgstr "機器人沒辦法玩"
+msgstr "הרובוט לא יכול לשחק"
 
 #: path.py:31
 msgid "Move tiles to make a path."
-msgstr "移動磚瓦來建造路徑"
-
-#~ msgid "Play with the computer."
-#~ msgstr "和電腦對戰"
-
-#~ msgid "It is my turn."
-#~ msgstr "換我了"
-
-#~ msgid "I took my turn."
-#~ msgstr "我用好了"
+msgstr "יש להזיז את האריחים כדי ליצור נתיב."
