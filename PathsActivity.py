@@ -328,7 +328,7 @@ class PathsActivity(activity.Activity):
 
     def _new_game(self, payload):
         ''' Sharer can start a new game. '''
-        if sharer:
+        if self.initiating:
             self._game.new_game()
 
     def _game_over(self, payload):
@@ -385,7 +385,7 @@ class PathsActivity(activity.Activity):
         if nick == self.nick:
             self._game.its_my_turn()
         else:
-            self.set_player_on_toolbar(self,nick)
+            set_player_on_toolbar(self,nick)
             self._game.its_their_turn(nick)
 
     def send_event(self, command, payload):
