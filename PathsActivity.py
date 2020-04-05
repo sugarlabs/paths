@@ -87,6 +87,7 @@ class PathsActivity(activity.Activity):
         self._game.buddies.append(self.nick)
         self._player_colors = [self.colors]
         self._player_pixbuf = [svg_str_to_pixbuf(generate_xo(scale=0.8, colors=self.colors))]
+        self.initiating = None # sharing (True) or joining (False)
         self.connect('shared', self._shared_cb)
         self.connect('joined', self._joined_cb)
          
@@ -254,19 +255,20 @@ class PathsActivity(activity.Activity):
 
     def _shared_cb(self, activity):
         """ Either set up initial share..."""
+        sharer = True
         self.after_share_join(True)
 
     def _joined_cb(self, activity):
         """ ...or join an exisiting share. """
+        sharer = False
         self.after_share_join(False)
 
     def after_share_join(self,sharer):
         """ Joining and sharing are mostly the same... """
-        self.waiting_for_hand = not sharer
-        # Let the sharer know joiner is waiting for a hand.
-        if self.waiting_for_hand:
-           self.send_event("j", json_dump([self.nick, self.colors]))
-
+        self.robot_button.set_icon_name('no-robot')
+        self.robot_button.set_tooltip(_('The robot is disabled when sharing.'))
+        self.initiating = sharer
+        
         if sharer:
             print('This is my activity: making a tube...')
             self._new_game_button.set_tooltip(
@@ -276,9 +278,8 @@ class PathsActivity(activity.Activity):
             self._new_game_button.set_icon_name('no-new-game')
             self._new_game_button.set_tooltip(
                 _('Only the sharer can start a new game.'))
+            self.send_event("j", json_dump([self.nick, self.colors]))
 
-        self.robot_button.set_icon_name('no-robot')
-        self.robot_button.set_tooltip(_('The robot is disabled when sharing.'))
 
         # display your XO on the toolbar
         self.player.set_from_pixbuf(self._player_pixbuf[0])
@@ -298,11 +299,8 @@ class PathsActivity(activity.Activity):
 
     def _message_cb(self, collab, buddy, msg):
         ''' Data from a tube has arrived. '''
-        command = msg.get("command")
-        if action is None:
-            return
-
-        payload = msg.get("payload")
+        command = msg.get('action')
+        payload = msg.get('new_text')
         self._processing_methods[command][0](payload)
 
     def _new_joiner(self, payload):
@@ -330,12 +328,12 @@ class PathsActivity(activity.Activity):
 
     def _new_game(self, payload):
         ''' Sharer can start a new game. '''
-        if not self.initiating:
+        if sharer:
             self._game.new_game()
 
     def _game_over(self, payload):
         ''' When one of the players cannot place a tile. '''
-        if not self._game.saw_game_over:
+        if self._game.saw_game_over:
             self._game.game_over()
 
     def _sending_deck(self, payload):
@@ -387,14 +385,15 @@ class PathsActivity(activity.Activity):
         if nick == self.nick:
             self._game.its_my_turn()
         else:
+            self.set_player_on_toolbar(self,nick)
             self._game.its_their_turn(nick)
 
     def send_event(self, command, payload):
         """ Send event through the tube. """
-        if hasattr(self, 'chattube') and self.collab is not None:
+        if self.collab is not None:
             self.collab.post(dict(
-                command=command,
-                payload=payload
+                action = command,
+                new_text = payload
             ))
 
     def set_player_on_toolbar(self, nick):
