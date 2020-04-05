@@ -155,7 +155,7 @@ class Game():
                                            remote=True))
                 self.hands[ROBOT_HAND].deal(self.deck)
             # ...or deal hands to the joiners.
-            elif len(self.buddies) > 1:
+            if len(self.buddies) > 1:
                 for i, buddy in enumerate(self.buddies):
                     if buddy != self._activity.nick:
                         self.hands.append(Hand(
@@ -165,7 +165,8 @@ class Game():
                             self.hands[i].serialize(buddy=buddy))
 
             # As initiator, you take the first turn.
-            self.its_my_turn()
+            if not self.we_are_sharing():
+                self.its_my_turn()
 
         # If we are joining, we need to wait for a hand.
         else:
