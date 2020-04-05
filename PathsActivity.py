@@ -266,7 +266,7 @@ class PathsActivity(activity.Activity):
     def after_share_join(self,sharer):
         """ Joining and sharing are mostly the same... """
         self.robot_button.set_icon_name('no-robot')
-        self.robot_button.set_tooltip(_('The robot is disabled when sharing.'))
+        self.robot_button.set_sensitive(False)
         self.initiating = sharer
         
         if sharer:
