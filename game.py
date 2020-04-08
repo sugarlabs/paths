@@ -62,7 +62,7 @@ class Game():
         self._canvas.connect("key_press_event", self._keypress_cb)
 
         self._width = Gdk.Screen.width()
-        self._height = Gdk.Screen.height() - (GRID_CELL_SIZE * 1.5)
+        self._height = Gdk.Screen.height() - GRID_CELL_SIZE
         self._scale = self._height / (8.0 * TILE_HEIGHT)
         self.tile_width = TILE_WIDTH * self._scale
         self.tile_height = TILE_HEIGHT * self._scale
@@ -772,13 +772,6 @@ class Game():
         return True
 
     def do_draw(self, cr):
-        ''' Handle the expose-event by drawing '''
-        # Restrict Cairo to the exposed area
-        alloc = self._canvas.get_allocation()
-
-        cr.rectangle(alloc.x, alloc.y, alloc.width, alloc.height)
-        cr.clip()
-        # Refresh sprite list
         self._sprites.redraw_sprites(cr=cr)
 
     def _destroy_cb(self, win, event):

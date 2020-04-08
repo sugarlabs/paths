@@ -32,7 +32,7 @@ class Grid:
         self.left_hand = int(tile_width // 2)
         self.left = int((width - (tile_width * COL)) // 2 + tile_width)
         self.xinc = int(tile_width)
-        self.top = 0
+        self.top = 1
         self.yinc = int(tile_height)
 
         for i in range(ROW * COL):
