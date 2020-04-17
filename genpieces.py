@@ -14,7 +14,6 @@
 
 
 import os
-from io import open
 
 class SVG:
     ''' SVG generators '''

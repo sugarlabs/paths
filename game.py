@@ -59,7 +59,7 @@ class Game():
         self._canvas.connect("button-press-event", self._button_press_cb)
         self._canvas.connect("button-release-event", self._button_release_cb)
         self._canvas.connect("motion-notify-event", self._mouse_move_cb)
-        self._canvas.connect("key_press_event", self._keypress_cb)
+        self._canvas.connect("key-press-event", self._keypress_cb)
 
         self._width = Gdk.Screen.width()
         self._height = Gdk.Screen.height() - GRID_CELL_SIZE
@@ -235,7 +235,7 @@ class Game():
     def took_my_turn(self):
         # Did I complete my turn without any errors?
         if self._there_are_errors:
-            self._set_label(_('There are errors—it is still your turn.'))
+            self._set_label(_('Correct your move'))
             return
 
         # After the tile is placed, expand regions of playable grid squares.

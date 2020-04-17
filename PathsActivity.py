@@ -147,7 +147,6 @@ class PathsActivity(activity.Activity):
         separator_factory(toolbox.toolbar, True, False)
 
         stop_button = StopButton(self)
-        stop_button.props.accelerator = '<Ctrl>q'
         toolbox.toolbar.insert(stop_button, -1)
         stop_button.show()
 
@@ -159,6 +158,8 @@ class PathsActivity(activity.Activity):
         ''' Play with the computer (or not). '''
         if not self._game.playing_with_robot:
             self.set_robot_status(True, 'robot-on')
+            self.robot_button.set_tooltip(
+                _('Disable Robot'))
             self._game.new_game()
         else:
             self.set_robot_status(False, 'robot-off')
@@ -394,8 +395,8 @@ class PathsActivity(activity.Activity):
         """ Send event through the tube. """
         if self.collab is not None:
             self.collab.post(dict(
-                action = command,
-                new_text = payload
+                action=command,
+                new_text=payload
             ))
 
     def set_player_on_toolbar(self, nick):
