@@ -15,7 +15,6 @@
 
 import os
 
-
 class SVG:
     ''' SVG generators '''
     def __init__(self):
@@ -212,7 +211,7 @@ def generate_tile_2_lines(a, b, c, d, e, f, g, h, scale=1,
 
 
 def open_file(datapath, filename):
-    return file(os.path.join(datapath, filename), "w")
+    return open(os.path.join(datapath, filename), "w")
 
 
 def close_file(f):

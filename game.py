@@ -20,7 +20,7 @@ GRID_CELL_SIZE = style.GRID_CELL_SIZE
 
 from gi.repository import Gtk
 from gi.repository import Gdk
-from gi.repository import GObject
+from gi.repository import GLib
 
 from grid import Grid
 from hand import Hand
@@ -59,10 +59,10 @@ class Game():
         self._canvas.connect("button-press-event", self._button_press_cb)
         self._canvas.connect("button-release-event", self._button_release_cb)
         self._canvas.connect("motion-notify-event", self._mouse_move_cb)
-        self._canvas.connect("key_press_event", self._keypress_cb)
+        self._canvas.connect("key-press-event", self._keypress_cb)
 
         self._width = Gdk.Screen.width()
-        self._height = Gdk.Screen.height() - (GRID_CELL_SIZE * 1.5)
+        self._height = Gdk.Screen.height() - GRID_CELL_SIZE
         self._scale = self._height / (8.0 * TILE_HEIGHT)
         self.tile_width = TILE_WIDTH * self._scale
         self.tile_height = TILE_HEIGHT * self._scale
@@ -155,7 +155,7 @@ class Game():
                                            remote=True))
                 self.hands[ROBOT_HAND].deal(self.deck)
             # ...or deal hands to the joiners.
-            elif len(self.buddies) > 1:
+            if len(self.buddies) > 1:
                 for i, buddy in enumerate(self.buddies):
                     if buddy != self._activity.nick:
                         self.hands.append(Hand(
@@ -165,7 +165,8 @@ class Game():
                             self.hands[i].serialize(buddy=buddy))
 
             # As initiator, you take the first turn.
-            self.its_my_turn()
+            if not self.we_are_sharing():
+                self.its_my_turn()
 
         # If we are joining, we need to wait for a hand.
         else:
@@ -234,7 +235,7 @@ class Game():
     def took_my_turn(self):
         # Did I complete my turn without any errors?
         if self._there_are_errors:
-            self._set_label(_('There are errors—it is still your turn.'))
+            self._set_label(_('Correct your move'))
             return
 
         # After the tile is placed, expand regions of playable grid squares.
@@ -261,7 +262,7 @@ class Game():
         if self.playing_with_robot:
             self.its_their_turn(_('robot'))
             self._waiting_for_robot = True
-            gobject.timeout_add(1000, self._robot_turn)
+            GLib.timeout_add(1000, self._robot_turn)
         elif not self.we_are_sharing():
             if self.deck.empty() and \
                self.hands[self._my_hand].tiles_in_hand() == 0:
@@ -294,7 +295,7 @@ class Game():
 
     def _button_press_cb(self, win, event):
         win.grab_focus()
-        x, y = map(int, event.get_coords())
+        x, y = list(map(int, event.get_coords()))
 
         self._dragpos = [x, y]
         self._total_drag = [0, 0]
@@ -341,7 +342,7 @@ class Game():
             self._dragpos = [0, 0]
             return True
         win.grab_focus()
-        x, y = map(int, event.get_coords())
+        x, y = list(map(int, event.get_coords()))
         dx = x - self._dragpos[0]
         dy = y - self._dragpos[1]
         spr.move_relative([dx, dy])
@@ -361,7 +362,7 @@ class Game():
         if self._press is None:
             return
 
-        x, y = map(int, event.get_coords())
+        x, y = list(map(int, event.get_coords()))
         spr = self._sprites.find_sprite((x, y))
         self._release = spr
         grid_pos = self.grid.xy_to_grid(x, y)
@@ -771,13 +772,6 @@ class Game():
         return True
 
     def do_draw(self, cr):
-        ''' Handle the expose-event by drawing '''
-        # Restrict Cairo to the exposed area
-        alloc = self._canvas.get_allocation()
-
-        cr.rectangle(alloc.x, alloc.y, alloc.width, alloc.height)
-        cr.clip()
-        # Refresh sprite list
         self._sprites.redraw_sprites(cr=cr)
 
     def _destroy_cb(self, win, event):

@@ -29,10 +29,10 @@ class Grid:
             self.grid.append(None)
 
         # tile spacing
-        self.left_hand = int(tile_width / 2)
-        self.left = int((width - (tile_width * COL)) / 2 + tile_width)
+        self.left_hand = int(tile_width // 2)
+        self.left = int((width - (tile_width * COL)) // 2 + tile_width)
         self.xinc = int(tile_width)
-        self.top = 0
+        self.top = 1
         self.yinc = int(tile_height)
 
         for i in range(ROW * COL):
@@ -90,15 +90,15 @@ class Grid:
     def xy_to_grid(self, x, y):
         ''' Convert from sprite x,y to grid index. '''
         if x > self.left:
-            return COL * int((y - self.top) / self.yinc) + \
-                   int((x - self.left) / self.xinc)
+            return COL * int((y - self.top) // self.yinc) + \
+                   int((x - self.left) // self.xinc)
         else:
             return None
 
     def grid_to_xy(self, i):
         ''' Convert from grid index to sprite x,y. '''
         return (int((self.left + i % COL * self.xinc)),
-                int((self.top + (i / COL) * self.yinc)))
+                int((self.top + (i // COL) * self.yinc)))
 
     def grid_to_spr(self, i):
         ''' Return the sprite in grid-position i. '''

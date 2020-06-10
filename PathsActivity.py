@@ -9,7 +9,8 @@
 # along with this library; if not, write to the Free Software
 # Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
 
-
+import gi
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import Gdk
 
@@ -29,15 +30,10 @@ from sugar3.datastore import datastore
 from toolbar_utils import button_factory, image_factory, label_factory, \
     separator_factory
 
-import telepathy
-from dbus.service import signal
-from dbus.gobject_service import ExportedGObject
-from sugar3.presence import presenceservice
 
-try:
-    from sugar3.presence.wrapper import CollabWrapper
-except ImportError:
-    from textchannelwrapper import CollabWrapper
+from dbus.service import signal
+
+from collabwrapper import CollabWrapper
 
 from gettext import gettext as _
 import locale
@@ -80,7 +76,17 @@ class PathsActivity(activity.Activity):
         self.show_all()
 
         self._game = Game(canvas, parent=self, colors=self.colors)
-        self._setup_presence_service()
+        self._game.buddies.append(self.nick)
+        self._player_colors = [self.colors]
+        self._player_pixbuf = [svg_str_to_pixbuf(generate_xo(scale=0.8, colors=self.colors))]
+        self.initiating = None # sharing (True) or joining (False)
+        self.connect('shared', self._shared_cb)
+        self.connect('joined', self._joined_cb)
+         
+        self.collab = CollabWrapper(self)
+        self.collab.message.connect(self._message_cb)
+        self.collab.connect('joined',self._joined_cb)
+        self.collab.setup()
 
         # Restore game state from Journal or start new game
         if 'deck' in self.metadata:
@@ -133,7 +139,6 @@ class PathsActivity(activity.Activity):
         separator_factory(toolbox.toolbar, True, False)
 
         stop_button = StopButton(self)
-        stop_button.props.accelerator = '<Ctrl>q'
         toolbox.toolbar.insert(stop_button, -1)
         stop_button.show()
 
@@ -145,6 +150,8 @@ class PathsActivity(activity.Activity):
         ''' Play with the computer (or not). '''
         if not self._game.playing_with_robot:
             self.set_robot_status(True, 'robot-on')
+            self.robot_button.set_tooltip(
+                _('Disable Robot'))
             self._game.new_game()
         else:
             self.set_robot_status(False, 'robot-off')
@@ -153,7 +160,7 @@ class PathsActivity(activity.Activity):
     def set_robot_status(self, status, icon):
         ''' Reset robot icon and status '''
         self._game.playing_with_robot = status
-        self.robot_button.set_icon(icon)
+        self.robot_button.set_icon_name(icon)
 
     def _dialog_cb(self, button=None):
         ''' Send end of turn '''
@@ -233,96 +240,45 @@ class PathsActivity(activity.Activity):
 
     # Collaboration-related methods
 
-    def _setup_presence_service(self):
-        """ Setup the Presence Service. """
-        self.pservice = presenceservice.get_instance()
-        self.initiating = None  # sharing (True) or joining (False)
-
-        owner = self.pservice.get_owner()
-        self.owner = owner
-        self._game.buddies.append(self.nick)
-        self._player_colors = [self.colors]
-        self._player_pixbuf = [svg_str_to_pixbuf(
-                generate_xo(scale=0.8, colors=self.colors))]
-        self._share = ""
-        self.connect('shared', self._shared_cb)
-        self.connect('joined', self._joined_cb)
+    def set_data(self,data):
+        pass
+   
+    def get_data(self):
+        return None
 
     def _shared_cb(self, activity):
         """ Either set up initial share..."""
-        self._new_tube_common(True)
+        self.initiating = True
+        self.after_share_join(True)
 
     def _joined_cb(self, activity):
         """ ...or join an exisiting share. """
-        self._new_tube_common(False)
+        self.initiating = False
+        self.after_share_join(False)
 
-    def _new_tube_common(self, sharer):
+    def after_share_join(self,sharer):
         """ Joining and sharing are mostly the same... """
-        if self._shared_activity is None:
-            print("Error: Failed to share or join activity ... \
-                _shared_activity is null in _shared_cb()")
-            return
-
+        self.robot_button.set_icon_name('no-robot')
+        self.robot_button.set_sensitive(False)
         self.initiating = sharer
-        self.waiting_for_hand = not sharer
-
-        self.conn = self._shared_activity.telepathy_conn
-        self.tubes_chan = self._shared_activity.telepathy_tubes_chan
-        self.text_chan = self._shared_activity.telepathy_text_chan
-
-        self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].connect_to_signal(
-            'NewTube', self._new_tube_cb)
-
+        
         if sharer:
             print('This is my activity: making a tube...')
-            id = self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].OfferDBusTube(
-                SERVICE, {})
-
             self._new_game_button.set_tooltip(
                 _('Start a new game once everyone has joined.'))
         else:
             print('I am joining an activity: waiting for a tube...')
-            self.tubes_chan[telepathy.CHANNEL_TYPE_TUBES].ListTubes(
-                reply_handler=self._list_tubes_reply_cb,
-                error_handler=self._list_tubes_error_cb)
-
-            self._new_game_button.set_icon('no-new-game')
+            self._new_game_button.set_icon_name('no-new-game')
             self._new_game_button.set_tooltip(
                 _('Only the sharer can start a new game.'))
+            self.send_event("j", json_dump([self.nick, self.colors]))
+            self._game._set_label('Wait for your turn')
+            self._game._waiting_for_my_turn = True # Wait till sharer starts a new game and makes the first move
 
-        self.robot_button.set_icon('no-robot')
-        self.robot_button.set_tooltip(_('The robot is disabled when sharing.'))
 
         # display your XO on the toolbar
         self.player.set_from_pixbuf(self._player_pixbuf[0])
         self.toolbar.show_all()
-
-    def _list_tubes_reply_cb(self, tubes):
-        """ Reply to a list request. """
-        for tube_info in tubes:
-            self._new_tube_cb(*tube_info)
-
-    def _list_tubes_error_cb(self, e):
-        """ Log errors. """
-        print('Error: ListTubes() failed: %s', e)
-
-    def _new_tube_cb(self, id, initiator, type, service, params, state):
-        """ Create a new tube. """
-        print('New tube: ID=%d initator=%d type=%d service=%s params=%r \
-state=%d' % (id, initiator, type, service, params, state))
-
-        if (type == telepathy.TUBE_TYPE_DBUS and service == SERVICE):
-            if state == telepathy.TUBE_STATE_LOCAL_PENDING:
-                self.tubes_chan[ \
-                              telepathy.CHANNEL_TYPE_TUBES].AcceptDBusTube(id)
-
-            self.collab = CollabWrapper(self)
-            self.collab.message.connect(self.event_received_cb)
-            self.collab.setup()
-
-            # Let the sharer know joiner is waiting for a hand.
-            if self.waiting_for_hand:
-                self.send_event("j", json_dump([self.nick, self.colors]))
 
     def _setup_dispatch_table(self):
         self._processing_methods = {
@@ -336,13 +292,10 @@ state=%d' % (id, initiator, type, service, params, state))
             'g': [self._game_over, 'game over']
             }
 
-    def event_received_cb(self, collab, buddy, msg):
+    def _message_cb(self, collab, buddy, msg):
         ''' Data from a tube has arrived. '''
-        command = msg.get("command")
-        if action is None:
-            return
-
-        payload = msg.get("payload")
+        command = msg.get('action')
+        payload = msg.get('new_text')
         self._processing_methods[command][0](payload)
 
     def _new_joiner(self, payload):
@@ -370,11 +323,11 @@ state=%d' % (id, initiator, type, service, params, state))
 
     def _new_game(self, payload):
         ''' Sharer can start a new game. '''
-        if not self.initiating:
+        if self.initiating:
             self._game.new_game()
 
     def _game_over(self, payload):
-        ''' Someone cannot plce a tile. '''
+        ''' When one of the players cannot place a tile. '''
         if not self._game.saw_game_over:
             self._game.game_over()
 
@@ -427,14 +380,15 @@ state=%d' % (id, initiator, type, service, params, state))
         if nick == self.nick:
             self._game.its_my_turn()
         else:
+            self.set_player_on_toolbar(self,nick)
             self._game.its_their_turn(nick)
 
     def send_event(self, command, payload):
         """ Send event through the tube. """
-        if hasattr(self, 'chattube') and self.collab is not None:
+        if self.collab is not None:
             self.collab.post(dict(
-                command=command,
-                payload=payload
+                action=command,
+                new_text=payload
             ))
 
     def set_player_on_toolbar(self, nick):

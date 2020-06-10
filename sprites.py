@@ -80,6 +80,7 @@ import cairo
 
 import gi
 gi.require_version("Gtk", "3.0")
+gi.require_version('PangoCairo', '1.0')
 
 from gi.repository import Gtk
 from gi.repository import GdkPixbuf
@@ -156,7 +157,7 @@ class Sprites:
         else:
             self.cr = cr
         if cr is None:
-            print 'sprites.redraw_sprites: no Cairo context'
+            print('sprites.redraw_sprites: no Cairo context')
             return
         for spr in self.list:
             if area is None:
@@ -284,7 +285,7 @@ class Sprite:
     def set_label(self, new_label, i=0):
         ''' Set the label drawn on the sprite '''
         self._extend_labels_array(i)
-        if isinstance(new_label, (str, unicode)):
+        if isinstance(new_label, str):
             # pango doesn't like nulls
             self.labels[i] = new_label.replace('\0', ' ')
         else:
@@ -361,7 +362,7 @@ class Sprite:
         if self._sprites.defer_draw:
             return
         if cr is None:
-            print 'sprite.draw: no Cairo context.'
+            print('sprite.draw: no Cairo context.')
             return
         for i, surface in enumerate(self.cached_surfaces):
             cr.set_source_surface(surface,
@@ -491,4 +492,4 @@ class Sprite:
         cr.fill()
         cs.flush()  # Ensure all the writing is done.
         pixels = cs.get_data()  # Read the pixel.
-        return (ord(pixels[2]), ord(pixels[1]), ord(pixels[0]), 0)
+        return (pixels[2], pixels[1], pixels[0], 0)
