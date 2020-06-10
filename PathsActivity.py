@@ -328,7 +328,7 @@ class PathsActivity(activity.Activity):
 
     def _game_over(self, payload):
         ''' When one of the players cannot place a tile. '''
-        if self._game.saw_game_over:
+        if not self._game.saw_game_over:
             self._game.game_over()
 
     def _sending_deck(self, payload):
@@ -380,7 +380,7 @@ class PathsActivity(activity.Activity):
         if nick == self.nick:
             self._game.its_my_turn()
         else:
-            set_player_on_toolbar(self,nick)
+            self.set_player_on_toolbar(self,nick)
             self._game.its_their_turn(nick)
 
     def send_event(self, command, payload):

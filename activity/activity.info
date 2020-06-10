@@ -8,4 +8,4 @@ icon = activity-paths
 show_launcher = yes
 summary = multi-player pattern matching game
 category = game
-repository = https://github.com/walterbender/paths
+repository = https://github.com/sugarlabs/paths
