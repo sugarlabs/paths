@@ -13,8 +13,6 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 from gi.repository import Gdk
-gi.require_version('TelepathyGLib', '0.12')
-from gi.repository import TelepathyGLib
 
 import sugar3
 from sugar3.activity import activity
@@ -34,14 +32,8 @@ from toolbar_utils import button_factory, image_factory, label_factory, \
 
 
 from dbus.service import signal
-from dbus.gi_service import ExportedGObject
-from sugar3.presence import presenceservice
-from sugar3.presence.tubeconn import TubeConnection
 
-try:
-    from sugar3.presence.wrapper import CollabWrapper
-except ImportError:
-    from collabwrapper.collabwrapper import CollabWrapper
+from collabwrapper import CollabWrapper
 
 from gettext import gettext as _
 import locale
@@ -256,12 +248,12 @@ class PathsActivity(activity.Activity):
 
     def _shared_cb(self, activity):
         """ Either set up initial share..."""
-        sharer = True
+        self.initiating = True
         self.after_share_join(True)
 
     def _joined_cb(self, activity):
         """ ...or join an exisiting share. """
-        sharer = False
+        self.initiating = False
         self.after_share_join(False)
 
     def after_share_join(self,sharer):
