@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-05-25 00:31-0400\n"
-"PO-Revision-Date: 2026-03-18 06:28+0000\n"
+"PO-Revision-Date: 2026-04-01 08:04+0000\n"
 "Last-Translator: NF <rkavt@smartprojects.ge>\n"
 "Language-Team: Georgian <http://weblate.sugarlabs.org/projects/"
 "sugar-activities/paths/ka/>\n"
@@ -31,11 +31,11 @@ msgstr ""
 
 #: PathsActivity.py:117
 msgid "Game"
-msgstr ""
+msgstr "თამაში"
 
 #: PathsActivity.py:124
 msgid "Start a new game."
-msgstr ""
+msgstr "ახალი თამაშის დაწყება."
 
 #: PathsActivity.py:128
 msgid "Play with the robot."
