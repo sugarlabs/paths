@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-05-25 00:31-0400\n"
-"PO-Revision-Date: 2026-04-01 08:04+0000\n"
+"PO-Revision-Date: 2026-06-15 07:48+0000\n"
 "Last-Translator: NF <rkavt@smartprojects.ge>\n"
 "Language-Team: Georgian <http://weblate.sugarlabs.org/projects/"
 "sugar-activities/paths/ka/>\n"
@@ -22,7 +22,7 @@ msgstr ""
 #. TRANS: "name" option from activity.info file
 #: game.py:189 path.py:30
 msgid "Paths"
-msgstr ""
+msgstr "ბილიკები"
 
 #. TRANS: "summary" option from activity.info file
 #. TRANS: "description" option from activity.info file
@@ -51,7 +51,7 @@ msgstr "დახმარება"
 
 #: PathsActivity.py:145 PathsActivity.py:239 game.py:187 game.py:500
 msgid "Score: "
-msgstr ""
+msgstr "ქულა: "
 
 #: PathsActivity.py:297
 msgid "Start a new game once everyone has joined."
@@ -95,7 +95,7 @@ msgstr ""
 
 #: game.py:265
 msgid "robot"
-msgstr ""
+msgstr "რობოტი"
 
 #: game.py:295
 msgid "Wait your turn."
